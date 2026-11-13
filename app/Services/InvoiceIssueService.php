@@ -90,6 +90,14 @@ class InvoiceIssueService
             $payloadMerge['zheart_request_id'] = $signed['request_id'];
         }
 
+        if (! empty($signed['submission_skip_reason'])) {
+            $payloadMerge['zheart_submission_skip'] = $signed['submission_skip_reason'];
+        }
+
+        if (! empty($signed['reporting_status'])) {
+            $payloadMerge['zheart_reporting_status'] = $signed['reporting_status'];
+        }
+
         $invoice->forceFill([
             'status' => InvoiceStatus::Issued,
             'icv' => $signed['icv'],

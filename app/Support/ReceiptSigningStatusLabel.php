@@ -13,8 +13,18 @@ final class ReceiptSigningStatusLabel
     {
         $payload = $invoice->payload ?? [];
         $requestId = $payload['zheart_request_id'] ?? null;
+        $skip = $payload['zheart_submission_skip'] ?? null;
+        $reportingStatus = $payload['zheart_reporting_status'] ?? null;
 
-        if (! config('zheart.auto_submit_signed')) {
+        if ($skip === 'integration_disabled') {
+            return [
+                'tone' => 'skipped',
+                'title' => __('pos.receipt_status_integration_off_title'),
+                'detail' => __('pos.receipt_status_integration_off_detail'),
+            ];
+        }
+
+        if ($skip === 'submit_disabled' || ! config('zheart.auto_submit_signed')) {
             return [
                 'tone' => 'sandbox',
                 'title' => __('pos.receipt_status_sandbox_title'),
@@ -27,6 +37,14 @@ final class ReceiptSigningStatusLabel
                 'tone' => 'not_reported',
                 'title' => __('pos.receipt_status_not_reported_title'),
                 'detail' => __('pos.receipt_status_not_reported_detail'),
+            ];
+        }
+
+        if (is_string($reportingStatus) && $reportingStatus !== '') {
+            return [
+                'tone' => 'reported',
+                'title' => __('pos.receipt_status_reported_title'),
+                'detail' => __('pos.receipt_status_reporting_detail', ['status' => $reportingStatus]),
             ];
         }
 

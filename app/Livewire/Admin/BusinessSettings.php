@@ -113,6 +113,10 @@ class BusinessSettings extends Component
 
     public string $deliveryAppsRaw = '';
 
+    public bool $invoicingIntegrationEnabled = false;
+
+    public bool $zheartKeyConfigured = false;
+
     /** @var list<string> */
     public array $tabsWithErrors = [];
 
@@ -128,7 +132,7 @@ class BusinessSettings extends Component
 
     public function setSection(string $section): void
     {
-        $allowed = ['brand', 'legal', 'contact', 'hours', 'branches', 'extras'];
+        $allowed = ['brand', 'legal', 'contact', 'hours', 'branches', 'extras', 'invoicing'];
         if (in_array($section, $allowed, true)) {
             $this->section = $section;
             $this->dispatch('business-tab-shown', section: $section);
@@ -421,6 +425,20 @@ class BusinessSettings extends Component
         $this->toastSuccess(__('business.messages.saved'));
     }
 
+    public function saveInvoicing(BusinessSettingsService $service): void
+    {
+        $this->authorize('business.manage');
+        $this->section = 'invoicing';
+        $this->resetErrorBag();
+        $this->tabsWithErrors = [];
+
+        $service->saveInvoicing($this->tenant(), [
+            'integration_enabled' => $this->invoicingIntegrationEnabled,
+        ], auth('tenant')->user());
+
+        $this->toastSuccess(__('business.messages.saved'));
+    }
+
     public function render(): View
     {
         $tenant = $this->tenant();
@@ -532,6 +550,13 @@ class BusinessSettings extends Component
         $apps = (array) ($extras['delivery_apps'] ?? []);
         $this->deliveryAppsRaw = implode("\n", $apps);
 
+        $this->zheartKeyConfigured = filled(config('zheart.api_key'));
+        $storedIntegration = data_get($settings, 'invoicing.integration_enabled');
+        if ($storedIntegration === null && $this->zheartKeyConfigured) {
+            $this->invoicingIntegrationEnabled = true;
+        } else {
+            $this->invoicingIntegrationEnabled = (bool) $storedIntegration;
+        }
     }
 
     /**

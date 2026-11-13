@@ -11,6 +11,13 @@ return [
         'hours' => 'Hours',
         'branches' => 'Branches',
         'extras' => 'Extras',
+        'invoicing' => 'Invoicing',
+    ],
+    'invoicing' => [
+        'intro' => 'Control whether issued invoices are signed only or also reported/cleared to ZATCA through Z-Heart after signing.',
+        'integration_enabled' => 'Enable Z-Heart invoicing integration (report / clear after sign)',
+        'integration_hint' => 'When disabled, invoices are still cryptographically signed locally but not submitted to ZATCA. Receipts show this status explicitly.',
+        'key_missing' => 'No ZHEART_API_KEY is configured in the environment. Signing still requires base URL and key.',
     ],
     'brand' => [
         'logo_choose' => 'Choose logo file',

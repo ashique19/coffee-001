@@ -81,16 +81,6 @@ class IssueInvoice extends Component
     {
         $this->validate($this->rulesForMode());
 
-        if ($this->mode === 'standard') {
-            $vatDigits = preg_replace('/\D/', '', $this->buyerVat) ?? '';
-            $cr = trim($this->buyerCr);
-            if ($vatDigits === '' && $cr === '') {
-                $this->addError('buyerVat', __('invoices.errors.buyer_id_required'));
-
-                return;
-            }
-        }
-
         $branch = Branch::query()->where('is_active', true)->orderBy('id')->first();
         $type = $this->mode === 'standard' ? InvoiceDocumentType::Standard : InvoiceDocumentType::Simplified;
         $documentNumber = strtoupper($this->mode === 'standard' ? 'STD' : 'SIMP')
@@ -165,7 +155,7 @@ class IssueInvoice extends Component
 
         return array_merge($lineRules, [
             'buyerName' => ['required', 'string', 'max:200'],
-            'buyerVat' => FieldValidationRules::vatOptional(),
+            'buyerVat' => FieldValidationRules::vatRequired(),
             'buyerCr' => FieldValidationRules::crNumberOptional(),
             'addrBuilding' => ['required', 'string', 'max:32'],
             'addrStreet' => ['required', 'string', 'max:120'],

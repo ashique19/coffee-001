@@ -16,6 +16,7 @@ interface InvoiceSigningGateway
      *     previous_invoice_hash: string,
      *     invoice_uuid: string,
      *     remote_submitted?: bool,
+     *     submission_skip_reason?: string|null,
      *     remote_submission?: array<string, mixed>|null,
      *     reporting_status?: string|null,
      *     cleared_xml?: string|null,
