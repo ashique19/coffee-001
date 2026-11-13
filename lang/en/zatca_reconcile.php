@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'title' => 'ZATCA reporting',
+    'subtitle' => 'Push issued simplified (reporting), standard, and credit/debit documents to ZATCA. Simplified invoices have a 24-hour reporting window; standard documents use clearance.',
+    'nav' => 'ZATCA reporting',
+    'auto_push_notice' => 'This page reports pending and retryable failed invoices one HTTP request at a time (ICV order). No queue worker required — keep this page open until the list is clear.',
+    'drain_running' => 'Reporting to ZATCA… one invoice per request. Leave this tab open.',
+    'drain_locked' => 'Another tab is reporting right now. This page will retry automatically.',
+    'pending_count' => ':count document(s) still need to reach ZATCA.',
+    'reminder_banner' => ':count simplified invoice(s) still need ZATCA reporting. Open ',
+    'retry' => 'Retry push',
+    'failure_hint' => 'Fix the underlying issue if possible, then retry. Already reported invoices cannot be sent again.',
+    'empty' => 'No issued documents to show.',
+    'date_filter_aria' => 'Filter by issue date',
+    'date_all' => 'All',
+    'date_today' => 'Today',
+    'date_this_month' => 'This month',
+    'date_last_30_days' => 'Last 30 days',
+    'date_filter_hint' => 'Filters use invoice issue date (Asia/Riyadh).',
+    'clearance_pending' => 'Awaiting ZATCA clearance.',
+    'window_cleared' => 'Cleared by ZATCA.',
+    'window_reported' => 'Reported within the 24-hour window.',
+    'window_open' => 'Report by :deadline (:remaining left).',
+    'window_expired' => 'Reporting window ended at :deadline.',
+    'status' => [
+        'none' => 'Not queued',
+        'pending' => 'Pending',
+        'failed' => 'Failed',
+        'reported' => 'Reported',
+        'reported_with_warnings' => 'Reported (warnings)',
+    ],
+];

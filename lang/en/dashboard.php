@@ -1,0 +1,31 @@
+<?php
+
+return [
+    'title' => 'Dashboard',
+    'subtitle' => 'Today’s sales, invoices, and ZATCA submission status for your business.',
+    'nav' => 'Dashboard',
+    'open_analytics' => 'Full analytics',
+    'zatca_queue' => 'ZATCA queue',
+    'today_orders' => 'Orders today',
+    'today_sales' => 'Sales today',
+    'today_vat' => 'VAT today',
+    'today_aov' => 'Avg. order today',
+    'sar' => 'SAR',
+    'recent_sales' => 'Recent sales',
+    'last_7_days' => 'Last 7 days',
+    'no_sales_yet' => 'No paid orders in this period yet.',
+    'invoices_by_type' => 'Invoices by type',
+    'invoices_issued_hint' => 'Issued invoices for this tenant (all time).',
+    'invoice_type' => [
+        'simplified' => 'Simplified',
+        'standard' => 'Standard',
+        'credit_note' => 'Credit notes',
+        'debit_note' => 'Debit notes',
+    ],
+    'zatca_status' => 'ZATCA submissions',
+    'zatca_status_hint' => 'Reporting and clearance queue outcomes.',
+    'zatca_pending' => 'Pending',
+    'zatca_reported' => 'Reported / cleared',
+    'zatca_failed' => 'Failed',
+    'no_submissions' => 'No ZATCA submissions yet.',
+];

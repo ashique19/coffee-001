@@ -1,0 +1,496 @@
+@import '@fontsource/fraunces/500.css';
+@import '@fontsource/fraunces/600.css';
+@import '@fontsource/fraunces/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
+@layer components {
+    .cafe-body {
+        --font-display: 'Fraunces', Georgia, serif;
+        --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        --cafe-gold: var(--cafe-accent, #d4a574);
+    }
+
+    [dir='rtl'] .cafe-body {
+        --font-display: 'Tajawal', ui-sans-serif, sans-serif;
+        --font-body: 'Tajawal', ui-sans-serif, sans-serif;
+    }
+
+    .cafe-body.is-loading {
+        opacity: 0;
+    }
+
+    .cafe-body.is-ready {
+        opacity: 1;
+        transition: opacity 0.7s ease;
+    }
+
+    .cafe-grain::before {
+        content: '';
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        opacity: 0.035;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .cafe-cursor-glow {
+        display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .cafe-cursor-glow {
+            display: block;
+            position: fixed;
+            width: 280px;
+            height: 280px;
+            margin: -140px 0 0 -140px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 40;
+            background: radial-gradient(circle, color-mix(in srgb, var(--cafe-gold) 22%, transparent) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .cafe-cursor-glow.is-on {
+            opacity: 1;
+        }
+    }
+
+    .cafe-header {
+        @apply fixed inset-x-0 top-0 z-50 transition-all duration-500;
+    }
+
+    .cafe-header--hero {
+        @apply border-b border-white/15 bg-cafe-espresso/80 text-cafe-cream shadow-lg backdrop-blur-xl;
+    }
+
+    .cafe-header--hero .cafe-header-link {
+        @apply text-cafe-cream/90 hover:text-cafe-accent;
+    }
+
+    .cafe-header--hero + main,
+    .cafe-premium-hero {
+        margin-top: 0;
+    }
+
+    body:has(.cafe-premium-hero) .cafe-header--hero {
+        @apply text-cafe-cream;
+    }
+
+    .cafe-header--solid {
+        @apply border-cafe-latte/40 bg-cafe-cream/95 text-cafe-espresso shadow-lg backdrop-blur-xl;
+    }
+
+    .cafe-header--solid .cafe-header-link {
+        @apply text-cafe-mocha;
+    }
+
+    .cafe-header--solid .cafe-pill-cta--ghost {
+        @apply border-cafe-caramel/50 bg-cafe-latte/90 text-cafe-espresso shadow-sm;
+    }
+
+    .cafe-mobile-nav {
+        @apply border-t px-2 py-2 backdrop-blur-xl;
+    }
+
+    .cafe-header--hero .cafe-mobile-nav {
+        @apply border-white/15 bg-cafe-espresso/95;
+    }
+
+    .cafe-header--hero .cafe-mobile-nav__link {
+        @apply text-cafe-cream hover:bg-white/10;
+    }
+
+    .cafe-header--solid .cafe-mobile-nav {
+        @apply border-cafe-latte/60 bg-cafe-cream shadow-md;
+    }
+
+    .cafe-header--solid .cafe-mobile-nav__link {
+        @apply text-cafe-espresso hover:bg-cafe-latte/70;
+    }
+
+    .cafe-mobile-nav__link {
+        @apply flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold transition;
+    }
+
+    .cafe-header-link {
+        @apply rounded-full px-3 py-2 text-sm font-medium transition hover:text-cafe-accent;
+    }
+
+    .cafe-locale-trigger {
+        @apply inline-flex h-11 max-w-[9.5rem] items-center gap-1.5 rounded-full border border-cafe-latte/50 bg-white/95 px-2.5 text-xs font-semibold text-cafe-espresso shadow-sm backdrop-blur-sm;
+    }
+
+    .cafe-locale-trigger__code {
+        @apply inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-cafe-espresso text-[0.65rem] font-bold text-cafe-cream;
+    }
+
+    .cafe-locale-trigger__label {
+        @apply hidden text-cafe-mocha sm:inline;
+    }
+
+    .cafe-header--hero .cafe-locale-trigger {
+        @apply border-white/30 bg-cafe-espresso/40 text-cafe-cream;
+    }
+
+    .cafe-header--hero .cafe-locale-trigger__code {
+        @apply bg-cafe-cream text-cafe-espresso;
+    }
+
+    .cafe-header--hero .cafe-locale-trigger__label {
+        @apply text-cafe-cream/90;
+    }
+
+    .cafe-locale-menu {
+        @apply absolute end-0 top-[calc(100%+0.35rem)] z-[60] min-w-[11rem] overflow-hidden rounded-2xl border border-cafe-latte/60 bg-white/95 p-1 shadow-xl backdrop-blur-xl;
+    }
+
+    .cafe-locale-menu__item {
+        @apply flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-medium text-cafe-mocha transition hover:bg-cafe-latte/40;
+    }
+
+    .cafe-locale-menu__item--active {
+        @apply bg-cafe-espresso font-semibold text-cafe-cream;
+    }
+
+    .cafe-locale-menu__code {
+        @apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cafe-latte/60 text-[0.65rem] font-bold tabular-nums;
+    }
+
+    .cafe-locale-menu__item--active .cafe-locale-menu__code {
+        @apply bg-cafe-cream/20 text-cafe-cream;
+    }
+
+    .cafe-locale-bar {
+        @apply gap-0.5 rounded-full border border-cafe-latte bg-white/95 p-0.5 text-xs font-semibold shadow-sm backdrop-blur-sm;
+    }
+
+    .cafe-locale-bar__link {
+        @apply flex min-h-10 items-center justify-center rounded-full px-3 text-cafe-mocha transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-cafe-caramel;
+    }
+
+    .cafe-locale-bar__link--active {
+        @apply bg-cafe-espresso text-cafe-cream;
+    }
+
+    .cafe-header--solid .cafe-locale-bar {
+        @apply border-cafe-latte/80 bg-white;
+    }
+
+    .cafe-pill-cta {
+        @apply inline-flex min-h-12 items-center justify-center rounded-full px-7 text-sm font-semibold tracking-wide transition duration-300;
+    }
+
+    .cafe-pill-cta--primary {
+        @apply bg-cafe-cream text-cafe-espresso shadow-lg hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98];
+    }
+
+    .cafe-pill-cta--ghost {
+        @apply border border-cafe-cream/40 bg-cafe-espresso/20 text-cafe-cream backdrop-blur-sm hover:bg-cafe-cream/15;
+    }
+
+    .cafe-premium-hero {
+        @apply relative isolate min-h-[100svh] overflow-hidden bg-cafe-espresso text-cafe-cream;
+    }
+
+    .cafe-hero-bg {
+        @apply absolute inset-0;
+    }
+
+    .cafe-hero-bg img {
+        @apply h-full w-full object-cover;
+        animation: cafe-ken-burns 24s ease-in-out infinite alternate;
+        will-change: transform;
+    }
+
+    .cafe-hero-overlay {
+        @apply absolute inset-0 bg-gradient-to-t from-cafe-espresso via-cafe-espresso/55 to-cafe-espresso/25;
+    }
+
+    .cafe-hero-floating {
+        @apply pointer-events-none absolute inset-0 overflow-hidden;
+    }
+
+    .cafe-float-bean {
+        @apply absolute rounded-full bg-cafe-accent/30 blur-sm;
+        animation: cafe-float-drift 12s ease-in-out infinite;
+    }
+
+    .cafe-hero-inner {
+        @apply relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-end px-4 pb-16 pt-32 sm:px-6 lg:px-8 lg:pb-24;
+    }
+
+    .cafe-display {
+        font-family: var(--font-display);
+        @apply text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl;
+    }
+
+    .cafe-split-word {
+        @apply inline-block overflow-hidden align-bottom;
+    }
+
+    .cafe-split-word > span {
+        @apply inline-block;
+        transform: translateY(110%);
+    }
+
+    .cafe-scroll-cue {
+        @apply mt-10 flex flex-col items-center gap-2 text-xs uppercase tracking-[0.25em] text-cafe-cream/70;
+    }
+
+    .cafe-scroll-cue span {
+        @apply block h-10 w-6 rounded-full border border-cafe-cream/40 p-1;
+    }
+
+    .cafe-scroll-cue span::after {
+        content: '';
+        @apply mx-auto block h-2 w-1 animate-bounce rounded-full bg-cafe-accent;
+    }
+
+    .cafe-stat-card {
+        @apply rounded-3xl border border-cafe-latte/50 bg-white/90 p-6 text-center shadow-lg backdrop-blur;
+    }
+
+    .cafe-stat-value {
+        font-family: var(--font-display);
+        @apply text-3xl font-semibold text-cafe-espresso sm:text-4xl;
+    }
+
+    .cafe-parallax-band {
+        @apply relative overflow-hidden py-20;
+    }
+
+    .cafe-parallax-band__media {
+        @apply absolute inset-0 -z-10 opacity-30;
+    }
+
+    .cafe-carousel {
+        @apply flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 pt-2;
+        scrollbar-width: none;
+    }
+
+    .cafe-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cafe-carousel-card {
+        @apply w-[min(88vw,22rem)] shrink-0 snap-center overflow-hidden rounded-[1.5rem] bg-cafe-cream shadow-[0_12px_40px_-12px_rgba(44,24,16,0.22)] ring-1 ring-cafe-latte/80;
+    }
+
+    .cafe-carousel-card__body {
+        @apply space-y-2 border-t border-cafe-latte/70 bg-cafe-cream p-5;
+    }
+
+    .cafe-product-eyebrow {
+        @apply text-[0.65rem] font-bold uppercase tracking-[0.2em] text-cafe-mocha;
+    }
+
+    .cafe-menu-card {
+        @apply overflow-hidden rounded-[1.25rem] bg-white shadow-[0_12px_40px_-12px_rgba(44,24,16,0.25)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_-12px_rgba(44,24,16,0.35)];
+    }
+
+    .cafe-price-chip {
+        @apply rounded-full bg-cafe-espresso px-3 py-1 text-sm font-bold text-cafe-cream;
+    }
+
+    .cafe-masonry {
+        column-count: 2;
+        column-gap: 0.75rem;
+    }
+
+    @media (min-width: 768px) {
+        .cafe-masonry {
+            column-count: 3;
+            column-gap: 1rem;
+        }
+    }
+
+    .cafe-masonry-item {
+        @apply mb-3 break-inside-avoid overflow-hidden rounded-2xl;
+    }
+
+    .cafe-testimonial {
+        @apply rounded-3xl border border-cafe-latte bg-white p-8 shadow-lg;
+    }
+
+    .cafe-cta-band {
+        @apply relative overflow-hidden rounded-[2rem] bg-cafe-espresso px-6 py-14 text-center text-cafe-cream sm:px-12;
+    }
+
+    .cafe-reveal {
+        opacity: 0;
+        transform: translate3d(0, 2.5rem, 0);
+    }
+
+    .cafe-clip-reveal {
+        clip-path: inset(100% 0 0 0);
+    }
+
+    .cafe-menu-sticky-chips-bar {
+        @apply sticky z-40 border-b border-cafe-latte/80 bg-cafe-cream/95 shadow-sm backdrop-blur-lg;
+        top: var(--cafe-header-height, 4.25rem);
+    }
+
+    .cafe-menu-sticky-chips {
+        @apply flex w-full max-w-full gap-2 overflow-x-auto py-3;
+        scrollbar-width: none;
+    }
+
+    .cafe-menu-sticky-chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cafe-menu-section {
+        scroll-margin-top: calc(var(--cafe-header-height, 4.25rem) + 3.75rem);
+    }
+
+    .cafe-chip {
+        @apply shrink-0 rounded-full border border-cafe-latte px-4 py-2 text-sm font-medium text-cafe-mocha transition;
+    }
+
+    .cafe-chip--active {
+        @apply border-cafe-espresso bg-cafe-espresso text-cafe-cream;
+    }
+
+    .cafe-bottom-sheet {
+        @apply fixed inset-x-0 bottom-0 z-[60] max-h-[85svh] overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl;
+    }
+
+    @keyframes cafe-ken-burns {
+        from {
+            transform: scale(1.05) translate3d(0, 0, 0);
+        }
+        to {
+            transform: scale(1.18) translate3d(-1.5%, -2%, 0);
+        }
+    }
+
+    @keyframes cafe-float-drift {
+        0%,
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+        50% {
+            transform: translate3d(12px, -18px, 0);
+        }
+    }
+
+    .auth-shell {
+        @apply relative flex min-h-dvh flex-col;
+    }
+
+    .auth-shell__bg {
+        @apply pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-cafe-espresso;
+    }
+
+    .auth-shell__bg img {
+        @apply h-full w-full scale-105 object-cover opacity-70;
+        filter: blur(14px);
+    }
+
+    .auth-shell__gradient {
+        @apply absolute inset-0;
+        background: linear-gradient(
+            145deg,
+            color-mix(in srgb, var(--cafe-espresso) 88%, transparent) 0%,
+            color-mix(in srgb, var(--cafe-mocha) 75%, transparent) 45%,
+            color-mix(in srgb, var(--cafe-caramel) 35%, var(--cafe-espresso)) 100%
+        );
+    }
+
+    .auth-shell__header {
+        @apply relative z-20 border-b border-white/10 bg-cafe-espresso/25 backdrop-blur-md;
+    }
+
+    .auth-shell__main {
+        @apply relative z-10 flex-1;
+    }
+
+    .auth-shell__footer {
+        @apply relative z-20 border-t border-white/10 bg-cafe-espresso/35 backdrop-blur-sm;
+    }
+
+    .auth-glass-card {
+        @apply rounded-[1.5rem] border border-white/40 bg-cafe-cream/90 shadow-[0_24px_60px_-12px_rgba(44,24,16,0.45)] backdrop-blur-xl;
+    }
+
+    .auth-shell--platform .auth-shell__gradient {
+        background: linear-gradient(
+            160deg,
+            color-mix(in srgb, var(--cafe-espresso) 92%, #0f0a08) 0%,
+            color-mix(in srgb, var(--cafe-accent) 40%, var(--cafe-mocha)) 100%
+        );
+    }
+
+    .cafe-branch-map__host .leaflet-container {
+        @apply h-full min-h-[17.5rem] w-full bg-cafe-latte font-sans text-cafe-espresso;
+        font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
+    }
+
+    .cafe-branch-map--locked .cafe-branch-map__host {
+        pointer-events: none;
+    }
+
+    .cafe-branch-map__host .leaflet-control-zoom a {
+        @apply min-h-11 min-w-11 leading-[2.75rem];
+    }
+
+    .cafe-map-pin-wrap {
+        background: transparent;
+        border: none;
+    }
+
+    .cafe-map-pin {
+        display: block;
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 9999px 9999px 9999px 0;
+        transform: rotate(-45deg);
+        background: var(--cafe-map-accent, var(--cafe-accent, #d4a574));
+        border: 3px solid var(--cafe-cream, #faf6f0);
+        box-shadow: 0 8px 18px -4px color-mix(in srgb, var(--cafe-espresso) 55%, transparent);
+    }
+
+    .cafe-map-popup-shell .leaflet-popup-content-wrapper {
+        @apply rounded-2xl border border-cafe-latte bg-cafe-cream shadow-lg;
+    }
+
+    .cafe-map-popup-shell .leaflet-popup-content {
+        @apply m-3 text-sm leading-relaxed text-cafe-espresso;
+    }
+
+    .cafe-map-popup__title {
+        @apply font-semibold text-cafe-espresso;
+    }
+
+    .cafe-map-popup__address {
+        @apply mt-1 text-cafe-mocha;
+    }
+
+    .cafe-map-popup__link {
+        @apply mt-3 inline-flex min-h-11 items-center font-semibold text-cafe-caramel underline-offset-4 hover:underline;
+    }
+
+    [dir='rtl'] .cafe-map-popup__link {
+        @apply justify-end;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cafe-hero-bg img,
+    .cafe-float-bean,
+    .cafe-scroll-cue span::after {
+        animation: none !important;
+    }
+
+    .cafe-reveal,
+    .cafe-clip-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+    }
+}

@@ -1,0 +1,31 @@
+<?php
+
+return [
+    'title' => 'ڈیش بورڈ',
+    'subtitle' => 'آج کی فروخت، انوائسز، اور ZATCA جمع کرانے کی حیثیت۔',
+    'nav' => 'ڈیش بورڈ',
+    'open_analytics' => 'مکمل تجزیات',
+    'zatca_queue' => 'ZATCA قطار',
+    'today_orders' => 'آج کے آرڈر',
+    'today_sales' => 'آج کی فروخت',
+    'today_vat' => 'آج کی VAT',
+    'today_aov' => 'آج کا اوسط آرڈر',
+    'sar' => 'SAR',
+    'recent_sales' => 'حالیہ فروخت',
+    'last_7_days' => 'آخری 7 دن',
+    'no_sales_yet' => 'اس مدت میں ابھی کوئی ادا شدہ آرڈر نہیں۔',
+    'invoices_by_type' => 'قسم کے لحاظ سے انوائسز',
+    'invoices_issued_hint' => 'جاری کردہ انوائسز (تمام عرصے)۔',
+    'invoice_type' => [
+        'simplified' => 'آسان',
+        'standard' => 'معیاری',
+        'credit_note' => 'کریڈٹ نوٹ',
+        'debit_note' => 'ڈیبٹ نوٹ',
+    ],
+    'zatca_status' => 'ZATCA جمع کرانے',
+    'zatca_status_hint' => 'رپورٹنگ اور کلیئرنس کے نتائج۔',
+    'zatca_pending' => 'زیر التوا',
+    'zatca_reported' => 'رپورٹ / کلیئر',
+    'zatca_failed' => 'ناکام',
+    'no_submissions' => 'ابھی کوئی ZATCA جمع کرانا نہیں۔',
+];

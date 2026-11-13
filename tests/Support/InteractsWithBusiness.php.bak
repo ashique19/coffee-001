@@ -1,0 +1,42 @@
+<?php
+
+namespace Tests\Support;
+
+use App\Models\EgsDevice;
+use App\Models\BusinessSetting;
+use App\Business\BusinessContext;
+use Illuminate\Support\Str;
+
+trait InteractsWithTenancy
+{
+    protected function createTenant(string $slug = 'acme'): Tenant
+    {
+        return Tenant::query()->create([
+            'slug' => $slug,
+            'name' => strtoupper($slug),
+            'settings' => array_merge(Tenant::defaultSettings(), [
+                'legal_entity' => [
+                    'name_ar' => 'شركة '.$slug,
+                    'name_en' => strtoupper($slug).' LLC',
+                    'vat_number' => '300000000000003',
+                    'cr_number' => '1010000000',
+                    'address' => 'Riyadh, SA',
+                ],
+            ]),
+        ]);
+    }
+
+    protected function actingAsTenant(Tenant $tenant): void
+    {
+        BusinessContext::set($tenant);
+    }
+
+    protected function createEgsDevice(Tenant $tenant): EgsDevice
+    {
+        return EgsDevice::query()->create([
+            'tenant_id' => $tenant->id,
+            'uuid' => (string) Str::uuid(),
+            'name' => 'EGS-1',
+        ]);
+    }
+}
