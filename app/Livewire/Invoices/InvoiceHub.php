@@ -14,16 +14,17 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use App\Livewire\Concerns\ValidatesFieldsLive;
 use Livewire\Component;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use Livewire\WithPagination;
 use Spatie\Permission\PermissionRegistrar;
 
 #[Layout('layouts.pos')]
 class InvoiceHub extends Component
 {
+    use ResolvesBusinessContext;
     use ValidatesFieldsLive;
     use WithPagination;
 
-    public Tenant $tenant;
 
     #[Url]
     public string $search = '';
@@ -34,11 +35,11 @@ class InvoiceHub extends Component
     #[Url]
     public string $zatcaFilter = 'all';
 
-    public function mount(Tenant $tenant): void
+    public function mount(): void
     {
-        $this->tenant = $tenant;
-        BusinessContext::set($tenant);
-        app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
+        $this->resolveBusiness();
+        BusinessContext::set($this->tenant);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->tenant->id);
     }
 
     public function updatingSearch(): void
@@ -66,7 +67,7 @@ class InvoiceHub extends Component
     private function invoicePage(): LengthAwarePaginator
     {
         $query = Invoice::query()
-            ->with(['zatcaSubmission', 'referencedInvoice'])
+            ->with(['referencedInvoice'])
             ->where('status', 'issued')
             ->orderByDesc('issued_at')
             ->orderByDesc('id');
@@ -82,21 +83,6 @@ class InvoiceHub extends Component
 
         if ($this->typeFilter !== 'all') {
             $query->where('document_type', $this->typeFilter);
-        }
-
-        if ($this->zatcaFilter !== 'all') {
-            if ($this->zatcaFilter === 'reported') {
-                $query->whereHas('zatcaSubmission', fn ($q) => $q
-                    ->where('status', ZatcaSubmissionStatus::Accepted)
-                    ->whereNull('last_warnings'));
-            } elseif ($this->zatcaFilter === 'reported_with_warnings') {
-                $query->whereHas('zatcaSubmission', fn ($q) => $q
-                    ->where('status', ZatcaSubmissionStatus::Accepted)
-                    ->whereNotNull('last_warnings'));
-            } else {
-                $status = ZatcaSubmissionStatus::from($this->zatcaFilter);
-                $query->whereHas('zatcaSubmission', fn ($q) => $q->where('status', $status));
-            }
         }
 
         return $query->paginate(15);

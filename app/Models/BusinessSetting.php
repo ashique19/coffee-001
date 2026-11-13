@@ -170,6 +170,7 @@ class BusinessSetting extends Model
   public function cafeContent(): array
   {
     $content = (array) data_get($this->settings, 'content.cafe', []);
+    $content = \App\Support\Storefront\StorefrontBusinessMirror::overlay($this, $content);
 
     return \App\Support\Themes\CafeStorefrontImages::enrich($this, $content);
   }

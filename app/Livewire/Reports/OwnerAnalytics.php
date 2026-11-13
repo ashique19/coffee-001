@@ -11,11 +11,12 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 
 #[Layout('layouts.pos')]
 class OwnerAnalytics extends Component
 {
-    public Tenant $tenant;
+    use ResolvesBusinessContext;
 
     #[Url(as: 'branch')]
     public ?int $branchId = null;
@@ -32,9 +33,9 @@ class OwnerAnalytics extends Component
     #[Url]
     public string $preset = '7d';
 
-    public function mount(Tenant $tenant): void
+    public function mount(): void
     {
-        $this->tenant = $tenant;
+        $this->resolveBusiness();
 
         if ($this->dateFrom === '' || $this->dateTo === '') {
             $this->applyPreset($this->preset);

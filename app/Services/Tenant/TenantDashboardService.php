@@ -4,10 +4,8 @@ namespace App\Services\Tenant;
 
 use App\Enums\InvoiceDocumentType;
 use App\Enums\InvoiceStatus;
-use App\Enums\ZatcaSubmissionStatus;
 use App\Models\Invoice;
 use App\Models\BusinessSetting;
-use App\Models\ZatcaSubmission;
 use App\Services\Pos\PosAnalyticsService;
 use Illuminate\Support\Carbon;
 
@@ -20,7 +18,7 @@ class TenantDashboardService
     /**
      * @return array<string, mixed>
      */
-    public function snapshot(Tenant $tenant): array
+    public function snapshot(BusinessSetting $tenant): array
     {
         $tz = config('app.timezone');
         $todayEnd = Carbon::now($tz)->endOfDay();
@@ -41,11 +39,10 @@ class TenantDashboardService
     /**
      * @return list<array{type: string, label_key: string, count: int}>
      */
-    private function invoiceCountsByType(Tenant $tenant): array
+    private function invoiceCountsByType(BusinessSetting $tenant): array
     {
         $rows = Invoice::query()
             ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
             ->where('status', InvoiceStatus::Issued)
             ->selectRaw('document_type, COUNT(*) as aggregate')
             ->groupBy('document_type')
@@ -74,26 +71,13 @@ class TenantDashboardService
     /**
      * @return array{pending: int, reported: int, failed: int, total: int}
      */
-    private function zatcaStatusCounts(Tenant $tenant): array
+    private function zatcaStatusCounts(BusinessSetting $tenant): array
     {
-        $raw = ZatcaSubmission::query()
-            ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
-            ->selectRaw('status, COUNT(*) as aggregate')
-            ->groupBy('status')
-            ->pluck('aggregate', 'status');
-
-        $pending = (int) ($raw[ZatcaSubmissionStatus::Pending->value] ?? 0)
-            + (int) ($raw[ZatcaSubmissionStatus::Submitted->value] ?? 0);
-        $reported = (int) ($raw[ZatcaSubmissionStatus::Accepted->value] ?? 0);
-        $failed = (int) ($raw[ZatcaSubmissionStatus::Failed->value] ?? 0)
-            + (int) ($raw[ZatcaSubmissionStatus::Rejected->value] ?? 0);
-
         return [
-            'pending' => $pending,
-            'reported' => $reported,
-            'failed' => $failed,
-            'total' => $pending + $reported + $failed,
+            'pending' => 0,
+            'reported' => 0,
+            'failed' => 0,
+            'total' => 0,
         ];
     }
 }

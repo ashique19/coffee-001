@@ -12,6 +12,7 @@ use App\Support\TenantBusinessProfile;
 use App\Support\Upload\LogoUploadConstraints;
 use Illuminate\Support\Facades\Log;
 use App\Business\BusinessContext;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -23,6 +24,7 @@ use Livewire\WithFileUploads;
 #[Layout('layouts.pos')]
 class BusinessSettings extends Component
 {
+    use ResolvesBusinessContext;
     use DispatchesToasts;
     use WithFileUploads;
 
@@ -120,12 +122,13 @@ class BusinessSettings extends Component
     /** @var list<string> */
     public array $tabsWithErrors = [];
 
-    public function mount(Tenant $tenant, TenantBusinessSettingsService $service): void
+    public function mount(TenantBusinessSettingsService $service): void
     {
+        $this->resolveBusiness();
         $this->authorize('business.manage');
-        $this->tenantId = $tenant->id;
-        BusinessContext::set($tenant);
-        $tenant = $service->ensureHydrated($tenant);
+        $this->tenantId = $this->tenant->id;
+        BusinessContext::set($this->tenant);
+        $tenant = $service->ensureHydrated($this->tenant);
         $this->hydrateFromTenant($tenant);
     }
 
@@ -447,13 +450,13 @@ class BusinessSettings extends Component
         return view('livewire.admin.business-settings', [
             'tenant' => $tenant,
             'colorOptions' => TenantBusinessProfile::brandColorOptions($tenant),
-            'teamUrl' => route('admin.team', $tenant),
+            'teamUrl' => route('admin.team'),
         ]);
     }
 
-    private function tenant(): Tenant
+    private function tenant(): BusinessSetting
     {
-        return Tenant::query()->findOrFail($this->tenantId);
+        return BusinessSetting::query()->findOrFail($this->tenantId);
     }
 
     protected function validationAttributes(): array
@@ -486,7 +489,7 @@ class BusinessSettings extends Component
         return TenantBusinessProfile::scalarString($value);
     }
 
-    private function hydrateFromTenant(Tenant $tenant): void
+    private function hydrateFromTenant(BusinessSetting $tenant): void
     {
         $settings = $tenant->settings ?? [];
         $brand = (array) data_get($settings, 'business.brand', []);

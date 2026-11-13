@@ -8,12 +8,12 @@
             <p class="app-page-lead">{{ __('dashboard.subtitle') }}</p>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('admin.reports', $tenant) }}" class="tap-action-muted min-h-11 items-center gap-2 px-4 text-sm">
+            <a href="{{ route('admin.reports') }}" class="tap-action-muted min-h-11 items-center gap-2 px-4 text-sm">
                 <x-app.icon name="chart" class="h-4 w-4" />
                 {{ __('dashboard.open_analytics') }}
             </a>
             @can('invoices.issue')
-                <a href="{{ route('admin.invoices.reconcile', $tenant) }}" class="tap-action-muted min-h-11 items-center gap-2 px-4 text-sm">
+                <a href="{{ route('admin.invoices') }}" class="tap-action-muted min-h-11 items-center gap-2 px-4 text-sm">
                     <x-app.icon name="clipboard" class="h-4 w-4" />
                     {{ __('dashboard.zatca_queue') }}
                 </a>

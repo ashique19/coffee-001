@@ -3,51 +3,33 @@
 namespace Tests\Support;
 
 use App\Models\Branch;
-use App\Models\PosOrder;
-use App\Models\BusinessSetting;
 
 /**
- * Authenticated GET routes used for post-login smoke tests.
+ * Authenticated GET routes used for post-login smoke tests (single-client).
  */
 final class AuthenticatedRouteCatalog
 {
     /**
      * @return list<array{0: string, 1: array<string, mixed>, 2: int, 3?: string|null}>
      */
-    public static function tenantRoutes(Tenant $tenant, Branch $branch, PosOrder $order): array
-    {
-        $t = ['tenant' => $tenant];
-
-        return [
-            ['admin.dashboard', $t, 200, null],
-            ['tenant.zatca', $t, 200, null],
-            ['admin.pos.home', $t, 200, null],
-            ['admin.pos.terminal', ['tenant' => $tenant, 'branch' => $branch], 200, null],
-            ['admin.pos.history', ['tenant' => $tenant, 'branch' => $branch], 200, null],
-            ['admin.pos.eod', ['tenant' => $tenant, 'branch' => $branch], 200, null],
-            ['admin.pos.ops', ['tenant' => $tenant, 'branch' => $branch], 200, null],
-            ['admin.reports', $t, 200, null],
-            ['admin.storefront', $t, 200, null],
-            ['admin.customers', $t, 200, null],
-            ['admin.invoices', $t, 200, null],
-            ['admin.invoices.reconcile', $t, 200, null],
-            ['admin.catalog', $t, 200, null],
-            ['admin.team', $t, 200, null],
-            ['admin.pos.receipt', ['tenant' => $tenant, 'order' => $order], 200, null],
-        ];
-    }
-
-    /**
-     * @return list<array{0: string, 1: array<string, mixed>, 2: int, 3?: string|null}>
-     */
-    public static function platformRoutes(Tenant $tenant): array
+    public static function adminRoutes(Branch $branch): array
     {
         return [
-            ['platform.dashboard', [], 200, null],
-            ['platform.clients.export', [], 200, null],
-            ['platform.tenants.storefront', ['tenant' => $tenant], 200, null],
-            ['platform.support.tenant', ['tenant' => $tenant], 200, null],
-            ['platform.tenants.export', ['tenant' => $tenant, 'type' => 'bundle'], 200, null],
+            ['admin.dashboard', [], 200, null],
+            ['admin.business', [], 200, null],
+            ['admin.pos.home', [], 200, null],
+            ['admin.pos.terminal', ['branch' => $branch], 200, null],
+            ['admin.pos.history', ['branch' => $branch], 200, null],
+            ['admin.pos.eod', ['branch' => $branch], 200, null],
+            ['admin.pos.ops', ['branch' => $branch], 200, null],
+            ['admin.reports', [], 200, null],
+            ['admin.storefront', [], 200, null],
+            ['admin.customers', [], 200, null],
+            ['admin.invoices', [], 200, null],
+            ['admin.invoices.issue', ['mode' => 'simplified'], 200, null],
+            ['admin.catalog', [], 200, null],
+            ['admin.inventory', [], 200, null],
+            ['admin.team', [], 200, null],
         ];
     }
 }

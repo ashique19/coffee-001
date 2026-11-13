@@ -13,15 +13,16 @@ use App\Business\BusinessContext;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use Spatie\Permission\PermissionRegistrar;
 
 #[Layout('layouts.pos')]
 class IssueInvoice extends Component
 {
+    use ResolvesBusinessContext;
     use DispatchesToasts;
     use ValidatesFieldsLive;
 
-    public Tenant $tenant;
 
     public string $mode;
 
@@ -50,23 +51,16 @@ class IssueInvoice extends Component
 
     public ?string $buyerNameOptional = '';
 
-    public function mount(Tenant $tenant, string $mode): void
+    public function mount(string $mode): void
     {
+        $this->resolveBusiness();
         abort_unless(in_array($mode, ['standard', 'simplified'], true), 404);
 
-        $this->tenant = $tenant;
+        $tenant = $this->tenant;
         $this->mode = $mode;
         BusinessContext::set($tenant);
-        app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
 
         abort_unless(auth('tenant')->user()?->can('invoices.issue'), 403);
-
-        if ($mode === 'simplified' && $tenant->defaultInvoiceDocumentType() === InvoiceDocumentType::Simplified) {
-            abort(404);
-        }
-        if ($mode === 'standard' && $tenant->defaultInvoiceDocumentType() === InvoiceDocumentType::Standard) {
-            abort(404);
-        }
     }
 
     public function addLine(): void

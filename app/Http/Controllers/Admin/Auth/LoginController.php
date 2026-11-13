@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
+use App\Business\BusinessContext;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
+use App\Models\StaffUser;
+use App\Support\TenantLandingRoute;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Models\BusinessSettingUser;
-use App\Support\TenantLandingRoute;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -15,12 +16,14 @@ use Illuminate\View\View;
 
 class LoginController extends Controller
 {
-    public function create(Tenant $tenant): View
+    public function create(): View
     {
-        return view('tenant.auth.login', ['tenant' => $tenant]);
+        $business = BusinessSetting::query()->find(1) ?? BusinessSetting::query()->first();
+
+        return view('tenant.auth.login', ['tenant' => $business]);
     }
 
-    public function store(Request $request, Tenant $tenant): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -28,8 +31,6 @@ class LoginController extends Controller
         ]);
 
         $user = StaffUser::query()
-            ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
             ->where('email', $credentials['email'])
             ->first();
 
@@ -43,15 +44,18 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(TenantLandingRoute::forUser($tenant, $user));
+        $business = BusinessSetting::query()->find(1) ?? BusinessSetting::query()->firstOrFail();
+        BusinessContext::set($business);
+
+        return redirect()->intended(TenantLandingRoute::forUser($business, $user));
     }
 
-    public function destroy(Request $request, Tenant $tenant): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('tenant')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login', ['tenant' => $tenant]);
+        return redirect()->route('admin.login');
     }
 }

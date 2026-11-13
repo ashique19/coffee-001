@@ -8,7 +8,7 @@ use App\Support\Geo\GeoMapsUrl;
 use App\Support\Validation\FieldValidationRules;
 use App\Models\Branch;
 use App\Models\BusinessSetting;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use App\Services\Operations\BranchAdminService;
 use App\Services\Operations\ShiftService;
 use App\Services\Operations\StaffAdminService;
@@ -20,15 +20,16 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use Spatie\Permission\PermissionRegistrar;
 
 #[Layout('layouts.pos')]
 class TeamHub extends Component
 {
+    use ResolvesBusinessContext;
     use DispatchesToasts;
     use ValidatesFieldsLive;
 
-    public Tenant $tenant;
 
     #[Url]
     public string $tab = 'staff';
@@ -87,16 +88,15 @@ class TeamHub extends Component
 
     public string $closeNotes = '';
 
-    public function mount(Tenant $tenant): void
+    public function mount(): void
     {
-        $this->tenant = $tenant;
-        BusinessContext::set($tenant);
-        app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
+        $this->resolveBusiness();
+        BusinessContext::set($this->tenant);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->tenant->id);
 
         if ($this->shiftBranchId === null) {
             $this->shiftBranchId = Branch::query()
                 ->withoutGlobalScopes()
-                ->where('tenant_id', $tenant->id)
                 ->orderBy('name')
                 ->value('id');
         }
@@ -128,7 +128,7 @@ class TeamHub extends Component
     {
         $rules = [
             'staffName' => ['required', 'string', 'max:120'],
-            'staffEmail' => ['required', 'email', 'max:255', Rule::unique('tenant_users', 'email')->where(fn ($q) => $q->where('tenant_id', $this->tenant->id))->ignore($this->editingStaffId)],
+            'staffEmail' => ['required', 'email', 'max:255', Rule::unique('staff_users', 'email')->ignore($this->editingStaffId)],
             'staffBranchId' => ['nullable', 'integer'],
             'staffRoles' => ['required', 'array', 'min:1'],
             'staffActive' => ['boolean'],
@@ -196,7 +196,7 @@ class TeamHub extends Component
     public function saveBranch(): void
     {
         $validated = $this->validate([
-            'branchCode' => ['required', 'string', 'max:32', Rule::unique('branches', 'code')->where(fn ($q) => $q->where('tenant_id', $this->tenant->id))->ignore($this->editingBranchId)],
+            'branchCode' => ['required', 'string', 'max:32', Rule::unique('branches', 'code')->ignore($this->editingBranchId)],
             'branchName' => ['required', 'string', 'max:160'],
             'branchNameAr' => ['nullable', 'string', 'max:160'],
             'branchAddress' => ['nullable', 'string', 'max:500'],
@@ -348,7 +348,6 @@ class TeamHub extends Component
         $recentShifts = $shiftBranch
             ? \App\Models\Shift::query()
                 ->withoutGlobalScopes()
-                ->where('tenant_id', $this->tenant->id)
                 ->where('branch_id', $shiftBranch->id)
                 ->orderByDesc('started_at')
                 ->limit(8)
@@ -373,12 +372,12 @@ class TeamHub extends Component
 
     private function staffQuery()
     {
-        return StaffUser::query()->where('tenant_id', $this->tenant->id);
+        return StaffUser::query();
     }
 
     private function branchQuery()
     {
-        return Branch::query()->where('tenant_id', $this->tenant->id);
+        return Branch::query();
     }
 
     private function resetStaffForm(): void

@@ -57,6 +57,7 @@
                                     type="button"
                                     class="pos-qty-stepper__btn touch-target"
                                     wire:click="decrementLine({{ $idx }})"
+                                    @mousedown.prevent
                                     wire:loading.attr="disabled"
                                     wire:target="decrementLine({{ $idx }})"
                                     aria-label="{{ __('pos.qty_decrease') }}"
@@ -93,6 +94,7 @@
                                     type="button"
                                     class="pos-qty-stepper__btn touch-target"
                                     wire:click="incrementLine({{ $idx }})"
+                                    @mousedown.prevent
                                     wire:loading.class="opacity-70"
                                     wire:target="incrementLine({{ $idx }})"
                                     aria-label="{{ __('pos.qty_increase') }}"

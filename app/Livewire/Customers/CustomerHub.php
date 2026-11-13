@@ -16,17 +16,18 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use Livewire\WithPagination;
 use Spatie\Permission\PermissionRegistrar;
 
 #[Layout('layouts.pos')]
 class CustomerHub extends Component
 {
+    use ResolvesBusinessContext;
     use DispatchesToasts;
     use ValidatesFieldsLive;
     use WithPagination;
 
-    public Tenant $tenant;
 
     #[Url]
     public string $search = '';
@@ -46,11 +47,11 @@ class CustomerHub extends Component
 
     public string $adjustNote = '';
 
-    public function mount(Tenant $tenant): void
+    public function mount(): void
     {
-        $this->tenant = $tenant;
-        BusinessContext::set($tenant);
-        app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
+        $this->resolveBusiness();
+        BusinessContext::set($this->tenant);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->tenant->id);
     }
 
     public function updatingSearch(): void

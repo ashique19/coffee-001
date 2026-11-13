@@ -8,7 +8,7 @@ use App\Models\PosOrder;
 use App\Models\Product;
 use App\Models\ProductModifier;
 use App\Exceptions\InsufficientIngredientStockException;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use App\Services\Inventory\IngredientStockService;
 use Illuminate\Support\Str;
 
@@ -24,7 +24,6 @@ class PosOrderService
         $this->assertBranchAccess($cashier, $branch);
 
         return PosOrder::query()->create([
-            'tenant_id' => $branch->tenant_id,
             'branch_id' => $branch->id,
             'cashier_id' => $cashier->id,
             'order_number' => $this->nextOrderNumber($branch),

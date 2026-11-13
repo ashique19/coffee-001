@@ -4,7 +4,6 @@
             <h1 class="app-page-title">{{ __('invoices.title') }}</h1>
             <p class="app-page-lead">{{ __('invoices.subtitle') }}</p>
         </div>
-        <a class="tap-action-muted min-h-11 px-4 text-sm" href="{{ route('admin.invoices.reconcile', $tenant) }}">{{ __('invoices.reconcile_link') }}</a>
     </header>
 
     <section class="app-card mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">

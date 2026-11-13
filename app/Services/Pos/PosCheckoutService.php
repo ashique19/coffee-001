@@ -8,7 +8,7 @@ use App\Enums\PosPaymentMethod;
 use App\Models\BusinessSetting;
 use App\Models\Invoice;
 use App\Models\PosOrder;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use App\Services\Loyalty\LoyaltyService;
 use App\Exceptions\InsufficientIngredientStockException;
 use App\Services\Inventory\IngredientStockService;
@@ -40,7 +40,7 @@ class PosCheckoutService
             throw new \InvalidArgumentException('Cashier cannot pay orders for another branch.');
         }
 
-        $tenant = $order->tenant ?? Tenant::query()->findOrFail($order->tenant_id);
+        $tenant = BusinessSetting::singleton();
         if ($tenant->defaultInvoiceDocumentType() === InvoiceDocumentType::Standard) {
             $order->loadMissing('customer');
             StandardBuyerPayload::fromCustomer($order->customer);

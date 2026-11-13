@@ -49,11 +49,10 @@ final class AppShellNav
     /**
      * @return list<Branch>
      */
-    public static function branchesForSwitcher(Tenant $tenant): array
+    public static function branchesForSwitcher(BusinessSetting $tenant): array
     {
         return Branch::query()
             ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
             ->orderBy('name')
             ->get()
             ->all();

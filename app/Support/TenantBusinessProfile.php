@@ -13,14 +13,14 @@ final class TenantBusinessProfile
   /**
    * @return array<string, mixed>
    */
-  public static function contentSlice(Tenant $tenant): array
+  public static function contentSlice(BusinessSetting $tenant): array
   {
       return $tenant->isCafeTheme()
           ? (array) data_get($tenant->settings, 'content.cafe', [])
           : (array) data_get($tenant->settings, 'content.plumber', []);
   }
 
-  public static function contentKey(Tenant $tenant): string
+  public static function contentKey(BusinessSetting $tenant): string
   {
       return $tenant->isCafeTheme() ? 'content.cafe' : 'content.plumber';
   }
@@ -28,7 +28,7 @@ final class TenantBusinessProfile
   /**
    * @return array<string, string>
    */
-  public static function brandColorOptions(Tenant $tenant): array
+  public static function brandColorOptions(BusinessSetting $tenant): array
   {
       $colors = $tenant->themeColors();
       $labels = $tenant->isCafeTheme()
@@ -55,7 +55,7 @@ final class TenantBusinessProfile
       return $out;
   }
 
-  public static function primaryColorKey(Tenant $tenant): string
+  public static function primaryColorKey(BusinessSetting $tenant): string
   {
       return $tenant->isCafeTheme() ? 'espresso' : 'navy';
   }

@@ -65,7 +65,7 @@ final class IngredientStockService
         $worst = 'ok';
 
         foreach ($bom as $line) {
-            $ingredient = $this->resolveIngredient((int) $product->tenant_id, $branch, (int) $line['ingredient_id']);
+            $ingredient = $this->resolveIngredient($branch, (int) $line['ingredient_id']);
             if ($ingredient === null) {
                 return 'out';
             }
@@ -103,7 +103,7 @@ final class IngredientStockService
         $cap = null;
 
         foreach ($bom as $line) {
-            $ingredient = $this->resolveIngredient((int) $product->tenant_id, $branch, (int) $line['ingredient_id']);
+            $ingredient = $this->resolveIngredient($branch, (int) $line['ingredient_id']);
             if ($ingredient === null) {
                 return 0;
             }
@@ -146,7 +146,7 @@ final class IngredientStockService
         $cap = null;
 
         foreach ($bom as $bomLine) {
-            $ingredient = $this->resolveIngredient((int) $product->tenant_id, $branch, (int) $bomLine['ingredient_id']);
+            $ingredient = $this->resolveIngredient($branch, (int) $bomLine['ingredient_id']);
             if ($ingredient === null) {
                 return 0;
             }
@@ -201,7 +201,7 @@ final class IngredientStockService
         }
 
         foreach ($totals as $ingredientId => $need) {
-            $ingredient = $this->resolveIngredient((int) $order->tenant_id, $branch, (int) $ingredientId);
+            $ingredient = $this->resolveIngredient($branch, (int) $ingredientId);
             if ($ingredient === null) {
                 throw new InsufficientIngredientStockException(__('inventory.error_missing_ingredient'));
             }
@@ -278,13 +278,13 @@ final class IngredientStockService
     }
 
     /** @return list<Ingredient> */
-    public function lowStockForTenant(int $tenantId, ?Branch $branch = null, int $limit = 12): array
+    public function lowStockForTenant(?Branch $branch = null, int $limit = 12): array
     {
         if (! IngredientInventorySchema::ingredientsReady()) {
             return [];
         }
 
-        return $this->ingredientsQuery($tenantId, $branch)
+        return $this->ingredientsQuery($branch)
             ->where('is_active', true)
             ->get()
             ->filter(fn (Ingredient $ing) => $ing->isLowStock())
@@ -294,7 +294,7 @@ final class IngredientStockService
     }
 
     /** @return Collection<int, Product> */
-    public function soldOutProductIds(int $tenantId, ?Branch $branch, Collection $products): Collection
+    public function soldOutProductIds(?Branch $branch, Collection $products): Collection
     {
         if (! IngredientInventorySchema::ingredientsReady()) {
             return collect();
@@ -305,10 +305,10 @@ final class IngredientStockService
         });
     }
 
-    private function ingredientsQuery(int $tenantId, ?Branch $branch): Builder
+    private function ingredientsQuery(?Branch $branch): Builder
     {
         return Ingredient::query()
-            ->where('tenant_id', $tenantId)
+            
             ->where(function (Builder $q) use ($branch) {
                 $q->whereNull('branch_id');
                 if ($branch !== null) {
@@ -317,10 +317,10 @@ final class IngredientStockService
             });
     }
 
-    private function resolveIngredient(int $tenantId, ?Branch $branch, int $ingredientId): ?Ingredient
+    private function resolveIngredient(?Branch $branch, int $ingredientId): ?Ingredient
     {
         $row = Ingredient::query()
-            ->where('tenant_id', $tenantId)
+            
             ->where('id', $ingredientId)
             ->where(function (Builder $q) use ($branch) {
                 $q->whereNull('branch_id');
@@ -349,13 +349,12 @@ final class IngredientStockService
         $branchId = $branch?->id ?? $order?->branch_id ?? $ingredient->branch_id;
         if ($branchId === null) {
             $branchId = Branch::query()
-                ->where('tenant_id', $ingredient->tenant_id)
+                
                 ->orderBy('id')
                 ->value('id');
         }
 
         $payload = [
-            'tenant_id' => $ingredient->tenant_id,
             'branch_id' => $branchId,
             'ingredient_id' => $ingredient->id,
             'type' => $reason,

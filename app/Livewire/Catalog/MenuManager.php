@@ -22,15 +22,16 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 
 #[Layout('layouts.pos')]
 class MenuManager extends Component
 {
+    use ResolvesBusinessContext;
     use AuthorizesRequests;
     use DispatchesToasts;
     use ValidatesFieldsLive;
 
-    public Tenant $tenant;
 
     public string $tab = 'products';
 
@@ -120,10 +121,10 @@ class MenuManager extends Component
 
     public string $quickIngredientUnit = 'g';
 
-    public function mount(Tenant $tenant): void
+    public function mount(): void
     {
-        $this->tenant = $tenant;
-        BusinessContext::set($tenant);
+        $this->resolveBusiness();
+        BusinessContext::set($this->tenant);
     }
 
     public function setTab(string $tab): void

@@ -12,7 +12,7 @@ class TenantSettingsAuditService
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function record(Tenant $tenant, string $event, array $payload = [], ?StaffUser $actor = null): void
+    public function record(BusinessSetting $tenant, string $event, array $payload = [], ?StaffUser $actor = null): void
     {
         if (! Schema::hasTable('tenant_settings_audit_logs')) {
             return;

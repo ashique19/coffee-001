@@ -6,7 +6,7 @@ use App\Models\Branch;
 use App\Models\Invoice;
 use App\Models\PosOrder;
 use App\Models\Shift;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use Illuminate\Support\Facades\DB;
 
 class BranchAdminService
@@ -26,9 +26,6 @@ class BranchAdminService
         }
         if (Shift::query()->withoutGlobalScopes()->where('branch_id', $branch->id)->exists()) {
             $blockers[] = 'shifts';
-        }
-        if ($branch->egsDevices()->exists()) {
-            $blockers[] = 'egs_devices';
         }
         if (StaffUser::query()->withoutGlobalScopes()->where('branch_id', $branch->id)->exists()) {
             $blockers[] = 'staff';

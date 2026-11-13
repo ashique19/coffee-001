@@ -11,6 +11,12 @@ npm ci && npm run build
 ## Permissions (cPanel)
 
 ```bash
+bash scripts/cpanel-permissions.sh
+```
+
+Or manually:
+
+```bash
 chmod -R ug+rwx storage bootstrap/cache
 find storage -type d -exec chmod 775 {} \;
 find storage -type f -exec chmod 664 {} \;

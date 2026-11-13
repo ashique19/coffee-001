@@ -11,7 +11,7 @@ class TenantBusinessLogoService
   /**
    * Store under public/img/tenants/{id}/ (no storage symlink); path is relative to public/.
    */
-  public function store(Tenant $tenant, UploadedFile $file): string
+  public function store(BusinessSetting $tenant, UploadedFile $file): string
   {
     if ($file->getSize() > LogoUploadConstraints::MAX_BYTES) {
       throw new \InvalidArgumentException(__('business.logo_upload.errors.too_big', ['limit' => '1 MB']));
@@ -77,7 +77,7 @@ class TenantBusinessLogoService
     }
   }
 
-  public function deleteTenantLogos(Tenant $tenant, ?string $keepRelative = null): void
+  public function deleteTenantLogos(BusinessSetting $tenant, ?string $keepRelative = null): void
   {
     $directory = public_path('img/tenants/'.$tenant->id);
     if (! is_dir($directory)) {

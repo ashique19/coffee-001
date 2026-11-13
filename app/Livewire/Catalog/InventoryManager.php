@@ -6,7 +6,7 @@ use App\Livewire\Concerns\DispatchesToasts;
 use App\Livewire\Concerns\ValidatesFieldsLive;
 use App\Models\Ingredient;
 use App\Models\InventoryMovement;
-use App\Models\BusinessSetting;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use App\Services\Inventory\IngredientStockService;
 use App\Support\Inventory\IngredientInventorySchema;
 use App\Business\BusinessContext;
@@ -20,9 +20,8 @@ class InventoryManager extends Component
 {
     use AuthorizesRequests;
     use DispatchesToasts;
+    use ResolvesBusinessContext;
     use ValidatesFieldsLive;
-
-    public Tenant $tenant;
 
     public bool $showForm = false;
 
@@ -53,11 +52,11 @@ class InventoryManager extends Component
 
     public bool $schemaReady = true;
 
-    public function mount(Tenant $tenant): void
+    public function mount(): void
     {
+        $this->resolveBusiness();
         $this->schemaReady = IngredientInventorySchema::ingredientsReady();
-        $this->tenant = $tenant;
-        BusinessContext::set($tenant);
+        BusinessContext::set($this->tenant);
     }
 
     public function startCreate(): void
@@ -181,7 +180,6 @@ class InventoryManager extends Component
             : collect();
         $movements = IngredientInventorySchema::movementsReady()
             ? InventoryMovement::query()
-                ->where('tenant_id', $this->tenant->id)
                 ->latest('id')
                 ->limit(40)
                 ->get()
@@ -191,7 +189,7 @@ class InventoryManager extends Component
             'ingredients' => $ingredients,
             'movements' => $movements,
             'canManage' => auth('tenant')->user()?->can('inventory.manage') ?? false,
-            'lowStock' => $this->schemaReady ? $stock->lowStockForTenant($this->tenant->id) : [],
+            'lowStock' => $this->schemaReady ? $stock->lowStockForTenant() : [],
             'schemaReady' => $this->schemaReady,
         ])->layout('layouts.pos', ['pageTitle' => __('inventory.title')]);
     }
@@ -215,9 +213,7 @@ class InventoryManager extends Component
 
     private function query()
     {
-        return Ingredient::query()
-            ->where('tenant_id', $this->tenant->id)
-            ->whereNull('branch_id');
+        return Ingredient::query()->whereNull('branch_id');
     }
 
     private function authorizeManage(): void

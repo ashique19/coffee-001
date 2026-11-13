@@ -2,12 +2,13 @@
 
 namespace App\Livewire\Admin;
 
+use App\Business\BusinessContext;
 use App\Livewire\Concerns\DispatchesToasts;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use App\Livewire\Concerns\ValidatesFieldsLive;
-use App\Support\Validation\FieldValidationRules;
 use App\Models\BusinessSetting;
 use App\Support\Storefront\StorefrontConfig;
-use App\Business\BusinessContext;
+use App\Support\Validation\FieldValidationRules;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -15,6 +16,7 @@ use Livewire\Component;
 #[Layout('layouts.pos')]
 class StorefrontSettings extends Component
 {
+    use ResolvesBusinessContext;
     use DispatchesToasts;
     use ValidatesFieldsLive;
 
@@ -26,15 +28,16 @@ class StorefrontSettings extends Component
 
     public string $bingSiteVerification = '';
 
-    public function mount(Tenant $tenant): void
+    public function mount(): void
     {
-        abort_unless($tenant->isCafeTheme(), 404);
+        $this->resolveBusiness();
+        abort_unless($this->tenant->isCafeTheme(), 404);
         $this->authorize('reports.view');
 
-        $this->tenantId = $tenant->id;
-        BusinessContext::set($tenant);
+        $this->tenantId = $this->tenant->id;
+        BusinessContext::set($this->tenant);
 
-        $config = StorefrontConfig::forTenant($tenant);
+        $config = StorefrontConfig::forBusinessSetting($this->tenant);
         $this->gaMeasurementId = $config['ga_measurement_id'];
         $this->googleSiteVerification = $config['google_site_verification'];
         $this->bingSiteVerification = $config['bing_site_verification'];
@@ -50,8 +53,8 @@ class StorefrontSettings extends Component
         $google = trim($this->googleSiteVerification);
         $bing = trim($this->bingSiteVerification);
 
-        $tenant = Tenant::query()->findOrFail($this->tenantId);
-        StorefrontConfig::mergeIntoTenant($tenant, [
+        $business = BusinessSetting::query()->findOrFail($this->tenantId);
+        StorefrontConfig::mergeIntoBusinessSetting($business, [
             'ga_measurement_id' => $ga,
             'google_site_verification' => $google,
             'bing_site_verification' => $bing,
@@ -62,12 +65,12 @@ class StorefrontSettings extends Component
 
     public function render(): View
     {
-        $tenant = Tenant::query()->findOrFail($this->tenantId);
+        $tenant = BusinessSetting::query()->findOrFail($this->tenantId);
 
-        return view('livewire.admin.storefront-settings', [
+        return view('livewire.tenant.storefront-settings', [
             'tenant' => $tenant,
-            'publicHomeUrl' => route('cafe.home', $tenant),
-            'sitemapUrl' => route('cafe.sitemap', $tenant),
+            'publicHomeUrl' => route('cafe.home'),
+            'sitemapUrl' => route('storefront.sitemap'),
         ]);
     }
 

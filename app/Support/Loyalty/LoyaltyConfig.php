@@ -6,9 +6,9 @@ use App\Models\BusinessSetting;
 
 final class LoyaltyConfig
 {
-    public function __construct(private readonly Tenant $tenant) {}
+    public function __construct(private readonly BusinessSetting $tenant) {}
 
-    public static function for(Tenant $tenant): self
+    public static function for(BusinessSetting $tenant): self
     {
         return new self($tenant);
     }

@@ -8,7 +8,7 @@ use App\Models\Branch;
 use App\Models\PosOrder;
 use App\Models\Product;
 use App\Models\BusinessSetting;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -18,7 +18,7 @@ class PosAnalyticsService
      * @return array<string, mixed>
      */
     public function report(
-        Tenant $tenant,
+        BusinessSetting $tenant,
         ?Branch $branch,
         Carbon $from,
         Carbon $to,
@@ -67,11 +67,10 @@ class PosAnalyticsService
     /**
      * @return Collection<int, PosOrder>
      */
-    private function paidOrders(Tenant $tenant, ?Branch $branch, Carbon $from, Carbon $to): Collection
+    private function paidOrders(BusinessSetting $tenant, ?Branch $branch, Carbon $from, Carbon $to): Collection
     {
         $q = PosOrder::query()
             ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
             ->where('status', PosOrderStatus::Paid)
             ->whereBetween('paid_at', [$from, $to])
             ->orderBy('paid_at');
@@ -203,7 +202,7 @@ class PosAnalyticsService
      * @param  Collection<int, PosOrder>  $orders
      * @return list<array{label: string, total: float, pct: float}>
      */
-    private function categoryMix(Tenant $tenant, Collection $orders): array
+    private function categoryMix(BusinessSetting $tenant, Collection $orders): array
     {
         $productIds = [];
         foreach ($orders as $order) {
@@ -218,7 +217,6 @@ class PosAnalyticsService
         $products = Product::query()
             ->withoutGlobalScopes()
             ->with('category')
-            ->where('tenant_id', $tenant->id)
             ->whereIn('id', array_keys($productIds))
             ->get()
             ->keyBy('id');
@@ -293,11 +291,10 @@ class PosAnalyticsService
      * @param  Collection<int, PosOrder>  $orders
      * @return list<array{branch_id: int, name: string, total: float, orders: int}>
      */
-    private function branchComparison(Tenant $tenant, Collection $orders): array
+    private function branchComparison(BusinessSetting $tenant, Collection $orders): array
     {
         $branches = Branch::query()
             ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
             ->get()
             ->keyBy('id');
 
@@ -322,12 +319,11 @@ class PosAnalyticsService
      * @param  Collection<int, PosOrder>  $orders
      * @return list<array{cashier_id: int|null, name: string, total: float, orders: int, aov: float}>
      */
-    private function cashierPerformance(Tenant $tenant, Collection $orders): array
+    private function cashierPerformance(BusinessSetting $tenant, Collection $orders): array
     {
         $userIds = $orders->pluck('cashier_id')->filter()->unique()->values();
         $users = StaffUser::query()
             ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
             ->whereIn('id', $userIds)
             ->get()
             ->keyBy('id');

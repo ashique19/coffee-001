@@ -6,7 +6,7 @@ use App\Models\BusinessSetting;
 
 final class ThemeStorefrontThumbnail
 {
-    public static function urlFor(Tenant $tenant): ?string
+    public static function urlFor(BusinessSetting $tenant): ?string
     {
         $path = match (true) {
             $tenant->isCafeTheme() => 'images/templates/cafe-storefront.webp',
@@ -17,7 +17,7 @@ final class ThemeStorefrontThumbnail
         return $path !== null ? asset($path) : null;
     }
 
-    public static function altFor(Tenant $tenant, string $locale): string
+    public static function altFor(BusinessSetting $tenant, string $locale): string
     {
         $name = $tenant->displayName($locale);
 
@@ -28,7 +28,7 @@ final class ThemeStorefrontThumbnail
         };
     }
 
-    public static function themeLabel(Tenant $tenant): string
+    public static function themeLabel(BusinessSetting $tenant): string
     {
         return match (true) {
             $tenant->isCafeTheme() => __('invoicing.tenant_theme_cafe'),

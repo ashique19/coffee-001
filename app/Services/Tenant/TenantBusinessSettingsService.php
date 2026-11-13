@@ -3,8 +3,8 @@
 namespace App\Services\Tenant;
 
 use App\Models\BusinessSetting;
-use App\Models\BusinessSettingUser;
-use App\Support\Storefront\PlumberThemeExtrasSync;
+use App\Models\StaffUser;
+use App\Support\Storefront\StorefrontBusinessMirror;
 use App\Support\TenantBusinessHours;
 use App\Support\TenantBusinessProfile;
 
@@ -18,14 +18,17 @@ class TenantBusinessSettingsService
     /**
      * Ensure settings.business exists and mirrors current legal/content data (idempotent).
      */
-    public function ensureHydrated(Tenant $tenant): Tenant
+    public function ensureHydrated(BusinessSetting $tenant): BusinessSetting
     {
-        $settings = $tenant->settings ?? Tenant::defaultSettings();
+        $settings = $tenant->settings ?? BusinessSetting::defaultSettings();
         $canonical = $this->canonicalBusinessBlock($tenant, $settings);
         $previous = data_get($settings, 'business');
 
-        if ($canonical !== $previous) {
-            $settings['business'] = $canonical;
+        $settings['business'] = $canonical;
+        StorefrontBusinessMirror::persistToContent($tenant, $settings);
+        $before = json_encode($tenant->settings);
+        $after = json_encode($settings);
+        if ($before !== $after) {
             $tenant->forceFill(['settings' => $settings])->save();
         }
 
@@ -36,7 +39,7 @@ class TenantBusinessSettingsService
      * @param  array<string, mixed>  $settings
      * @return array<string, mixed>
      */
-    private function canonicalBusinessBlock(Tenant $tenant, array $settings): array
+    private function canonicalBusinessBlock(BusinessSetting $tenant, array $settings): array
     {
         $legal = (array) ($settings['legal_entity'] ?? []);
         $content = TenantBusinessProfile::contentSlice($tenant);
@@ -53,7 +56,7 @@ class TenantBusinessSettingsService
             ),
         ], (array) ($existing['brand'] ?? []));
 
-        $defaultNa = Tenant::defaultSettings()['legal_entity']['national_address'];
+        $defaultNa = BusinessSetting::defaultSettings()['legal_entity']['national_address'];
         $legalBlock = array_merge([
             'name_en' => TenantBusinessProfile::scalarString($legal['name_en'] ?? ''),
             'name_ar' => TenantBusinessProfile::scalarString($legal['name_ar'] ?? ''),
@@ -115,9 +118,9 @@ class TenantBusinessSettingsService
     /**
      * @param  array<string, mixed>  $input
      */
-    public function saveBrand(Tenant $tenant, array $input, ?StaffUser $actor = null, $logo = null): Tenant
+    public function saveBrand(BusinessSetting $tenant, array $input, ?StaffUser $actor = null, $logo = null): BusinessSetting
     {
-        $settings = $tenant->settings ?? Tenant::defaultSettings();
+        $settings = $tenant->settings ?? BusinessSetting::defaultSettings();
         $business = $this->canonicalBusinessBlock($tenant, $settings);
         $brand = (array) ($business['brand'] ?? []);
 
@@ -172,9 +175,9 @@ class TenantBusinessSettingsService
     /**
      * @param  array<string, mixed>  $input
      */
-    public function saveLegal(Tenant $tenant, array $input, ?StaffUser $actor = null): Tenant
+    public function saveLegal(BusinessSetting $tenant, array $input, ?StaffUser $actor = null): BusinessSetting
     {
-        $settings = $tenant->settings ?? Tenant::defaultSettings();
+        $settings = $tenant->settings ?? BusinessSetting::defaultSettings();
         $business = $this->canonicalBusinessBlock($tenant, $settings);
         $legalBlock = (array) ($business['legal'] ?? []);
         foreach (['name_en', 'name_ar', 'vat_number', 'cr_number', 'address_en', 'address_ar'] as $key) {
@@ -210,9 +213,9 @@ class TenantBusinessSettingsService
     /**
      * @param  array<string, mixed>  $input
      */
-    public function saveContact(Tenant $tenant, array $input, ?StaffUser $actor = null): Tenant
+    public function saveContact(BusinessSetting $tenant, array $input, ?StaffUser $actor = null): BusinessSetting
     {
-        $settings = $tenant->settings ?? Tenant::defaultSettings();
+        $settings = $tenant->settings ?? BusinessSetting::defaultSettings();
         $business = $this->canonicalBusinessBlock($tenant, $settings);
         $contact = TenantBusinessProfile::normalizeContactBlock(array_merge(
             (array) ($business['contact'] ?? []),
@@ -250,9 +253,9 @@ class TenantBusinessSettingsService
     /**
      * @param  array<string, mixed>  $input
      */
-    public function saveHours(Tenant $tenant, array $input, ?StaffUser $actor = null): Tenant
+    public function saveHours(BusinessSetting $tenant, array $input, ?StaffUser $actor = null): BusinessSetting
     {
-        $settings = $tenant->settings ?? Tenant::defaultSettings();
+        $settings = $tenant->settings ?? BusinessSetting::defaultSettings();
         $business = $this->canonicalBusinessBlock($tenant, $settings);
         $hours = (array) ($business['hours'] ?? []);
         if (isset($input['weekdays']) && is_array($input['weekdays'])) {
@@ -281,20 +284,19 @@ class TenantBusinessSettingsService
     /**
      * @param  array<string, mixed>  $input
      */
-    public function saveThemeExtras(Tenant $tenant, array $input, ?StaffUser $actor = null): Tenant
+    public function saveThemeExtras(BusinessSetting $tenant, array $input, ?StaffUser $actor = null): BusinessSetting
     {
-        $settings = $tenant->settings ?? Tenant::defaultSettings();
+        $settings = $tenant->settings ?? BusinessSetting::defaultSettings();
         $business = $this->canonicalBusinessBlock($tenant, $settings);
         $extras = array_merge((array) ($business['theme_extras'] ?? []), $input);
         $business['theme_extras'] = $extras;
         $settings['business'] = $business;
         $settings['business']['theme_extras'] = $extras;
 
-        if ($tenant->isPlumberTheme()) {
-            PlumberThemeExtrasSync::applyToSettings($settings, $extras);
-        }
+        StorefrontBusinessMirror::persistToContent($tenant, $settings);
 
         $tenant->forceFill(['settings' => $settings])->save();
+        $tenant->refresh();
         $this->audit->record($tenant, 'business.settings.theme_extras', ['keys' => array_keys($input)], $actor);
 
         return $tenant->fresh();
@@ -303,7 +305,7 @@ class TenantBusinessSettingsService
     /**
      * @return array<string, mixed>
      */
-    private function defaultThemeExtras(Tenant $tenant): array
+    private function defaultThemeExtras(BusinessSetting $tenant): array
     {
         if ($tenant->isCafeTheme()) {
             return [

@@ -10,7 +10,7 @@ class ThemeAssetCatalog
     /**
      * @return list<string> Paths relative to /public (e.g. images/fancy-coffee/hero.jpg)
      */
-    public static function assetPathsForTenant(Tenant $tenant): array
+    public static function assetPathsForTenant(BusinessSetting $tenant): array
     {
         $paths = [];
         self::walk($tenant->settings ?? [], $paths);

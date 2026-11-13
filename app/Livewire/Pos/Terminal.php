@@ -73,10 +73,6 @@ class Terminal extends Component
         $categories = $catalog->categoriesForBranch($branch);
         $this->categoryId = $categories->first()?->id;
 
-        $tenant = $branch->tenant ?? Tenant::query()->find($branch->tenant_id);
-        if ($tenant?->isPlumberTheme()) {
-            $this->catalogKind = 'service';
-        }
     }
 
     public function addProduct(int $productId, PosOrderService $orders): void
@@ -186,15 +182,24 @@ class Terminal extends Component
                 return;
             }
 
+            $lines = $this->currentOrder()->line_items;
+            $line = $lines[$index] ?? null;
+            if ($line === null) {
+                return;
+            }
+
+            $currentQty = (int) floor((float) ($line['quantity'] ?? 1));
             $originalQty = (int) floor((float) $quantity);
             $qty = $originalQty;
 
+            if ($qty === $currentQty) {
+                $this->dispatch('pos-line-qty-updated', index: $index, quantity: $currentQty);
+
+                return;
+            }
+
             if ($qty <= 0) {
-                $lines = $this->currentOrder()->line_items;
-                $line = $lines[$index] ?? null;
-                if ($line !== null) {
-                    $this->removeLineAt($index, $orders, $line);
-                }
+                $this->dispatch('pos-line-qty-updated', index: $index, quantity: $currentQty);
 
                 return;
             }
@@ -248,10 +253,7 @@ class Terminal extends Component
         try {
             $method = PosPaymentMethod::from($this->paymentMethod);
             $order = $checkout->pay($this->currentOrder(), $method, Auth::guard('tenant')->user());
-            $tenant = request()->route('tenant') ?? $order->branch->tenant;
-
             $this->redirectRoute('admin.pos.receipt', [
-                'tenant' => $tenant,
                 'order' => $order->id,
                 'locale' => app()->getLocale(),
                 'paid' => 1,
@@ -301,9 +303,9 @@ class Terminal extends Component
 
     public function render(PosCatalogQuery $catalog, PosBranchInsights $insights, ShiftService $shifts, IngredientStockService $stock): View
     {
-        $branch = Branch::query()->with('tenant')->findOrFail($this->branchId);
-        $tenant = $branch->tenant;
-        $tradesCatalog = $tenant?->isPlumberTheme() ?? false;
+        $branch = Branch::query()->findOrFail($this->branchId);
+        $tenant = BusinessSetting::singleton();
+        $tradesCatalog = false;
         $activeShift = $shifts->openShiftForBranch($branch);
         $order = $this->currentOrder();
         $categories = $catalog->categoriesForBranch($branch);
