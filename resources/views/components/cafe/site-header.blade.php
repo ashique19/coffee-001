@@ -38,7 +38,10 @@
 
         <div class="flex shrink-0 items-center gap-1.5 sm:gap-2 lg:hidden">
             <x-cafe.locale-switch :current="$locale" />
-            <button type="button" class="cafe-pill-cta cafe-pill-cta--ghost min-h-11 px-4 text-xs" @click="navOpen = !navOpen" :aria-expanded="navOpen">
+            <button type="button" @class([
+                'cafe-pill-cta cafe-pill-cta--ghost min-h-11 px-4 text-xs',
+                'cafe-pill-cta--on-dark' => $overlay,
+            ]) @click="navOpen = !navOpen" :aria-expanded="navOpen">
                 <span x-text="navOpen ? '{{ __('cafe.nav_close') }}' : '{{ __('cafe.nav_toggle') }}'"></span>
             </button>
         </div>

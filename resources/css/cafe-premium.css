@@ -190,7 +190,41 @@
     }
 
     .cafe-pill-cta--ghost {
-        @apply border border-cafe-cream/40 bg-cafe-espresso/20 text-cafe-cream backdrop-blur-sm hover:bg-cafe-cream/15;
+        @apply border border-cafe-caramel/40 bg-cafe-cream/95 text-cafe-espresso backdrop-blur-sm;
+        @apply hover:border-cafe-caramel hover:bg-cafe-cream;
+        @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cafe-caramel;
+    }
+
+    /* Ghost pills on espresso / hero backgrounds — cream label, espresso on hover/fill (WCAG AA). */
+    .cafe-pill-cta--on-dark {
+        border-color: color-mix(in srgb, var(--color-cafe-cream) 62%, transparent);
+        background-color: color-mix(in srgb, var(--color-cafe-cream) 16%, transparent);
+        color: var(--color-cafe-cream);
+        @apply shadow-sm backdrop-blur-sm;
+    }
+
+    .cafe-pill-cta--on-dark:hover {
+        border-color: var(--color-cafe-cream);
+        background-color: var(--color-cafe-cream);
+        color: var(--color-cafe-espresso);
+    }
+
+    .cafe-pill-cta--on-dark:focus-visible {
+        outline: 2px solid var(--color-cafe-accent);
+        outline-offset: 3px;
+        color: var(--color-cafe-cream);
+        background-color: color-mix(in srgb, var(--color-cafe-cream) 22%, transparent);
+    }
+
+    .cafe-pill-cta--on-dark:active {
+        color: var(--color-cafe-espresso);
+        background-color: var(--color-cafe-cream);
+    }
+
+    .cafe-cta-band .cafe-pill-cta--primary {
+        @apply bg-cafe-cream text-cafe-espresso;
+        @apply hover:bg-white hover:text-cafe-espresso;
+        @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cafe-accent;
     }
 
     .cafe-premium-hero {

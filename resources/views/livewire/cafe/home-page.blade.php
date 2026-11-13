@@ -62,7 +62,7 @@
                 <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary w-full sm:w-auto">
                     {{ __('cafe.cta_menu') }}
                 </a>
-                <a href="#visit" class="cafe-pill-cta cafe-pill-cta--ghost w-full sm:w-auto">
+                <a href="#visit" class="cafe-pill-cta cafe-pill-cta--ghost cafe-pill-cta--on-dark w-full sm:w-auto">
                     {{ __('cafe.cta_visit') }}
                 </a>
             </div>
@@ -268,7 +268,12 @@
             <p class="mx-auto mt-4 max-w-lg text-cafe-latte">{{ $tagline }}</p>
             <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary">{{ __('cafe.cta_menu') }}</a>
-                <a href="tel:{{ preg_replace('/\s+/', '', $content['contact']['phone'] ?? '') }}" class="cafe-pill-cta cafe-pill-cta--ghost">{{ $content['contact']['phone'] ?? '' }}</a>
+                <a
+                    href="tel:{{ preg_replace('/\s+/', '', $content['contact']['phone'] ?? '') }}"
+                    class="cafe-pill-cta cafe-pill-cta--ghost cafe-pill-cta--on-dark"
+                    dir="ltr"
+                    aria-label="{{ __('cafe.phone_label') }}"
+                >{{ $content['contact']['phone'] ?? '' }}</a>
             </div>
         </div>
     </section>
