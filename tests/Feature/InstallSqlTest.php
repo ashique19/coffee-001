@@ -20,3 +20,7 @@ it('ships a mysql-oriented install.sql with seed data', function () {
     $createTables = array_filter($statements, fn (string $stmt) => str_starts_with(strtoupper($stmt), 'CREATE TABLE'));
     expect(count($createTables))->toBeGreaterThan(5);
 });
+
+it('lists docs/sql/2026-11-14-schema-fix.sql for live hosts on stale install.sql schemas', function () {
+    expect(base_path('docs/sql/2026-11-14-schema-fix.sql'))->toBeReadableFile();
+});

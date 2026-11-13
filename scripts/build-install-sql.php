@@ -57,15 +57,9 @@ function sqliteSchemaToMysql(string $sql): string
         1
     ) ?? $sql;
 
-    $sql = preg_replace_callback(
-        '/^(CREATE TABLE\b[\s\S]*?\)\s*);(\s*(?:\n|$))/mi',
-        static fn (array $m): string => $m[1].') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;'.$m[2],
-        $sql
-    ) ?? $sql;
-
     $sql = preg_replace(
-        '/\bCREATE (?:UNIQUE )?INDEX\b[\s\S]*?\)\s*ENGINE=InnoDB[^;]*;/i',
-        static fn (array $m): string => preg_replace('/\s+ENGINE=InnoDB[^;]+/i', '', $m[0]) ?? $m[0],
+        '/(CREATE TABLE IF NOT EXISTS [`"][\\w]+[`"][\\s\\S]*?)\n\);/i',
+        '$1) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
         $sql
     ) ?? $sql;
 

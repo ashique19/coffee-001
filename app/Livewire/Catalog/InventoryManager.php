@@ -72,7 +72,7 @@ class InventoryManager extends Component
         $this->authorizeManage();
         $ing = $this->query()->findOrFail($id);
         $this->editingId = $ing->id;
-        $this->nameEn = (string) ($ing->name_en ?: $ing->name);
+        $this->nameEn = (string) ($ing->name_en ?: (IngredientInventorySchema::hasLegacyNameColumn() ? ($ing->getAttribute('name') ?? '') : ''));
         $this->nameAr = (string) ($ing->name_ar ?? '');
         $this->nameBn = (string) ($ing->name_bn ?? '');
         $this->unit = (string) $ing->unit;
@@ -101,7 +101,6 @@ class InventoryManager extends Component
         $payload = [
             'name_en' => $validated['nameEn'],
             'name_ar' => $validated['nameAr'] ?: null,
-            'name' => $validated['nameEn'],
             'unit' => $validated['unit'],
             'quantity_on_hand' => $validated['quantityOnHand'],
             'reorder_level' => $validated['lowStockThreshold'],
@@ -111,6 +110,9 @@ class InventoryManager extends Component
 
         if (IngredientInventorySchema::hasI18nColumns()) {
             $payload['name_bn'] = $validated['nameBn'] ?: null;
+        }
+        if (IngredientInventorySchema::hasLegacyNameColumn()) {
+            $payload['name'] = $validated['nameEn'];
         }
         if (IngredientInventorySchema::hasLowStockThreshold()) {
             $payload['low_stock_threshold'] = $validated['lowStockThreshold'];
@@ -178,9 +180,13 @@ class InventoryManager extends Component
 
     public function render(IngredientStockService $stock): View
     {
-        $ingredients = $this->schemaReady
-            ? $this->query()->orderBy('name_en')->orderBy('name')->get()
-            : collect();
+        $ingredientQuery = $this->query();
+        if ($this->schemaReady) {
+            foreach (IngredientInventorySchema::orderByColumns() as $column) {
+                $ingredientQuery->orderBy($column);
+            }
+        }
+        $ingredients = $this->schemaReady ? $ingredientQuery->get() : collect();
         $movements = IngredientInventorySchema::movementsReady()
             ? InventoryMovement::query()
                 ->latest('id')
