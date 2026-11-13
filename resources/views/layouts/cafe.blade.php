@@ -1,5 +1,5 @@
 @php
-    use App\Support\TenantDisplayName;
+    use App\Support\BusinessSettingDisplayName;
 
     $locale = app()->getLocale();
     $dir = config("locales.supported.{$locale}.dir", 'ltr');
@@ -7,7 +7,7 @@
     $content = $footerContent ?? $tenant->cafeContent();
     $heroHeader = $heroHeader ?? true;
     $salesDemo = (bool) (data_get($content, 'sales_demo') ?? data_get($tenant->settings, 'content.cafe.sales_demo'));
-    $displayName = TenantDisplayName::for($tenant, $locale);
+    $displayName = BusinessSettingDisplayName::for($tenant, $locale);
     $logoUrl = data_get($tenant->settings, 'theme.logo_url');
     $iconUrl = $logoUrl ? asset($logoUrl) : asset('favicon.ico');
     $seo = $seo ?? null;
@@ -32,7 +32,7 @@
         <x-cafe.seo-head :seo="$seo" />
     @else
         @php
-            $tagline = TenantDisplayName::usesRtlName($locale)
+            $tagline = BusinessSettingDisplayName::usesRtlName($locale)
                 ? ($content['tagline_ar'] ?? '')
                 : ($content['tagline_en'] ?? '');
             $metaDescription = $tagline !== '' ? $tagline : __('cafe.meta_description');

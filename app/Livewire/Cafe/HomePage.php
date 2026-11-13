@@ -42,6 +42,7 @@ class HomePage extends Component
 
         return view('livewire.cafe.home-page', [
             'business' => $this->business,
+            'tenant' => $this->business,
             'content' => $content,
             'featured' => $featured,
             'featuredSource' => $featuredSource,

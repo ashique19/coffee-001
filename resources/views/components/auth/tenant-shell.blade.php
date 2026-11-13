@@ -3,7 +3,7 @@
     $locale = app()->getLocale();
     $isRtl = in_array($locale, ['ar', 'ur'], true);
     $dir = config("locales.supported.{$locale}.dir", 'ltr');
-    $displayName = \App\Support\TenantDisplayName::for($tenant, $locale);
+    $displayName = \App\Support\BusinessSettingDisplayName::for($tenant, $locale);
     $colors = $tenant->themeColors();
     $logoUrl = data_get($tenant->settings, 'theme.logo_url');
     $hero = $tenant->isCafeTheme() ? data_get($tenant->cafeContent(), 'media.hero') : null;

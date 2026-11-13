@@ -1,7 +1,7 @@
 @php
     use App\Support\Storefront\CafeMapsUrl;
     $locale = app()->getLocale();
-    $isAr = \App\Support\TenantDisplayName::usesRtlName($locale);
+    $isAr = \App\Support\BusinessSettingDisplayName::usesRtlName($locale);
     $preferArabic = in_array($locale, ['ar', 'bn'], true);
     $catalogLabel = function (array $row, string $field = 'name') use ($locale) {
         if (filled($row[$field] ?? null)) {
@@ -18,7 +18,7 @@
     $legal = data_get($tenant->settings, 'legal_entity', []);
     $heroImage = data_get($content, 'media.hero');
     $aboutImage = data_get($content, 'media.about');
-    $displayName = \App\Support\TenantDisplayName::for($tenant, $locale);
+    $displayName = \App\Support\BusinessSettingDisplayName::for($tenant, $locale);
     $tagline = $isAr ? ($content['tagline_ar'] ?? '') : ($content['tagline_en'] ?? '');
     $locationBadge = $isAr
         ? ($content['location_badge_ar'] ?? $legal['address_ar'] ?? $legal['address'] ?? '')

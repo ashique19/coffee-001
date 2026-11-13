@@ -1,9 +1,9 @@
 @props(['tenant', 'overlay' => true])
 @php
-    use App\Support\TenantDisplayName;
+    use App\Support\BusinessSettingDisplayName;
 
     $locale = app()->getLocale();
-    $name = TenantDisplayName::for($tenant, $locale);
+    $name = BusinessSettingDisplayName::for($tenant, $locale);
     $logoUrl = data_get($tenant->settings, 'theme.logo_url');
 @endphp
 <header
