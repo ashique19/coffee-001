@@ -20,6 +20,7 @@ final class EnabledLocales
 
         return collect($configured)
             ->filter(fn ($code) => is_string($code) && $code !== '' && in_array($code, $supported, true))
+            ->filter(fn (string $code) => (bool) data_get(config('locales.supported'), "{$code}.enabled", true))
             ->unique()
             ->values()
             ->all();

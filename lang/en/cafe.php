@@ -14,7 +14,7 @@ return [
     'locale_switch' => 'Language',
     'locale_en' => 'English',
     'locale_ar' => 'العربية',
-    'locale_ur' => 'اردو',
+    'locale_bn' => 'বাংলা',
     'logo_alt' => ':name logo',
     'hero_image_alt' => 'Decorative illustration of a coffee cup with warm gradient background',
     'hero_photo_alt' => ':name — specialty coffee',

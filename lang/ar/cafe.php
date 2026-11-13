@@ -14,7 +14,7 @@ return [
     'locale_switch' => 'اللغة',
     'locale_en' => 'English',
     'locale_ar' => 'العربية',
-    'locale_ur' => 'اردو',
+    'locale_bn' => 'বাংলা',
     'logo_alt' => 'شعار :name',
     'hero_image_alt' => 'رسم توضيحي لفنجان قهوة بخلفية دافئة',
     'hero_photo_alt' => ':name — قهوة مختصة',
