@@ -72,6 +72,7 @@ return [
     'map_directions' => 'Directions',
     'cta_band_title' => 'Visit :name today',
     'footer_explore' => 'Explore',
+    'footer_staff_login' => 'Staff login',
     'menu_categories_aria' => 'Menu categories',
     'quick_view' => 'Quick view',
     'sheet_close' => 'Close',

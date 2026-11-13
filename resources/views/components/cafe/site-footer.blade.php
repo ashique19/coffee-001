@@ -71,5 +71,8 @@
             </dl>
             <p class="sm:text-end">© {{ date('Y') }} {{ $name }}. {{ __('cafe.footer_rights') }}</p>
         </div>
+        <p class="mt-6 border-t border-cafe-mocha/50 pt-6 text-center sm:text-end">
+            <a href="{{ route('admin.login') }}" class="cafe-footer-staff-link">{{ __('cafe.footer_staff_login') }}</a>
+        </p>
     </div>
 </footer>

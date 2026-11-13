@@ -490,6 +490,18 @@
         @apply relative z-20 border-t border-white/10 bg-cafe-espresso/35 backdrop-blur-sm;
     }
 
+    /* Footer staff login — cream on espresso (WCAG AA), accent on hover/focus */
+    .cafe-footer-staff-link {
+        @apply inline-flex min-h-11 items-center text-sm font-medium tracking-wide text-cafe-cream;
+        @apply underline decoration-cafe-cream/40 underline-offset-4 transition duration-200;
+        @apply hover:text-cafe-accent hover:decoration-cafe-accent;
+        @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-cafe-accent;
+    }
+
+    .cafe-footer-staff-link:active {
+        @apply text-cafe-cream;
+    }
+
     .auth-glass-card {
         @apply rounded-[1.5rem] border border-white/40 bg-cafe-cream/90 shadow-[0_24px_60px_-12px_rgba(44,24,16,0.45)] backdrop-blur-xl;
     }
