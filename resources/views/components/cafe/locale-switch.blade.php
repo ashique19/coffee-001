@@ -2,18 +2,10 @@
 @php
     use Illuminate\Support\Str;
 
-    use App\Support\EnabledLocales;
     use App\Support\Storefront\StorefrontLocales;
-    use App\Models\BusinessSetting;
 
     $query = request()->query();
-    $routeTenant = request()->route('tenant');
-    $tenant = $routeTenant instanceof Tenant
-        ? $routeTenant
-        : (is_string($routeTenant) ? Tenant::query()->where('slug', $routeTenant)->first() : null);
-    $locales = $tenant instanceof Tenant
-        ? StorefrontLocales::enabledCodesForTenant($tenant)
-        : EnabledLocales::codesWithLangFile('cafe');
+    $locales = StorefrontLocales::enabledCodes();
 
     $labelFor = function (string $code): string {
         $labelKey = 'cafe.locale_'.$code;

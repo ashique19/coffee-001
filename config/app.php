@@ -88,8 +88,9 @@ return [
     |--------------------------------------------------------------------------
     |
     | Shown in language switchers (tenant admin, POS, storefronts, foundation,
-    | receipts). ur/hi remain in config('locales.supported') for translations
-    | and RTL metadata — append them here to surface in UI again.
+    | receipts). Default `en,ar,bn`. ur/hi stay in config('locales.supported')
+    | with enabled=false for files/metadata — add here and enable in locales.php
+    | to surface them again.
     |
     */
     'enabled_locales' => array_values(array_filter(array_map(

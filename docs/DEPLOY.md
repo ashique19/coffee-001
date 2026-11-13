@@ -44,7 +44,7 @@ Copy `.env.example` to `.env` and set:
 - `APP_DEBUG`
 - `APP_URL`
 - `APP_LOCALE`
-- `APP_ENABLED_LOCALES`
+- `APP_ENABLED_LOCALES` — use `en,ar,bn` (Urdu/Hindi lang files ship disabled; remove `ur`/`hi` from this list on live if present)
 - `AUTH_GUARD`
 - `DB_CONNECTION`
 - `DB_HOST`
