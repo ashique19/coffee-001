@@ -6,7 +6,7 @@ use App\Business\BusinessContext;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
 use App\Support\Storefront\StorefrontLocales;
-use App\Support\TenantDisplayName;
+use App\Support\BusinessSettingDisplayName;
 use Illuminate\Http\JsonResponse;
 
 class WebManifestController extends Controller
@@ -17,7 +17,7 @@ class WebManifestController extends Controller
     abort_unless($business->hasThemedStorefront(), 404);
 
     $locale = app()->getLocale();
-    $name = TenantDisplayName::for($business, $locale);
+    $name = BusinessSettingDisplayName::for($business, $locale);
     $colors = $business->themeColors();
     $logo = data_get($business->settings, 'theme.logo_url');
     $favicon = data_get($business->settings, 'business.brand.favicon_path');

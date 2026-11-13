@@ -1,12 +1,12 @@
 @props(['tenant', 'content' => [], 'salesDemo' => false])
 @php
     use App\Support\InstagramUrl;
-    use App\Support\TenantDisplayName;
+    use App\Support\BusinessSettingDisplayName;
 
     $locale = app()->getLocale();
     $legal = data_get($tenant->settings, 'legal_entity', []);
     $contact = $content['contact'] ?? [];
-    $name = TenantDisplayName::for($tenant, $locale);
+    $name = BusinessSettingDisplayName::for($tenant, $locale);
     $instagramUrl = InstagramUrl::fromHandle($contact['instagram'] ?? null);
 @endphp
 <footer class="mt-8 border-t border-cafe-mocha/40 bg-cafe-espresso text-cafe-cream" role="contentinfo">
@@ -15,7 +15,7 @@
             <div class="lg:col-span-2">
                 <p class="text-xs font-bold uppercase tracking-[0.25em] text-cafe-accent">{{ $name }}</p>
                 <p class="mt-4 max-w-md text-sm leading-relaxed text-cafe-latte">
-                    {{ TenantDisplayName::usesRtlName($locale) ? ($content['tagline_ar'] ?? '') : ($content['tagline_en'] ?? '') }}
+                    {{ BusinessSettingDisplayName::usesRtlName($locale) ? ($content['tagline_ar'] ?? '') : ($content['tagline_en'] ?? '') }}
                 </p>
                 <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary mt-6 inline-flex">{{ __('cafe.cta_menu') }}</a>
             </div>

@@ -1,7 +1,7 @@
 @php
     use App\Support\PosProductImagery;
     $locale = app()->getLocale();
-    $isAr = \App\Support\TenantDisplayName::usesRtlName($locale);
+    $isAr = \App\Support\BusinessSettingDisplayName::usesRtlName($locale);
     $catalogLabel = function (array $row, string $field = 'name') use ($locale) {
         if (filled($row[$field] ?? null)) {
             return $row[$field];
@@ -15,7 +15,7 @@
         );
     };
     $heroImage = data_get($content, 'media.hero');
-    $displayName = \App\Support\TenantDisplayName::for($tenant, $locale);
+    $displayName = \App\Support\BusinessSettingDisplayName::for($tenant, $locale);
     $salesDemo = ! empty($content['sales_demo']);
 @endphp
 <div
