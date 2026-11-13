@@ -13,10 +13,10 @@
         'autoprint' => request()->query('autoprint'),
     ], fn ($v) => $v !== null && $v !== '');
     $backUrl = $branch
-        ? route('admin.pos.terminal', [$tenant, $branch])
-        : route('admin.pos.history', [$tenant, $order->branch_id]);
-    $newOrderUrl = route('admin.pos.terminal', [$tenant, $order->branch_id]);
-    $historyUrl = route('admin.pos.history', [$tenant, $order->branch_id]);
+        ? route('admin.pos.terminal', [ $branch])
+        : route('admin.pos.history', [ $order->branch_id]);
+    $newOrderUrl = route('admin.pos.terminal', [ $order->branch_id]);
+    $historyUrl = route('admin.pos.history', [ $order->branch_id]);
     $t = $thermal;
     $invoiceTitleEn = $t['is_simplified']
         ? __('pos.receipt_title_simplified_en')

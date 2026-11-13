@@ -17,15 +17,15 @@
                 <p class="mt-4 max-w-md text-sm leading-relaxed text-cafe-latte">
                     {{ TenantDisplayName::usesRtlName($locale) ? ($content['tagline_ar'] ?? '') : ($content['tagline_en'] ?? '') }}
                 </p>
-                <a href="{{ route('cafe.menu', $tenant) }}" class="cafe-pill-cta cafe-pill-cta--primary mt-6 inline-flex">{{ __('cafe.cta_menu') }}</a>
+                <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary mt-6 inline-flex">{{ __('cafe.cta_menu') }}</a>
             </div>
             <div>
                 <p class="text-sm font-semibold uppercase tracking-widest text-cafe-accent">{{ __('cafe.footer_explore') }}</p>
                 <ul class="mt-4 space-y-2 text-sm text-cafe-latte">
-                    <li><a href="{{ route('cafe.home', $tenant) }}#about" class="hover:text-cafe-cream">{{ __('cafe.nav_about') }}</a></li>
-                    <li><a href="{{ route('cafe.home', $tenant) }}#gallery" class="hover:text-cafe-cream">{{ __('cafe.nav_gallery') }}</a></li>
-                    <li><a href="{{ route('cafe.menu', $tenant) }}" class="hover:text-cafe-cream">{{ __('cafe.nav_menu') }}</a></li>
-                    <li><a href="{{ route('cafe.home', $tenant) }}#visit" class="hover:text-cafe-cream">{{ __('cafe.nav_visit') }}</a></li>
+                    <li><a href="{{ route('cafe.home') }}#about" class="hover:text-cafe-cream">{{ __('cafe.nav_about') }}</a></li>
+                    <li><a href="{{ route('cafe.home') }}#gallery" class="hover:text-cafe-cream">{{ __('cafe.nav_gallery') }}</a></li>
+                    <li><a href="{{ route('cafe.menu') }}" class="hover:text-cafe-cream">{{ __('cafe.nav_menu') }}</a></li>
+                    <li><a href="{{ route('cafe.home') }}#visit" class="hover:text-cafe-cream">{{ __('cafe.nav_visit') }}</a></li>
                 </ul>
             </div>
             <div>

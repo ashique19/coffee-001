@@ -41,7 +41,7 @@ return [
         'pos_orders' => 'POS فروخت',
         'invoices' => 'انوائسز',
         'shifts' => 'شفٹیں',
-        'egs_devices' => 'ZATCA آلات',
+        'egs_devices' => 'signing service آلات',
         'staff' => 'منسلک اسٹاف',
     ],
     'cannot_open_shift_inactive' => 'صرف فعال شاخ پر شفٹ کھولیں (پہلے دوبارہ فعال کریں)۔',

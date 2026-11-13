@@ -29,20 +29,7 @@ final class AppShellNav
             str_contains($name, 'admin.inventory') => 'inventory',
             str_contains($name, 'admin.team') => 'team',
             str_contains($name, 'admin.business') => 'business',
-            str_contains($name, 'tenant.zatca') => 'more',
             default => 'pos',
-        };
-    }
-
-    public static function platformActiveTab(): string
-    {
-        $name = Route::currentRouteName() ?? '';
-
-        return match (true) {
-            str_contains($name, 'platform.clients.export') => 'export',
-            str_contains($name, 'platform.tenants.storefront') => 'storefront',
-            str_contains($name, 'platform.support') => 'support',
-            default => 'tenants',
         };
     }
 

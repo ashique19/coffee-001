@@ -4,13 +4,13 @@ namespace App\Services\Auth;
 
 use App\Models\BusinessSetting;
 use App\Models\BusinessSettingUser;
-use App\Notifications\TenantResetPasswordNotification;
+use App\Notifications\StaffResetPasswordNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class TenantPasswordReset
+class StaffPasswordReset
 {
     public function tokenStorageKey(Tenant $tenant, string $email): string
     {
@@ -40,7 +40,7 @@ class TenantPasswordReset
             ],
         );
 
-        $user->notify(new TenantResetPasswordNotification($tenant, $token));
+        $user->notify(new StaffResetPasswordNotification($tenant, $token));
 
         return true;
     }

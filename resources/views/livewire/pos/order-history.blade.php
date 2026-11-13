@@ -20,8 +20,8 @@
                 <p class="tabular-nums font-medium">{{ number_format($order->total_inc_vat, 2) }} SAR · {{ $order->payment_method }}</p>
                 <div class="mt-3 flex flex-wrap gap-2">
                     @if($order->invoice_id)
-                        <a class="tap-action-muted min-h-11" href="{{ route('admin.pos.receipt', [$tenant, $order]) }}">{{ __('pos.receipt') }}</a>
-                        <a class="tap-action-muted min-h-11" href="{{ route('admin.pos.receipt', [$tenant, $order, 'autoprint' => 1]) }}">{{ __('pos.print_receipt') }}</a>
+                        <a class="tap-action-muted min-h-11" href="{{ route('admin.pos.receipt', [ $order]) }}">{{ __('pos.receipt') }}</a>
+                        <a class="tap-action-muted min-h-11" href="{{ route('admin.pos.receipt', [ $order, 'autoprint' => 1]) }}">{{ __('pos.print_receipt') }}</a>
                     @endif
                     @if($order->status->value === 'paid')
                         <x-ui.livewire-action wire:click="openRefundModal({{ $order->id }})" :target="'openRefundModal('.$order->id.')'" loading="refund" variant="muted" class="min-h-11">{{ __('pos.refund') }}</x-ui.livewire-action>
@@ -52,8 +52,8 @@
                         <td>{{ $order->payment_method }}</td>
                         <td class="app-table__actions">
                             @if($order->invoice_id)
-                                <a class="tap-action-muted min-h-11 px-3 py-2" href="{{ route('admin.pos.receipt', [$tenant, $order]) }}">{{ __('pos.receipt') }}</a>
-                                <a class="tap-action-muted min-h-11 px-3 py-2" href="{{ route('admin.pos.receipt', [$tenant, $order, 'autoprint' => 1]) }}">{{ __('pos.print_receipt') }}</a>
+                                <a class="tap-action-muted min-h-11 px-3 py-2" href="{{ route('admin.pos.receipt', [ $order]) }}">{{ __('pos.receipt') }}</a>
+                                <a class="tap-action-muted min-h-11 px-3 py-2" href="{{ route('admin.pos.receipt', [ $order, 'autoprint' => 1]) }}">{{ __('pos.print_receipt') }}</a>
                             @endif
                             @if($order->status->value === 'paid')
                                 <x-ui.livewire-action wire:click="openRefundModal({{ $order->id }})" :target="'openRefundModal('.$order->id.')'" loading="refund" variant="muted" class="ms-1 min-h-11 px-3 py-2">{{ __('pos.refund') }}</x-ui.livewire-action>

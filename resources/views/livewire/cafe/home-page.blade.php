@@ -59,7 +59,7 @@
             <h1 data-hero-headline class="cafe-display max-w-4xl text-cafe-cream">{{ $displayName }}</h1>
             <p data-reveal class="mt-5 max-w-xl text-lg leading-relaxed text-cafe-cream/85 sm:text-xl">{{ $tagline }}</p>
             <div data-reveal class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a href="{{ route('cafe.menu', $tenant) }}" class="cafe-pill-cta cafe-pill-cta--primary w-full sm:w-auto">
+                <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary w-full sm:w-auto">
                     {{ __('cafe.cta_menu') }}
                 </a>
                 <a href="#visit" class="cafe-pill-cta cafe-pill-cta--ghost w-full sm:w-auto">
@@ -101,7 +101,7 @@
     <section id="signature" class="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8" data-reveal data-featured-source="{{ $featuredSource ?? 'marketing' }}">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <h2 class="cafe-display text-cafe-espresso">{{ __('cafe.section_featured') }}</h2>
-            <a href="{{ route('cafe.menu', $tenant) }}" class="text-sm font-semibold text-cafe-caramel underline underline-offset-4">{{ __('cafe.view_full_menu') }}</a>
+            <a href="{{ route('cafe.menu') }}" class="text-sm font-semibold text-cafe-caramel underline underline-offset-4">{{ __('cafe.view_full_menu') }}</a>
         </div>
         <div class="cafe-carousel mt-8" data-reveal-stagger role="list">
             @foreach ($featured as $item)
@@ -267,7 +267,7 @@
             <h2 class="cafe-display text-cafe-cream">{{ __('cafe.cta_band_title', ['name' => $displayName]) }}</h2>
             <p class="mx-auto mt-4 max-w-lg text-cafe-latte">{{ $tagline }}</p>
             <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                <a href="{{ route('cafe.menu', $tenant) }}" class="cafe-pill-cta cafe-pill-cta--primary">{{ __('cafe.cta_menu') }}</a>
+                <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary">{{ __('cafe.cta_menu') }}</a>
                 <a href="tel:{{ preg_replace('/\s+/', '', $content['contact']['phone'] ?? '') }}" class="cafe-pill-cta cafe-pill-cta--ghost">{{ $content['contact']['phone'] ?? '' }}</a>
             </div>
         </div>

@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\Invoice;
 use App\Models\InvoiceAuditLog;
-use Illuminate\Support\Carbon;
-
 class InvoiceAuditService
 {
     /**
@@ -18,8 +16,7 @@ class InvoiceAuditService
         return InvoiceAuditLog::query()->create([
             'invoice_id' => $invoice->id,
             'event' => $event,
-            'metadata' => $redacted,
-            'occurred_at' => Carbon::now('UTC'),
+            'context' => $redacted,
         ]);
     }
 
@@ -29,7 +26,7 @@ class InvoiceAuditService
      */
     private function redactSecrets(array $metadata): array
     {
-        $keys = ['private_key', 'csid', 'certificate', 'encrypted_private_key'];
+        $keys = ['private_key', 'certificate', 'encrypted_private_key', 'api_key'];
 
         foreach ($keys as $key) {
             if (array_key_exists($key, $metadata)) {

@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Customers & loyalty',
-    'subtitle' => 'Guest profiles, referral codes, and points ledger (not a ZATCA clearance view).',
+    'subtitle' => 'Guest profiles, referral codes, and points ledger (not a signing service clearance view).',
     'nav' => 'Customers',
     'add' => 'Add customer',
     'search' => 'Search',

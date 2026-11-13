@@ -61,7 +61,7 @@ class InvoiceIssueService
         $now = Carbon::now('UTC');
         $referenced = $invoice->referencedInvoice;
         $invoiceCategory = $this->resolveInvoiceCategory($invoice, $referenced);
-        $invoiceUuid = (string) (($invoice->payload['zatca_uuid'] ?? null) ?: Str::uuid());
+        $invoiceUuid = (string) (($invoice->payload['invoice_uuid'] ?? null) ?: Str::uuid());
 
         $signingRequest = new InvoiceSigningRequest(
             business: $business,
@@ -74,7 +74,7 @@ class InvoiceIssueService
             invoiceUuid: $invoiceUuid,
             referencedInvoiceNumber: $referenced?->document_number,
             referencedInvoiceUuid: $referenced
-                ? (string) ($referenced->payload['zatca_uuid'] ?? '')
+                ? (string) ($referenced->payload['invoice_uuid'] ?? '')
                 : null,
             noteReason: $this->resolveNoteReason($invoice),
         );
@@ -83,7 +83,7 @@ class InvoiceIssueService
 
         $payloadMerge = array_merge($invoice->payload ?? [], [
             'lines' => $invoice->payload['lines'] ?? [],
-            'zatca_uuid' => $signed['invoice_uuid'],
+            'invoice_uuid' => $signed['invoice_uuid'],
         ]);
 
         if (! empty($signed['request_id'])) {
@@ -95,7 +95,7 @@ class InvoiceIssueService
             'icv' => $signed['icv'],
             'invoice_hash' => $signed['hash'],
             'previous_invoice_hash' => $signed['previous_invoice_hash'],
-            'ubl_xml' => $signed['cleared_xml'] ?? $signed['xml'],
+            'signed_xml' => $signed['cleared_xml'] ?? $signed['xml'],
             'qr_tlv_base64' => $signed['qr'],
             'issued_at' => $now,
             'payload' => $payloadMerge,
@@ -111,7 +111,7 @@ class InvoiceIssueService
 
     private function resolveInvoiceCategory(Invoice $invoice, ?Invoice $referenced): string
     {
-        $fromPayload = $invoice->payload['zatca_invoice_category'] ?? null;
+        $fromPayload = $invoice->payload['invoice_category'] ?? null;
         if (is_string($fromPayload) && $fromPayload !== '') {
             return $fromPayload;
         }

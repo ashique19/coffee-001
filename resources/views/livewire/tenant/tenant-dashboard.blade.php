@@ -101,8 +101,8 @@
         </section>
 
         <section class="app-card p-4">
-            <h2 class="text-sm font-semibold">{{ __('dashboard.zatca_status') }}</h2>
-            <p class="mt-1 text-xs text-[var(--app-muted)]">{{ __('dashboard.zatca_status_hint') }}</p>
+            <h2 class="text-sm font-semibold">{{ __('dashboard.signing_queue') }}</h2>
+            <p class="mt-1 text-xs text-[var(--app-muted)]">{{ __('dashboard.signing_queue_hint') }}</p>
             @if ($zatca['total'] === 0)
                 <p class="mt-4 text-sm text-[var(--app-muted)]">{{ __('dashboard.no_submissions') }}</p>
             @else
@@ -114,7 +114,7 @@
                     ] as $key => $label)
                         @php
                             $count = $zatca[$key];
-                            $barPct = round(($count / $zatcaMax) * 100);
+                            $barPct = round(($count / $signingMax) * 100);
                         @endphp
                         <li>
                             <div class="flex items-center justify-between gap-2 text-sm">

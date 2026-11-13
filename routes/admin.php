@@ -13,7 +13,7 @@ use App\Http\Middleware\EnsureInvoicesAccess;
 use App\Http\Middleware\EnsurePosAccess;
 use App\Http\Middleware\EnsureReportsAccess;
 use App\Http\Middleware\EnsureStaffManageAccess;
-use App\Http\Middleware\RedirectIfTenantAuthenticated;
+use App\Http\Middleware\RedirectIfBusinessGuest;
 use App\Livewire\Admin\AdminDashboard;
 use App\Livewire\Admin\BusinessSettings;
 use App\Livewire\Admin\StorefrontSettings;
@@ -31,7 +31,7 @@ use App\Livewire\Pos\Terminal;
 use App\Livewire\Reports\OwnerAnalytics;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(RedirectIfTenantAuthenticated::class)->group(function (): void {
+Route::middleware(RedirectIfBusinessGuest::class)->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('admin.login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:10,1')->name('admin.login.store');
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('admin.password.request');

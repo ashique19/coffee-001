@@ -35,6 +35,7 @@ return new class extends Migration
             $table->string('code', 32)->unique();
             $table->string('name');
             $table->string('name_ar')->nullable();
+            $table->text('address')->nullable();
             $table->boolean('is_active')->default(true);
             $table->json('settings')->nullable();
             $table->timestamps();
@@ -58,10 +59,14 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('vat_number', 32)->nullable();
-            $table->unsignedBigInteger('loyalty_points')->default(0);
+            $table->string('referral_code', 32)->nullable();
+            $table->foreignId('referred_by_customer_id')->nullable()->constrained('customers')->nullOnDelete();
+            $table->unsignedBigInteger('points_balance')->default(0);
+            $table->json('profile')->nullable();
             $table->timestamps();
 
             $table->unique('phone');
+            $table->unique('referral_code');
         });
 
         Schema::create('product_categories', function (Blueprint $table) {
@@ -135,7 +140,7 @@ return new class extends Migration
             $table->unsignedBigInteger('icv')->nullable();
             $table->string('invoice_hash', 512)->nullable();
             $table->string('previous_invoice_hash', 512)->nullable();
-            $table->longText('ubl_xml')->nullable();
+            $table->longText('signed_xml')->nullable();
             $table->text('qr_tlv_base64')->nullable();
             $table->json('payload')->nullable();
             $table->timestamp('issued_at')->nullable();
@@ -183,8 +188,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('pos_order_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('type', 32);
             $table->integer('points_delta');
-            $table->string('reason')->nullable();
+            $table->decimal('monetary_value_ex_vat', 12, 2)->nullable();
+            $table->json('metadata')->nullable();
+            $table->timestamp('occurred_at');
             $table->timestamps();
         });
 

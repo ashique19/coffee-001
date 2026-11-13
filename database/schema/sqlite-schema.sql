@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS "branches"(
   "code" varchar not null,
   "name" varchar not null,
   "name_ar" varchar,
+  "address" text,
   "is_active" tinyint(1) not null default '1',
   "settings" text,
   "created_at" datetime,
@@ -110,11 +111,18 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "phone" varchar,
   "email" varchar,
   "vat_number" varchar,
-  "loyalty_points" integer not null default '0',
+  "referral_code" varchar,
+  "referred_by_customer_id" integer,
+  "points_balance" integer not null default '0',
+  "profile" text,
   "created_at" datetime,
-  "updated_at" datetime
+  "updated_at" datetime,
+  foreign key("referred_by_customer_id") references "customers"("id") on delete set null
 );
 CREATE UNIQUE INDEX "customers_phone_unique" on "customers"("phone");
+CREATE UNIQUE INDEX "customers_referral_code_unique" on "customers"(
+  "referral_code"
+);
 CREATE TABLE IF NOT EXISTS "product_categories"(
   "id" integer primary key autoincrement not null,
   "branch_id" integer,
@@ -200,7 +208,7 @@ CREATE TABLE IF NOT EXISTS "invoices"(
   "icv" integer,
   "invoice_hash" varchar,
   "previous_invoice_hash" varchar,
-  "ubl_xml" text,
+  "signed_xml" text,
   "qr_tlv_base64" text,
   "payload" text,
   "issued_at" datetime,
@@ -269,8 +277,11 @@ CREATE TABLE IF NOT EXISTS "loyalty_transactions"(
   "id" integer primary key autoincrement not null,
   "customer_id" integer not null,
   "pos_order_id" integer,
+  "type" varchar not null,
   "points_delta" integer not null,
-  "reason" varchar,
+  "monetary_value_ex_vat" numeric,
+  "metadata" text,
+  "occurred_at" datetime not null,
   "created_at" datetime,
   "updated_at" datetime,
   foreign key("customer_id") references "customers"("id") on delete cascade,

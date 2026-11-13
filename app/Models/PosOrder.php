@@ -64,7 +64,7 @@ class PosOrder extends Model
 
     public function invoice(): BelongsTo
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Invoice::class);
     }
 
     public function refundCreditNote(): BelongsTo

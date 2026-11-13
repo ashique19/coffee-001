@@ -6,7 +6,7 @@ use App\Models\BusinessSetting;
 
 /**
  * Canonical read/write paths for tenant business profile stored under settings.business,
- * synchronized with legacy legal_entity / content.* keys by TenantBusinessSettingsService.
+ * synchronized with legacy legal_entity / content.* keys by BusinessSettingsService.
  */
 final class TenantBusinessProfile
 {

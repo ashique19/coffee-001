@@ -3,7 +3,7 @@
 namespace App\Support\Invoicing;
 
 use App\Models\Customer;
-use App\Rules\ZatcaVatNumber;
+use App\Rules\SaudiVatNumber;
 use Illuminate\Support\Facades\Validator;
 
 final class StandardBuyerPayload
@@ -42,7 +42,7 @@ final class StandardBuyerPayload
         }
 
         if ($vat !== '') {
-            Validator::make(['vat' => $vat], ['vat' => [new ZatcaVatNumber]])->validate();
+            Validator::make(['vat' => $vat], ['vat' => [new SaudiVatNumber]])->validate();
         }
 
         if ($cr !== '' && ! preg_match('/^\d{1,10}$/', $cr)) {

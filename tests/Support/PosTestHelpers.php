@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\PosPaymentMethod;
 use App\Models\Branch;
 use App\Models\BusinessSetting;
+use App\Models\PosOrder;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\StaffUser;
@@ -53,4 +55,19 @@ function posTenantSetup(): array
     );
 
     return ['tenant' => $tenant, 'branch' => $branch, 'cashier' => $cashier, 'product' => $product];
+}
+
+function seedDemoPaidPosOrder(): PosOrder
+{
+    $branch = Branch::query()->where('code', 'jad-main')->first()
+        ?? Branch::query()->firstOrFail();
+    $cashier = StaffUser::query()->where('email', 'cashier@fancy-coffee.test')->firstOrFail();
+    $product = Product::query()->where('sku', 'LATTE-DEMO')->firstOrFail();
+
+    $orders = app(\App\Services\Pos\PosOrderService::class);
+    $checkout = app(\App\Services\Pos\PosCheckoutService::class);
+    $order = $orders->openOrder($branch, $cashier);
+    $orders->addProduct($order, $product, 1);
+
+    return $checkout->pay($order->fresh(), PosPaymentMethod::Cash, $cashier);
 }

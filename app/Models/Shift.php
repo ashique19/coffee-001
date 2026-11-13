@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Shift extends Model
 {
-
-    protected $fillable = [        'branch_id',
-        'tenant_user_id',
+    protected $fillable = [
+        'branch_id',
+        'staff_user_id',
         'started_at',
         'opening_cash_float',
         'closing_cash_counted',
@@ -36,6 +36,6 @@ class Shift extends Model
 
     public function cashier(): BelongsTo
     {
-        return $this->belongsTo(StaffUser::class, 'tenant_user_id');
+        return $this->belongsTo(StaffUser::class, 'staff_user_id');
     }
 }

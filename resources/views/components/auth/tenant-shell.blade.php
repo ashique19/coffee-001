@@ -7,12 +7,12 @@
     $colors = $tenant->themeColors();
     $logoUrl = data_get($tenant->settings, 'theme.logo_url');
     $hero = $tenant->isCafeTheme() ? data_get($tenant->cafeContent(), 'media.hero') : null;
-    $publicUrl = $tenant->isCafeTheme() ? route('cafe.home', $tenant) : url('/');
+    $publicUrl = $tenant->isCafeTheme() ? route('cafe.home') : url('/');
     $footerLinks = [
         ['label' => __('auth.footer_public'), 'href' => $publicUrl],
     ];
     if ($tenant->isCafeTheme()) {
-        $footerLinks[] = ['label' => __('cafe.nav_menu'), 'href' => route('cafe.menu', $tenant)];
+        $footerLinks[] = ['label' => __('cafe.nav_menu'), 'href' => route('cafe.menu')];
     }
     $footerLinks[] = ['label' => __('auth.footer_contact'), 'href' => $publicUrl.'#contact'];
 @endphp

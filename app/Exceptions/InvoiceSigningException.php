@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use App\Support\Zatca\SigningFailureSanitizer;
+use App\Support\Invoicing\SigningFailureSanitizer;
 
 class InvoiceSigningException extends \RuntimeException
 {

@@ -2,7 +2,7 @@
 
 namespace App\Support\Validation;
 
-use App\Rules\ZatcaVatNumber;
+use App\Rules\SaudiVatNumber;
 use App\Support\Storefront\StorefrontConfig;
 use Closure;
 /**
@@ -15,7 +15,7 @@ final class FieldValidationRules
      */
     public static function vatRequired(): array
     {
-        return ['required', 'string', new ZatcaVatNumber];
+        return ['required', 'string', new SaudiVatNumber];
     }
 
     /**
@@ -23,7 +23,7 @@ final class FieldValidationRules
      */
     public static function vatOptional(): array
     {
-        return ['nullable', 'string', new ZatcaVatNumber];
+        return ['nullable', 'string', new SaudiVatNumber];
     }
 
     /**

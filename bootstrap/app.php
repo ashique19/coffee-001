@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
 
         $middleware->alias([
-            'tenant.guest' => \App\Http\Middleware\RedirectIfTenantAuthenticated::class,
+            'business.guest' => \App\Http\Middleware\RedirectIfBusinessGuest::class,
             'pos.access' => \App\Http\Middleware\EnsurePosAccess::class,
             'reports.access' => \App\Http\Middleware\EnsureReportsAccess::class,
             'inventory.access' => \App\Http\Middleware\EnsureInventoryAccess::class,

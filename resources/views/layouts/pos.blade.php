@@ -6,10 +6,7 @@
     use App\Support\AppShellNav;
     use App\Support\TenantDisplayName;
 
-    $tenant = request()->route('tenant');
-    if (is_string($tenant)) {
-        $tenant = Tenant::query()->where('slug', $tenant)->first();
-    }
+    $tenant = \App\Business\BusinessContext::get() ?? BusinessSetting::query()->find(1);
     $branch = $branch ?? request()->route('branch');
     if ($branch !== null && ! $branch instanceof Branch) {
         $branch = Branch::query()->withoutGlobalScopes()->find($branch);
@@ -19,10 +16,10 @@
     $active = AppShellNav::tenantActiveTab();
     $displayName = $tenant ? TenantDisplayName::for($tenant, $locale) : config('app.name');
     $logoUrl = $tenant ? data_get($tenant->settings, 'theme.logo_url') : null;
-    $logoAltKey = ($tenant && $tenant->isPlumberTheme()) ? 'plumber.logo_alt' : 'cafe.logo_alt';
+    $logoAltKey = 'cafe.logo_alt';
     $colors = $tenant?->themeColors() ?? [];
     $branches = $tenant ? AppShellNav::branchesForSwitcher($tenant) : [];
-    app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId(auth('tenant')->user()?->tenant_id);
+    app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($tenant?->id ?? 1);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', $locale) }}" dir="{{ $dir }}" class="scroll-smooth"
@@ -67,98 +64,92 @@
                     $branchParam = $branch ?? ($branches[0] ?? null);
                 @endphp
                 @can('reports.view')
-                    <a href="{{ route('admin.dashboard', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'dashboard'])>
+                    <a href="{{ route('admin.dashboard') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'dashboard'])>
                         <x-app.icon name="home" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('dashboard.nav') }}</span>
                     </a>
                 @endcan
-                <a href="{{ route('admin.pos.home', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'pos'])>
+                <a href="{{ route('admin.pos.home') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'pos'])>
                     <x-app.icon name="chart" class="h-5 w-5 shrink-0" />
                     <span class="app-sidebar__label">{{ __('pos.nav_pos') }}</span>
                 </a>
                 @if($branchParam)
-                    <a href="{{ route('admin.pos.history', [$tenant, $branchParam]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'orders'])>
+                    <a href="{{ route('admin.pos.history', [ $branchParam]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'orders'])>
                         <x-app.icon name="clipboard" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('pos.nav_orders') }}</span>
                     </a>
-                    <a href="{{ route('admin.pos.eod', [$tenant, $branchParam]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'eod'])>
+                    <a href="{{ route('admin.pos.eod', [ $branchParam]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'eod'])>
                         <x-app.icon name="clock" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('pos.nav_eod') }}</span>
                     </a>
-                    <a href="{{ route('admin.pos.ops', [$tenant, $branchParam]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'ops'])>
+                    <a href="{{ route('admin.pos.ops', [ $branchParam]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'ops'])>
                         <x-app.icon name="chart" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('pos.nav_ops') }}</span>
                     </a>
                 @endif
                 @can('business.manage')
-                    <a href="{{ route('admin.business', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'business'])>
+                    <a href="{{ route('admin.business') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'business'])>
                         <x-app.icon name="paint" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('business.nav') }}</span>
                     </a>
                 @endcan
                 @can('staff.manage')
-                    <a href="{{ route('admin.team', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'team'])>
+                    <a href="{{ route('admin.team') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'team'])>
                         <x-app.icon name="clipboard" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('operations.nav') }}</span>
                     </a>
                 @endcan
                 @can('inventory.view')
-                    <a href="{{ route('admin.catalog', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'catalog'])>
+                    <a href="{{ route('admin.catalog') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'catalog'])>
                         <x-app.icon name="paint" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('catalog.nav') }}</span>
                     </a>
-                    <a href="{{ route('admin.inventory', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'inventory'])>
+                    <a href="{{ route('admin.inventory') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'inventory'])>
                         <x-app.icon name="shield" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('inventory.nav') }}</span>
                     </a>
                 @endcan
                 @can('reports.view')
-                    <a href="{{ route('admin.reports', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'analytics'])>
+                    <a href="{{ route('admin.reports') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'analytics'])>
                         <x-app.icon name="chart" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('reports.nav') }}</span>
                     </a>
                     @if ($tenant->isCafeTheme())
-                        <a href="{{ route('admin.storefront', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'storefront'])>
+                        <a href="{{ route('admin.storefront') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'storefront'])>
                             <x-app.icon name="external" class="h-5 w-5 shrink-0" />
                             <span class="app-sidebar__label">{{ __('storefront.nav') }}</span>
                         </a>
                     @elseif ($tenant->hasThemedStorefront())
-                        <a href="{{ route('cafe.home', $tenant) }}" target="_blank" rel="noopener" class="app-nav-link">
+                        <a href="{{ route('cafe.home') }}" target="_blank" rel="noopener" class="app-nav-link">
                             <x-app.icon name="external" class="h-5 w-5 shrink-0" />
                             <span class="app-sidebar__label">{{ __('pos.view_storefront') }}</span>
                         </a>
                     @endif
-                    <a href="{{ route('admin.customers', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'customers'])>
+                    <a href="{{ route('admin.customers') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'customers'])>
                         <x-app.icon name="users" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('customers.nav') }}</span>
                     </a>
                 @endcan
                 @if (auth('tenant')->user()?->can('invoices.issue') || auth('tenant')->user()?->can('reports.view'))
-                    <a href="{{ route('admin.invoices', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'invoices'])>
+                    <a href="{{ route('admin.invoices') }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'invoices'])>
                         <x-app.icon name="clipboard" class="h-5 w-5 shrink-0" />
                         <span class="app-sidebar__label">{{ __('invoices.nav') }}</span>
                     </a>
                     @can('invoices.issue')
                         @php $altInvoiceMode = $tenant->alternateInvoiceDocumentType()->value; @endphp
-                        <a href="{{ route('admin.invoices.issue', [$tenant, $altInvoiceMode]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'invoices-issue'])>
+                        <a href="{{ route('admin.invoices.issue', [ $altInvoiceMode]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'invoices-issue'])>
                             <x-app.icon name="clipboard" class="h-5 w-5 shrink-0" />
                             <span class="app-sidebar__label">{{ __('invoices.nav_issue_'.$altInvoiceMode) }}</span>
                         </a>
                     @endcan
                 @endif
-                @can('zatca.manage')
-                    <a href="{{ route('tenant.zatca', $tenant) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'more'])>
-                        <x-app.icon name="shield" class="h-5 w-5 shrink-0" />
-                        <span class="app-sidebar__label">{{ __('zatca_admin.title') }}</span>
-                    </a>
-                @endcan
             </nav>
             <div class="border-t p-2" style="border-color: var(--app-border)">
                 <button type="button" class="app-nav-link w-full" @click="sidebarCollapsed = !sidebarCollapsed">
                     <x-app.icon name="menu" class="h-5 w-5 shrink-0" />
                     <span class="app-sidebar__label">{{ __('pos.collapse_sidebar') }}</span>
                 </button>
-                <form method="POST" action="{{ route('admin.logout', $tenant) }}" class="mt-1">
+                <form method="POST" action="{{ route('admin.logout') }}" class="mt-1">
                     @csrf
                     <button type="submit" class="app-nav-link w-full">
                         <x-app.icon name="logout" class="h-5 w-5 shrink-0" />
@@ -185,7 +176,7 @@
                                     <ul class="app-card app-card--flat absolute z-20 mt-1 min-w-[12rem] p-1 shadow-lg">
                                         @foreach($branches as $b)
                                             <li>
-                                                <a class="app-nav-link" href="{{ route('admin.pos.terminal', [$tenant, $b]) }}">{{ $b->name }}</a>
+                                                <a class="app-nav-link" href="{{ route('admin.pos.terminal', [ $b]) }}">{{ $b->name }}</a>
                                             </li>
                                         @endforeach
                                     </ul>
@@ -202,11 +193,11 @@
                         <div x-show="userOpen" x-cloak @click.outside="userOpen = false" class="app-card app-card--flat absolute end-0 z-30 mt-1 min-w-[11rem] p-1 shadow-xl">
                             <x-app.locale-switch :current="$locale" class="flex p-2 sm:hidden" />
                             @if ($tenant->hasThemedStorefront())
-                                <a href="{{ route('cafe.home', $tenant) }}" target="_blank" rel="noopener" class="app-nav-link">
+                                <a href="{{ route('cafe.home') }}" target="_blank" rel="noopener" class="app-nav-link">
                                     <x-app.icon name="external" class="h-4 w-4" /> {{ __('pos.view_storefront') }}
                                 </a>
                             @endif
-                            <form method="POST" action="{{ route('admin.logout', $tenant) }}">
+                            <form method="POST" action="{{ route('admin.logout') }}">
                                 @csrf
                                 <button type="submit" class="app-nav-link w-full">{{ __('pos.logout') }}</button>
                             </form>
@@ -215,31 +206,25 @@
                 </div>
             </header>
 
-            @if (($zatcaPendingReportingCount ?? 0) > 0)
-                <div class="border-b border-amber-400/40 bg-amber-50 px-3 py-2 text-sm text-amber-950 sm:px-5" role="status">
-                    {{ __('zatca_reconcile.reminder_banner', ['count' => $zatcaPendingReportingCount]) }}
-                    <a class="font-semibold underline" href="{{ route('admin.invoices.reconcile', $tenant) }}">{{ __('zatca_reconcile.nav') }}</a>
-                </div>
-            @endif
             <main class="app-content">
                 {{ $slot }}
             </main>
 
             @if($branchParam)
                 <nav class="app-tabbar" aria-label="{{ __('pos.mobile_nav') }}">
-                    <a href="{{ route('admin.pos.terminal', [$tenant, $branchParam]) }}" class="app-tab @if($active === 'pos') app-tab--active @endif">
+                    <a href="{{ route('admin.pos.terminal', [ $branchParam]) }}" class="app-tab @if($active === 'pos') app-tab--active @endif">
                         <x-app.icon name="cart" />
                         {{ __('pos.nav_pos') }}
                     </a>
-                    <a href="{{ route('admin.pos.history', [$tenant, $branchParam]) }}" class="app-tab @if($active === 'orders') app-tab--active @endif">
+                    <a href="{{ route('admin.pos.history', [ $branchParam]) }}" class="app-tab @if($active === 'orders') app-tab--active @endif">
                         <x-app.icon name="clipboard" />
                         {{ __('pos.nav_orders') }}
                     </a>
-                    <a href="{{ route('admin.pos.eod', [$tenant, $branchParam]) }}" class="app-tab @if($active === 'eod') app-tab--active @endif">
+                    <a href="{{ route('admin.pos.eod', [ $branchParam]) }}" class="app-tab @if($active === 'eod') app-tab--active @endif">
                         <x-app.icon name="clock" />
                         {{ __('pos.nav_eod') }}
                     </a>
-                    <a href="{{ route('admin.pos.ops', [$tenant, $branchParam]) }}" class="app-tab @if($active === 'ops') app-tab--active @endif">
+                    <a href="{{ route('admin.pos.ops', [ $branchParam]) }}" class="app-tab @if($active === 'ops') app-tab--active @endif">
                         <x-app.icon name="chart" />
                         {{ __('pos.nav_ops') }}
                     </a>
@@ -253,34 +238,31 @@
                 <div x-show="moreOpen" x-cloak class="app-sheet p-4 lg:hidden" role="dialog" aria-label="{{ __('pos.nav_more') }}">
                     <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--app-border)]"></div>
                     <ul class="space-y-1">
-                        <li><a class="app-nav-link" href="{{ route('admin.pos.home', $tenant) }}">{{ __('pos.nav_home') }}</a></li>
+                        <li><a class="app-nav-link" href="{{ route('admin.pos.home') }}">{{ __('pos.nav_home') }}</a></li>
                         @can('business.manage')
-                            <li><a class="app-nav-link" href="{{ route('admin.business', $tenant) }}">{{ __('business.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.business') }}">{{ __('business.nav') }}</a></li>
                         @endcan
                         @can('staff.manage')
-                            <li><a class="app-nav-link" href="{{ route('admin.team', $tenant) }}">{{ __('operations.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.team') }}">{{ __('operations.nav') }}</a></li>
                         @endcan
                         @can('inventory.view')
-                            <li><a class="app-nav-link" href="{{ route('admin.catalog', $tenant) }}">{{ __('catalog.nav') }}</a></li>
-                            <li><a class="app-nav-link" href="{{ route('admin.inventory', $tenant) }}">{{ __('inventory.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.catalog') }}">{{ __('catalog.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.inventory') }}">{{ __('inventory.nav') }}</a></li>
                         @endcan
                         @can('reports.view')
-                            <li><a class="app-nav-link" href="{{ route('admin.dashboard', $tenant) }}">{{ __('dashboard.nav') }}</a></li>
-                            <li><a class="app-nav-link" href="{{ route('admin.reports', $tenant) }}">{{ __('reports.nav') }}</a></li>
-                            <li><a class="app-nav-link" href="{{ route('admin.customers', $tenant) }}">{{ __('customers.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.dashboard') }}">{{ __('dashboard.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.reports') }}">{{ __('reports.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.customers') }}">{{ __('customers.nav') }}</a></li>
                         @endcan
                         @if (auth('tenant')->user()?->can('invoices.issue') || auth('tenant')->user()?->can('reports.view'))
-                            <li><a class="app-nav-link" href="{{ route('admin.invoices', $tenant) }}">{{ __('invoices.nav') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.invoices') }}">{{ __('invoices.nav') }}</a></li>
                         @endif
                         @can('invoices.issue')
                             @php $altInvoiceMode = $tenant->alternateInvoiceDocumentType()->value; @endphp
-                            <li><a class="app-nav-link" href="{{ route('admin.invoices.issue', [$tenant, $altInvoiceMode]) }}">{{ __('invoices.nav_issue_'.$altInvoiceMode) }}</a></li>
-                        @endcan
-                        @can('zatca.manage')
-                            <li><a class="app-nav-link" href="{{ route('tenant.zatca', $tenant) }}">{{ __('zatca_admin.title') }}</a></li>
+                            <li><a class="app-nav-link" href="{{ route('admin.invoices.issue', [ $altInvoiceMode]) }}">{{ __('invoices.nav_issue_'.$altInvoiceMode) }}</a></li>
                         @endcan
                         <li>
-                            <form method="POST" action="{{ route('admin.logout', $tenant) }}">
+                            <form method="POST" action="{{ route('admin.logout') }}">
                                 @csrf
                                 <button type="submit" class="app-nav-link w-full">{{ __('pos.logout') }}</button>
                             </form>
@@ -289,7 +271,7 @@
                 </div>
             @else
                 <nav class="app-tabbar" aria-label="{{ __('pos.mobile_nav') }}">
-                    <a href="{{ route('admin.pos.home', $tenant) }}" class="app-tab app-tab--active">
+                    <a href="{{ route('admin.pos.home') }}" class="app-tab app-tab--active">
                         <x-app.icon name="home" />
                         {{ __('pos.nav_home') }}
                     </a>

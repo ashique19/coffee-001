@@ -82,12 +82,11 @@ class CustomerHub extends Component
                 'string',
                 'max:20',
                 'regex:/^(?:\+966|966|0)?5\d{8}$/',
-                Rule::unique('customers', 'phone')->where('tenant_id', $this->tenant->id),
+                Rule::unique('customers', 'phone'),
             ],
         ]));
 
         $customer = Customer::query()->create([
-            'tenant_id' => $this->tenant->id,
             'name' => $this->customerName,
             'phone' => $this->customerPhone,
             'email' => $this->customerEmail !== '' ? $this->customerEmail : null,

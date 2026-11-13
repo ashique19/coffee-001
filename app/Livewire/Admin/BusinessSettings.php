@@ -4,8 +4,8 @@ namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\DispatchesToasts;
 use App\Models\BusinessSetting;
-use App\Rules\ZatcaVatNumber;
-use App\Services\Tenant\TenantBusinessSettingsService;
+use App\Rules\SaudiVatNumber;
+use App\Services\Business\BusinessSettingsService;
 use App\Support\Geo\GeoMapsUrl;
 use App\Support\TenantBusinessHours;
 use App\Support\TenantBusinessProfile;
@@ -122,7 +122,7 @@ class BusinessSettings extends Component
     /** @var list<string> */
     public array $tabsWithErrors = [];
 
-    public function mount(TenantBusinessSettingsService $service): void
+    public function mount(BusinessSettingsService $service): void
     {
         $this->resolveBusiness();
         $this->authorize('business.manage');
@@ -202,7 +202,7 @@ class BusinessSettings extends Component
         $this->validateOnly($property, [$property => $rules]);
     }
 
-    public function saveBrand(TenantBusinessSettingsService $service): void
+    public function saveBrand(BusinessSettingsService $service): void
     {
         $this->authorize('business.manage');
         $this->section = 'brand';
@@ -268,7 +268,7 @@ class BusinessSettings extends Component
         $this->toastSuccess(__('business.messages.logo_removed'));
     }
 
-    public function saveLegal(TenantBusinessSettingsService $service): void
+    public function saveLegal(BusinessSettingsService $service): void
     {
         $this->authorize('business.manage');
         $this->section = 'legal';
@@ -278,7 +278,7 @@ class BusinessSettings extends Component
             $this->runSectionValidation([
             'legalNameEn' => 'required|string|max:200',
             'legalNameAr' => 'required|string|max:200',
-            'vatNumber' => ['required', 'string', new ZatcaVatNumber],
+            'vatNumber' => ['required', 'string', new SaudiVatNumber],
             'crNumber' => 'required|string|max:32',
             'addressEn' => 'required|string|max:500',
             'addressAr' => 'required|string|max:500',
@@ -313,7 +313,7 @@ class BusinessSettings extends Component
         $this->toastSuccess(__('business.messages.saved'));
     }
 
-    public function saveContact(TenantBusinessSettingsService $service): void
+    public function saveContact(BusinessSettingsService $service): void
     {
         $this->authorize('business.manage');
         $this->section = 'contact';
@@ -367,7 +367,7 @@ class BusinessSettings extends Component
         $this->toastSuccess(__('business.messages.saved'));
     }
 
-    public function saveHours(TenantBusinessSettingsService $service): void
+    public function saveHours(BusinessSettingsService $service): void
     {
         $this->authorize('business.manage');
         $this->section = 'hours';
@@ -395,7 +395,7 @@ class BusinessSettings extends Component
         $this->toastSuccess(__('business.messages.saved'));
     }
 
-    public function saveExtras(TenantBusinessSettingsService $service): void
+    public function saveExtras(BusinessSettingsService $service): void
     {
         $this->authorize('business.manage');
         $this->section = 'extras';

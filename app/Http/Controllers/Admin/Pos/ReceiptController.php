@@ -7,7 +7,7 @@ use App\Models\BusinessSetting;
 use App\Models\PosOrder;
 use App\Support\EnabledLocales;
 use App\Support\Pos\ReceiptThermalPresenter;
-use App\Support\ReceiptComplianceLabel;
+use App\Support\ReceiptSigningStatusLabel;
 use Illuminate\View\View;
 
 class ReceiptController extends Controller
@@ -31,9 +31,7 @@ class ReceiptController extends Controller
             'invoice' => $invoice,
             'locale' => $locale,
             'branch' => $order->branch,
-            'compliance' => ReceiptComplianceLabel::forInvoice($invoice),
-            'shouldDrainZatca' => false,
-            'zatcaReportUrl' => null,
+            'compliance' => ReceiptSigningStatusLabel::forInvoice($invoice),
             'thermal' => ReceiptThermalPresenter::compose($tenant, $order, $invoice, $order->branch),
         ]);
     }

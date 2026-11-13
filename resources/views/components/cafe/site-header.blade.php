@@ -18,7 +18,7 @@
     @keydown.escape.window="navOpen = false"
 >
     <div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:gap-3 sm:px-6 lg:justify-between lg:px-8">
-        <a href="{{ route('cafe.home', $tenant) }}" class="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-cafe-accent sm:gap-3 lg:flex-initial">
+        <a href="{{ route('cafe.home') }}" class="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-cafe-accent sm:gap-3 lg:flex-initial">
             @if ($logoUrl)
                 <img src="{{ asset($logoUrl) }}" alt="{{ __('cafe.logo_alt', ['name' => $name]) }}" class="h-10 w-10 rounded-xl object-contain ring-1 ring-white/20" width="40" height="40" loading="eager" decoding="async">
             @else
@@ -28,11 +28,11 @@
         </a>
 
         <nav class="hidden items-center gap-1 lg:flex" aria-label="{{ __('cafe.main_nav') }}">
-            <a href="{{ route('cafe.menu', $tenant) }}" class="cafe-header-link">{{ __('cafe.nav_menu') }}</a>
-            <a href="{{ route('cafe.home', $tenant) }}#about" class="cafe-header-link">{{ __('cafe.nav_about') }}</a>
-            <a href="{{ route('cafe.home', $tenant) }}#gallery" class="cafe-header-link">{{ __('cafe.nav_gallery') }}</a>
-            <a href="{{ route('cafe.home', $tenant) }}#visit" class="cafe-header-link">{{ __('cafe.nav_visit') }}</a>
-            <a href="{{ route('cafe.home', $tenant) }}#contact" class="cafe-header-link">{{ __('cafe.nav_contact') }}</a>
+            <a href="{{ route('cafe.menu') }}" class="cafe-header-link">{{ __('cafe.nav_menu') }}</a>
+            <a href="{{ route('cafe.home') }}#about" class="cafe-header-link">{{ __('cafe.nav_about') }}</a>
+            <a href="{{ route('cafe.home') }}#gallery" class="cafe-header-link">{{ __('cafe.nav_gallery') }}</a>
+            <a href="{{ route('cafe.home') }}#visit" class="cafe-header-link">{{ __('cafe.nav_visit') }}</a>
+            <a href="{{ route('cafe.home') }}#contact" class="cafe-header-link">{{ __('cafe.nav_contact') }}</a>
             <x-cafe.locale-switch :current="$locale" menu-id="cafe-locale-menu-desktop" class="ms-2" />
         </nav>
 
@@ -53,11 +53,11 @@
         aria-label="{{ __('cafe.main_nav') }}"
     >
         <ul class="flex flex-col gap-1">
-            <li><a href="{{ route('cafe.menu', $tenant) }}" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_menu') }}</a></li>
-            <li><a href="{{ route('cafe.home', $tenant) }}#about" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_about') }}</a></li>
-            <li><a href="{{ route('cafe.home', $tenant) }}#gallery" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_gallery') }}</a></li>
-            <li><a href="{{ route('cafe.home', $tenant) }}#visit" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_visit') }}</a></li>
-            <li><a href="{{ route('cafe.home', $tenant) }}#contact" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_contact') }}</a></li>
+            <li><a href="{{ route('cafe.menu') }}" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_menu') }}</a></li>
+            <li><a href="{{ route('cafe.home') }}#about" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_about') }}</a></li>
+            <li><a href="{{ route('cafe.home') }}#gallery" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_gallery') }}</a></li>
+            <li><a href="{{ route('cafe.home') }}#visit" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_visit') }}</a></li>
+            <li><a href="{{ route('cafe.home') }}#contact" class="cafe-mobile-nav__link" @click="navOpen = false">{{ __('cafe.nav_contact') }}</a></li>
         </ul>
     </nav>
 </header>

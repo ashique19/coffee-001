@@ -2,33 +2,30 @@
 
 namespace App\Services;
 
+use App\Business\BusinessContext;
 use App\Enums\InvoiceDocumentType;
 use App\Enums\PosOrderStatus;
+use App\Models\Branch;
+use App\Models\BusinessSetting;
 use App\Models\Invoice;
 use App\Models\PosOrder;
-use App\Models\BusinessSetting;
-use App\Support\EgsDeviceResolver;
 use App\Support\Invoicing\StandardBuyerPayload;
 use Illuminate\Support\Str;
 
 /**
- * Bridges POS settlement to ZATCA simplified (B2C) tax invoices and credit-note refunds.
- *
- * Loyalty / promotional discounts must reduce the VAT taxable base (ex-VAT) before VAT is calculated.
- * TODO: Verify AllowanceCharge / document-level discount encoding in UBL per ZATCA XML standard.
+ * Bridges POS settlement to signed tax invoices and credit-note refunds.
  */
 class PosInvoiceService
 {
     public function __construct(
         private readonly InvoiceIssueService $invoiceIssueService,
-        private readonly EgsDeviceResolver $egsDeviceResolver,
     ) {}
 
     public function issueInvoiceForOrder(PosOrder $order): Invoice
     {
-        $tenant = $order->tenant ?? Tenant::query()->findOrFail($order->tenant_id);
+        $business = BusinessContext::get() ?? BusinessSetting::singleton();
 
-        return $tenant->defaultInvoiceDocumentType() === InvoiceDocumentType::Standard
+        return $business->defaultInvoiceDocumentType() === InvoiceDocumentType::Standard
             ? $this->issueStandardInvoiceForOrder($order)
             : $this->issueSimplifiedInvoiceForOrder($order);
     }
@@ -43,21 +40,20 @@ class PosInvoiceService
             return $order->invoice()->firstOrFail();
         }
 
-        $device = $this->egsDeviceResolver->resolveForPosOrder($order);
+        $branch = $order->branch ?? Branch::query()->findOrFail($order->branch_id);
 
         $lineItems = $this->mapLineItems($order);
 
         $documentNumber = 'POS-'.$order->order_number;
 
         $draft = $this->invoiceIssueService->issueDraft(
-            device: $device,
+            branch: $branch,
             documentNumber: $documentNumber,
             type: InvoiceDocumentType::Simplified,
             lineItems: $lineItems,
         );
 
         $draft->forceFill([
-            'branch_id' => $order->branch_id,
             'source_type' => PosOrder::class,
             'source_id' => $order->id,
             'payload' => array_merge($draft->payload ?? [], [
@@ -86,21 +82,20 @@ class PosInvoiceService
             return $order->invoice()->firstOrFail();
         }
 
-        $device = $this->egsDeviceResolver->resolveForPosOrder($order);
+        $branch = $order->branch ?? Branch::query()->findOrFail($order->branch_id);
         $lineItems = $this->mapLineItems($order);
         $documentNumber = 'POS-'.$order->order_number;
         $order->loadMissing('customer');
         $buyer = StandardBuyerPayload::fromCustomer($order->customer);
 
         $draft = $this->invoiceIssueService->issueDraft(
-            device: $device,
+            branch: $branch,
             documentNumber: $documentNumber,
             type: InvoiceDocumentType::Standard,
             lineItems: $lineItems,
         );
 
         $draft->forceFill([
-            'branch_id' => $order->branch_id,
             'source_type' => PosOrder::class,
             'source_id' => $order->id,
             'payload' => array_merge($draft->payload ?? [], [
@@ -131,11 +126,11 @@ class PosInvoiceService
         }
 
         $original = $order->invoice()->firstOrFail();
-        $device = $this->egsDeviceResolver->resolveForInvoice($original);
+        $branch = $order->branch ?? Branch::query()->findOrFail($order->branch_id);
         $lineItems = $this->mapLineItems($order);
 
         $credit = $this->invoiceIssueService->issueDraft(
-            device: $device,
+            branch: $branch,
             documentNumber: 'CN-'.$order->order_number.'-'.Str::upper(Str::random(4)),
             type: InvoiceDocumentType::CreditNote,
             lineItems: $lineItems,
@@ -143,7 +138,6 @@ class PosInvoiceService
         );
 
         $credit->forceFill([
-            'branch_id' => $order->branch_id,
             'source_type' => PosOrder::class,
             'source_id' => $order->id,
             'payload' => array_merge($credit->payload ?? [], array_filter([

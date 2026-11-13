@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
-use App\Services\Auth\TenantPasswordReset;
+use App\Services\Auth\StaffPasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,7 +20,7 @@ class ResetPasswordController extends Controller
         ]);
     }
 
-    public function store(Request $request, Tenant $tenant, TenantPasswordReset $resets): RedirectResponse
+    public function store(Request $request, Tenant $tenant, StaffPasswordReset $resets): RedirectResponse
     {
         $validated = $request->validate([
             'token' => ['required', 'string'],

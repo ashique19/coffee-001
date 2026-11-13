@@ -6,8 +6,8 @@ use App\Enums\InvoiceDocumentType;
 use App\Livewire\Concerns\DispatchesToasts;
 use App\Livewire\Concerns\ValidatesFieldsLive;
 use App\Models\BusinessSetting;
+use App\Models\Branch;
 use App\Services\InvoiceIssueService;
-use App\Support\EgsDeviceResolver;
 use App\Support\Validation\FieldValidationRules;
 use App\Business\BusinessContext;
 use Illuminate\View\View;
@@ -77,7 +77,7 @@ class IssueInvoice extends Component
         $this->lines = array_values($this->lines);
     }
 
-    public function issue(InvoiceIssueService $issuer, EgsDeviceResolver $deviceResolver): void
+    public function issue(InvoiceIssueService $issuer): void
     {
         $this->validate($this->rulesForMode());
 
@@ -91,7 +91,7 @@ class IssueInvoice extends Component
             }
         }
 
-        $device = $deviceResolver->resolveForManualIssue($this->tenant);
+        $branch = Branch::query()->where('is_active', true)->orderBy('id')->first();
         $type = $this->mode === 'standard' ? InvoiceDocumentType::Standard : InvoiceDocumentType::Simplified;
         $documentNumber = strtoupper($this->mode === 'standard' ? 'STD' : 'SIMP')
             .'-'.now('Asia/Riyadh')->format('Ymd-His');
@@ -103,7 +103,7 @@ class IssueInvoice extends Component
             'vat_rate' => (float) $row['vat_rate'],
         ], $this->lines);
 
-        $draft = $issuer->issueDraft($device, $documentNumber, $type, $lineItems);
+        $draft = $issuer->issueDraft($branch, $documentNumber, $type, $lineItems);
 
         $payload = $draft->payload ?? [];
         if ($type === InvoiceDocumentType::Standard) {
@@ -129,7 +129,7 @@ class IssueInvoice extends Component
 
         $issued = $issuer->issue($draft->fresh());
         $this->toastSuccess(__('invoices.issue_success', ['number' => $issued->document_number]));
-        $this->redirect(route('admin.invoices', $this->tenant), navigate: true);
+        $this->redirect(route('admin.invoices'), navigate: true);
     }
 
     public function render(): View
@@ -192,14 +192,14 @@ class IssueInvoice extends Component
         return [
             'buyerName' => __('invoices.buyer_name'),
             'buyerNameOptional' => __('invoices.buyer_optional'),
-            'buyerVat' => __('zatca_admin.vat_number'),
-            'buyerCr' => __('zatca_admin.cr_number'),
-            'addrBuilding' => __('zatca_admin.fields.building'),
-            'addrStreet' => __('zatca_admin.fields.street'),
-            'addrDistrict' => __('zatca_admin.fields.district'),
-            'addrCity' => __('zatca_admin.fields.city'),
-            'addrPostal' => __('zatca_admin.fields.postal'),
-            'addrAdditional' => __('zatca_admin.fields.additional'),
+            'buyerVat' => __('business.fields.vat_number'),
+            'buyerCr' => __('business.fields.cr_number'),
+            'addrBuilding' => __('business.fields.building'),
+            'addrStreet' => __('business.fields.street'),
+            'addrDistrict' => __('business.fields.district'),
+            'addrCity' => __('business.fields.city'),
+            'addrPostal' => __('business.fields.postal'),
+            'addrAdditional' => __('business.fields.additional'),
             'lines.*.name' => __('invoices.line_name'),
             'lines.*.quantity' => __('invoices.line_qty'),
             'lines.*.unit_price' => __('invoices.line_price_ex_vat'),

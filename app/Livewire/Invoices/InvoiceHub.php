@@ -3,7 +3,6 @@
 namespace App\Livewire\Invoices;
 
 use App\Enums\InvoiceDocumentType;
-use App\Enums\ZatcaSubmissionStatus;
 use App\Models\Invoice;
 use App\Models\PosOrder;
 use App\Models\BusinessSetting;
@@ -33,7 +32,7 @@ class InvoiceHub extends Component
     public string $typeFilter = 'all';
 
     #[Url]
-    public string $zatcaFilter = 'all';
+    public string $signingFilter = 'all';
 
     public function mount(): void
     {
@@ -52,7 +51,7 @@ class InvoiceHub extends Component
         $this->resetPage();
     }
 
-    public function updatingZatcaFilter(): void
+    public function updatingSigningFilter(): void
     {
         $this->resetPage();
     }

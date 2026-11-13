@@ -23,7 +23,7 @@ class Invoice extends Model
         'icv',
         'invoice_hash',
         'previous_invoice_hash',
-        'ubl_xml',
+        'signed_xml',
         'qr_tlv_base64',
         'payload',
         'issued_at',

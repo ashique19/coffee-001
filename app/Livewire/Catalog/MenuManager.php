@@ -236,7 +236,7 @@ class MenuManager extends Component
     {
         $this->authorizeCatalogWrite();
         $validated = $this->validate([
-            'productSku' => ['nullable', 'string', 'max:64', Rule::unique('products', 'sku')->where(fn ($q) => $q->where('tenant_id', $this->tenant->id))->ignore($this->editingProductId)],
+            'productSku' => ['nullable', 'string', 'max:64', Rule::unique('products', 'sku')->ignore($this->editingProductId)],
             'productNameEn' => ['required', 'string', 'max:160'],
             'productNameAr' => ['required', 'string', 'max:160'],
             'productNameBn' => ['nullable', 'string', 'max:160'],
@@ -428,10 +428,8 @@ class MenuManager extends Component
         ]);
 
         $ing = Ingredient::query()->create([
-            'tenant_id' => $this->tenant->id,
             'branch_id' => null,
             'name_en' => $this->quickIngredientNameEn,
-            'name' => $this->quickIngredientNameEn,
             'unit' => $this->quickIngredientUnit,
             'quantity_on_hand' => 0,
             'reorder_level' => 0,
@@ -491,7 +489,7 @@ class MenuManager extends Component
             'catalogI18nReady' => CatalogI18n::columnsExist(),
             'inventoryReady' => IngredientInventorySchema::productIngredientsReady(),
             'ingredientOptions' => IngredientInventorySchema::ingredientsReady()
-                ? Ingredient::query()->where('tenant_id', $this->tenant->id)->whereNull('branch_id')->orderBy('name_en')->get()
+                ? Ingredient::query()->whereNull('branch_id')->orderBy('name_en')->get()
                 : collect(),
         ]);
     }
@@ -512,17 +510,17 @@ class MenuManager extends Component
 
     private function categoryQuery()
     {
-        return ProductCategory::query()->where('tenant_id', $this->tenant->id);
+        return ProductCategory::query();
     }
 
     private function productQuery()
     {
-        return Product::query()->where('tenant_id', $this->tenant->id);
+        return Product::query();
     }
 
     private function modifierQuery()
     {
-        return ProductModifier::query()->where('tenant_id', $this->tenant->id);
+        return ProductModifier::query();
     }
 
     private function resetCategoryForm(): void

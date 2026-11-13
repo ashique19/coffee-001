@@ -4,7 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\BusinessSetting;
 use App\Services\Inventory\IngredientStockService;
-use App\Services\Tenant\TenantDashboardService;
+use App\Services\Business\BusinessDashboardService;
 use App\Support\ChartScale;
 use App\Business\BusinessContext;
 use Illuminate\View\View;
@@ -26,7 +26,7 @@ class AdminDashboard extends Component
         $this->authorize('reports.view');
     }
 
-    public function render(TenantDashboardService $dashboard, IngredientStockService $stock): View
+    public function render(BusinessDashboardService $dashboard, IngredientStockService $stock): View
     {
         $snapshot = $dashboard->snapshot($this->tenant);
         $lowStock = $stock->lowStockForTenant();
@@ -36,16 +36,16 @@ class AdminDashboard extends Component
 
         $invoiceMax = ChartScale::floorMax(1, array_column($snapshot['invoices_by_type'], 'count'));
 
-        $zatca = $snapshot['zatca_status'];
-        $zatcaMax = max(1, $zatca['pending'], $zatca['reported'], $zatca['failed']);
+        $signingQueue = $snapshot['signing_queue'];
+        $signingMax = max(1, $signingQueue['pending'], $signingQueue['reported'], $signingQueue['failed']);
 
-        return view('livewire.tenant.tenant-dashboard', [
+        return view('livewire.admin.admin-dashboard', [
             'snapshot' => $snapshot,
             'series' => $series,
             'maxTotal' => $maxTotal,
             'invoiceMax' => $invoiceMax,
-            'zatca' => $zatca,
-            'zatcaMax' => $zatcaMax,
+            'signingQueue' => $signingQueue,
+            'signingMax' => $signingMax,
             'lowStock' => $lowStock,
         ]);
     }

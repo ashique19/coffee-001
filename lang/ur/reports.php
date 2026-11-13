@@ -2,7 +2,7 @@
 
 return [
     'title' => 'تجزیات',
-    'subtitle' => 'فروخت، VAT اور شاخوں کی کارکردگی (ٹیسٹ ڈیٹا — ZATCA clearance نہیں).',
+    'subtitle' => 'فروخت، VAT اور شاخوں کی کارکردگی (ٹیسٹ ڈیٹا — signing service clearance نہیں).',
     'nav' => 'تجزیات',
     'export_csv' => 'CSV برآمد',
     'preset_7d' => '7 دن',

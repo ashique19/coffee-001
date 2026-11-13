@@ -31,7 +31,7 @@ class LoyaltyService
         }
 
         $customer = $order->customer()->firstOrFail();
-        $config = LoyaltyConfig::for($order->tenant);
+        $config = LoyaltyConfig::for(\App\Business\BusinessContext::require());
         $points = (int) floor((float) $order->subtotal_ex_vat * $config->earnPointsPerSarExVat());
 
         if ($points <= 0) {
@@ -44,7 +44,7 @@ class LoyaltyService
 
     public function redeemOnOrder(PosOrder $order, Customer $customer, int $points): float
     {
-        $config = LoyaltyConfig::for($order->tenant);
+        $config = LoyaltyConfig::for(\App\Business\BusinessContext::require());
 
         if ($points < $config->minimumRedeemPoints()) {
             throw new \InvalidArgumentException('Below minimum redemption points.');
@@ -111,7 +111,7 @@ class LoyaltyService
         }
 
         $customer = Customer::query()->create([
-            'tenant_id' => $order->tenant_id,
+            'name' => $phone ?? __('customers.guest'),
             'phone' => $phone,
             'referral_code' => strtoupper(Str::random(8)),
             'referred_by_customer_id' => $referrer->id,
@@ -164,7 +164,6 @@ class LoyaltyService
         $customer->increment('points_balance', $pointsDelta);
 
         return LoyaltyTransaction::query()->create([
-            'tenant_id' => $customer->tenant_id,
             'customer_id' => $customer->id,
             'type' => $type,
             'points_delta' => $pointsDelta,

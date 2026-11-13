@@ -20,10 +20,6 @@
       "assets/layers-2x-Bpkbi35X.png"
     ]
   },
-  "_preload-helper-odF-skvc.js": {
-    "file": "assets/preload-helper-odF-skvc.js",
-    "name": "preload-helper"
-  },
   "_rolldown-runtime-WkwZ5CU-.js": {
     "file": "assets/rolldown-runtime-WkwZ5CU-.js",
     "name": "rolldown-runtime"
@@ -450,7 +446,7 @@
     "isEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-C3Iikpnx.css",
+    "file": "assets/app--lg6x59w.css",
     "name": "app",
     "names": [
       "app.css"
@@ -567,76 +563,6 @@
     "src": "resources/css/error-pages.css",
     "isEntry": true
   },
-  "resources/css/foundation-landing.css": {
-    "file": "assets/foundation-landing-wXY1wrvW.css",
-    "name": "foundation-landing",
-    "names": [
-      "foundation-landing.css"
-    ],
-    "src": "resources/css/foundation-landing.css",
-    "isEntry": true,
-    "assets": [
-      "assets/instrument-sans-latin-ext-400-normal-Q_nF8v4l.woff2",
-      "assets/instrument-sans-latin-ext-400-normal-r32jotim.woff",
-      "assets/instrument-sans-latin-400-normal-DRC__1Mx.woff2",
-      "assets/instrument-sans-latin-400-normal-D1W7dsQl.woff",
-      "assets/instrument-sans-latin-ext-500-normal-CTEe1bJa.woff2",
-      "assets/instrument-sans-latin-ext-500-normal-CAxz3nsc.woff",
-      "assets/instrument-sans-latin-500-normal-Dk9ku72i.woff2",
-      "assets/instrument-sans-latin-500-normal-Z6ESRlEs.woff",
-      "assets/instrument-sans-latin-ext-600-normal-BsaQcF38.woff2",
-      "assets/instrument-sans-latin-ext-600-normal-DMks36a2.woff",
-      "assets/instrument-sans-latin-600-normal-B7fBEWYG.woff2",
-      "assets/instrument-sans-latin-600-normal-B9e8oLYv.woff",
-      "assets/tajawal-arabic-400-normal-CyCXRvzh.woff2",
-      "assets/tajawal-arabic-400-normal-DCQxawbB.woff",
-      "assets/tajawal-latin-400-normal-BVNSOH3d.woff2",
-      "assets/tajawal-latin-400-normal-BdYcZznU.woff",
-      "assets/tajawal-arabic-500-normal-BZ8ojJNu.woff2",
-      "assets/tajawal-arabic-500-normal-CbVEaYEW.woff",
-      "assets/tajawal-latin-500-normal-CoYeBiSI.woff2",
-      "assets/tajawal-latin-500-normal-DU9v6xgj.woff",
-      "assets/tajawal-arabic-700-normal-D2-eand5.woff2",
-      "assets/tajawal-arabic-700-normal-9L7Zusdl.woff",
-      "assets/tajawal-latin-700-normal-BypgxfGb.woff2",
-      "assets/tajawal-latin-700-normal-CV3bxpHe.woff"
-    ]
-  },
-  "resources/css/plumber-storefront.css": {
-    "file": "assets/plumber-storefront-BHJ1UiJD.css",
-    "name": "plumber-storefront",
-    "names": [
-      "plumber-storefront.css"
-    ],
-    "src": "resources/css/plumber-storefront.css",
-    "isEntry": true,
-    "assets": [
-      "assets/tajawal-arabic-400-normal-CyCXRvzh.woff2",
-      "assets/tajawal-arabic-400-normal-DCQxawbB.woff",
-      "assets/tajawal-latin-400-normal-BVNSOH3d.woff2",
-      "assets/tajawal-latin-400-normal-BdYcZznU.woff",
-      "assets/tajawal-arabic-500-normal-BZ8ojJNu.woff2",
-      "assets/tajawal-arabic-500-normal-CbVEaYEW.woff",
-      "assets/tajawal-latin-500-normal-CoYeBiSI.woff2",
-      "assets/tajawal-latin-500-normal-DU9v6xgj.woff",
-      "assets/tajawal-arabic-700-normal-D2-eand5.woff2",
-      "assets/tajawal-arabic-700-normal-9L7Zusdl.woff",
-      "assets/tajawal-latin-700-normal-BypgxfGb.woff2",
-      "assets/tajawal-latin-700-normal-CV3bxpHe.woff",
-      "assets/instrument-sans-latin-ext-400-normal-Q_nF8v4l.woff2",
-      "assets/instrument-sans-latin-ext-400-normal-r32jotim.woff",
-      "assets/instrument-sans-latin-400-normal-DRC__1Mx.woff2",
-      "assets/instrument-sans-latin-400-normal-D1W7dsQl.woff",
-      "assets/instrument-sans-latin-ext-500-normal-CTEe1bJa.woff2",
-      "assets/instrument-sans-latin-ext-500-normal-CAxz3nsc.woff",
-      "assets/instrument-sans-latin-500-normal-Dk9ku72i.woff2",
-      "assets/instrument-sans-latin-500-normal-Z6ESRlEs.woff",
-      "assets/instrument-sans-latin-ext-600-normal-BsaQcF38.woff2",
-      "assets/instrument-sans-latin-ext-600-normal-DMks36a2.woff",
-      "assets/instrument-sans-latin-600-normal-B7fBEWYG.woff2",
-      "assets/instrument-sans-latin-600-normal-B9e8oLYv.woff"
-    ]
-  },
   "resources/css/receipt.css": {
     "file": "assets/receipt-Dj-NqnQU.css",
     "name": "receipt",
@@ -673,31 +599,16 @@
     ]
   },
   "resources/js/cafe-storefront.js": {
-    "file": "assets/cafe-storefront-Br0x8dXa.js",
+    "file": "assets/cafe-storefront-cB4cgTaE.js",
     "name": "cafe-storefront",
     "src": "resources/js/cafe-storefront.js",
     "isEntry": true,
-    "imports": [
-      "_preload-helper-odF-skvc.js"
-    ],
-    "dynamicImports": [
-      "resources/js/cafe-branch-map.js"
-    ]
-  },
-  "resources/js/plumber-storefront.js": {
-    "file": "assets/plumber-storefront-DOkvejtv.js",
-    "name": "plumber-storefront",
-    "src": "resources/js/plumber-storefront.js",
-    "isEntry": true,
-    "imports": [
-      "_preload-helper-odF-skvc.js"
-    ],
     "dynamicImports": [
       "resources/js/cafe-branch-map.js"
     ]
   },
   "resources/js/receipt.js": {
-    "file": "assets/receipt-QshImKqu.js",
+    "file": "assets/receipt-DYqNJLHd.js",
     "name": "receipt",
     "src": "resources/js/receipt.js",
     "isEntry": true,

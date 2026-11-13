@@ -15,21 +15,21 @@ final class AuthenticatedRouteCatalog
     public static function adminRoutes(Branch $branch): array
     {
         return [
-            ['admin.dashboard', [], 200, null],
-            ['admin.business', [], 200, null],
-            ['admin.pos.home', [], 200, null],
-            ['admin.pos.terminal', ['branch' => $branch], 200, null],
-            ['admin.pos.history', ['branch' => $branch], 200, null],
-            ['admin.pos.eod', ['branch' => $branch], 200, null],
-            ['admin.pos.ops', ['branch' => $branch], 200, null],
-            ['admin.reports', [], 200, null],
-            ['admin.storefront', [], 200, null],
-            ['admin.customers', [], 200, null],
-            ['admin.invoices', [], 200, null],
-            ['admin.invoices.issue', ['mode' => 'simplified'], 200, null],
-            ['admin.catalog', [], 200, null],
-            ['admin.inventory', [], 200, null],
-            ['admin.team', [], 200, null],
+            ['admin.dashboard', [], 200],
+            ['admin.business', [], 200],
+            ['admin.pos.home', [], 200],
+            ['admin.pos.terminal', ['branch' => $branch], 200],
+            ['admin.pos.history', ['branch' => $branch], 200],
+            ['admin.pos.eod', ['branch' => $branch], 200],
+            ['admin.pos.ops', ['branch' => $branch], 200],
+            ['admin.reports', [], 200],
+            ['admin.storefront', [], 200],
+            ['admin.customers', [], 200],
+            ['admin.invoices', [], 200],
+            ['admin.invoices.issue', ['mode' => 'simplified'], 200],
+            ['admin.catalog', [], 200],
+            ['admin.inventory', [], 200],
+            ['admin.team', [], 200],
         ];
     }
 }

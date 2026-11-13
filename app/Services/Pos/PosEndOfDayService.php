@@ -26,7 +26,6 @@ class PosEndOfDayService
         $end = $date->copy()->endOfDay();
 
         $rows = DB::table('pos_orders')
-            ->where('tenant_id', $branch->tenant_id)
             ->where('branch_id', $branch->id)
             ->where('status', PosOrderStatus::Paid->value)
             ->whereBetween('paid_at', [$start, $end])
@@ -49,7 +48,6 @@ class PosEndOfDayService
         }
 
         $vat = (float) DB::table('pos_orders')
-            ->where('tenant_id', $branch->tenant_id)
             ->where('branch_id', $branch->id)
             ->where('status', PosOrderStatus::Paid->value)
             ->whereBetween('paid_at', [$start, $end])

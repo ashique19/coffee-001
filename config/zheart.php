@@ -19,7 +19,7 @@ return [
   /*
    | When true, simplified invoices are reported and standard invoices cleared via Z-Heart after sign.
    */
-  'submit_to_zatca' => filter_var(env('ZHEART_SUBMIT_TO_ZATCA', false), FILTER_VALIDATE_BOOL),
+  'auto_submit_signed' => filter_var(env('ZHEART_SUBMIT_TO_ZATCA', false), FILTER_VALIDATE_BOOL),
 
   'allow_seller_override' => filter_var(env('ZHEART_ALLOW_SELLER_OVERRIDE', false), FILTER_VALIDATE_BOOL),
 ];

@@ -8,7 +8,7 @@ use ZipArchive;
 
 class ThemeImportService
 {
-    public function importFromZip(string $zipPath, ?string $targetSlug = null): Tenant
+    public function importFromZip(string $zipPath): BusinessSetting
     {
         $work = storage_path('app/theme-imports/'.uniqid('bundle-', true));
         File::ensureDirectoryExists($work);
@@ -26,44 +26,33 @@ class ThemeImportService
                 throw new \InvalidArgumentException('Bundle missing tenant.json');
             }
 
-            /** @var array{slug: string, name: string, settings: array<string, mixed>} $payload */
+            /** @var array{name: string, settings: array<string, mixed>} $payload */
             $payload = json_decode(file_get_contents($tenantFile), true, flags: JSON_THROW_ON_ERROR);
-
-            $slug = $targetSlug ?? $payload['slug'];
 
             $assetsDir = $work.'/assets';
             if (is_dir($assetsDir)) {
                 $this->copyAssetsIntoPublic($assetsDir, public_path());
             }
 
-            return Tenant::query()->updateOrCreate(
-                ['slug' => $slug],
-                [
-                    'name' => $payload['name'],
-                    'settings' => $payload['settings'],
-                ]
-            );
+            $business = BusinessSetting::query()->find(1) ?? new BusinessSetting(['id' => 1]);
+            $business->forceFill([
+                'name' => $payload['name'] ?? $business->name ?? 'Business',
+                'settings' => $payload['settings'] ?? $business->settings,
+            ])->save();
+
+            return $business;
         } finally {
             File::deleteDirectory($work);
         }
     }
 
-    private function copyAssetsIntoPublic(string $assetsRoot, string $publicRoot): void
+    private function copyAssetsIntoPublic(string $from, string $toPublic): void
     {
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($assetsRoot, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::SELF_FIRST
-        );
-
-        foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
-            if ($file->isDir()) {
-                continue;
-            }
-            $relative = substr($file->getPathname(), strlen($assetsRoot) + 1);
-            $target = $publicRoot.'/'.$relative;
-            File::ensureDirectoryExists(dirname($target));
-            File::copy($file->getPathname(), $target);
+        foreach (File::allFiles($from) as $file) {
+            $relative = $file->getRelativePathname();
+            $dest = $toPublic.'/'.str_replace('\\', '/', $relative);
+            File::ensureDirectoryExists(dirname($dest));
+            File::copy($file->getPathname(), $dest);
         }
     }
 }

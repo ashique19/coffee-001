@@ -206,7 +206,7 @@ CREATE TABLE IF NOT EXISTS `invoices`(
   `icv` BIGINT,
   `invoice_hash` VARCHAR(255),
   `previous_invoice_hash` VARCHAR(255),
-  `ubl_xml` TEXT,
+  `signed_xml` TEXT,
   `qr_tlv_base64` TEXT,
   `payload` TEXT,
   `issued_at` datetime,

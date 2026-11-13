@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TenantResetPasswordNotification extends Notification
+class StaffResetPasswordNotification extends Notification
 {
     use Queueable;
 

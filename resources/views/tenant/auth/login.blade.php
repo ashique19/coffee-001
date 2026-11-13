@@ -2,7 +2,7 @@
     <h1 class="text-xl font-bold text-cafe-espresso sm:text-2xl">{{ __('pos.login_title') }}</h1>
     <p class="mt-1 text-sm text-cafe-mocha">{{ data_get($tenant->settings, 'legal_entity.name_en', $tenant->name) }}</p>
 
-    <form method="POST" action="{{ route('tenant.login.store', $tenant) }}" class="mt-6 space-y-4">
+    <form method="POST" action="{{ route('tenant.login.store') }}" class="mt-6 space-y-4">
         @csrf
         <label @class(['auth-field', 'auth-field--invalid' => $errors->has('email')])>
             {{ __('pos.email') }}
@@ -38,7 +38,7 @@
                 <input type="checkbox" name="remember" class="auth-checkbox">
                 {{ __('pos.remember') }}
             </label>
-            <a href="{{ route('admin.password.request', $tenant) }}" class="min-h-11 inline-flex items-center font-medium text-cafe-mocha underline-offset-4 hover:underline">
+            <a href="{{ route('admin.password.request') }}" class="min-h-11 inline-flex items-center font-medium text-cafe-mocha underline-offset-4 hover:underline">
                 {{ __('auth.forgot_password') }}
             </a>
         </div>

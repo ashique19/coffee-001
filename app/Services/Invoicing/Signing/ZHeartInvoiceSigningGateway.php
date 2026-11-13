@@ -20,7 +20,7 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
     public function signIssuedInvoice(InvoiceSigningRequest $request, Invoice $invoice): array
     {
         $payload = $this->payloadBuilder->build($request);
-        $submitToZatca = config('zheart.submit_to_zatca') && $request->business->invoicingIntegrationEnabled();
+        $submitToZatca = config('zheart.auto_submit_signed') && $request->business->invoicingIntegrationEnabled();
 
         try {
             if ($submitToZatca) {

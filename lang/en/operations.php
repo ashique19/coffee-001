@@ -42,7 +42,7 @@ return [
         'pos_orders' => 'POS sales',
         'invoices' => 'invoices',
         'shifts' => 'shifts',
-        'egs_devices' => 'ZATCA devices',
+        'egs_devices' => 'signing service devices',
         'staff' => 'assigned staff',
     ],
     'cannot_open_shift_inactive' => 'Open a shift only on an active branch (reactivate it first).',

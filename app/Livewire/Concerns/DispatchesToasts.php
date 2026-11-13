@@ -2,7 +2,8 @@
 
 namespace App\Livewire\Concerns;
 
-use App\Support\Zatca\ZatcaApiUserMessage;
+use App\Services\Invoicing\ZHeart\ZHeartApiException;
+use App\Support\Invoicing\ZHeartApiUserMessage;
 
 trait DispatchesToasts
 {
@@ -26,8 +27,11 @@ trait DispatchesToasts
         $this->dispatch('toast', type: 'error', message: $message, title: $title, persistent: $persistent);
     }
 
-    protected function toastZatcaError(\Throwable $e): void
+    protected function toastSigningError(\Throwable $e): void
     {
-        $this->toastError(ZatcaApiUserMessage::forThrowable($e));
+        $message = $e instanceof ZHeartApiException
+            ? ZHeartApiUserMessage::forException($e)
+            : $e->getMessage();
+        $this->toastError($message);
     }
 }

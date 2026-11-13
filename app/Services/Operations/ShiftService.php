@@ -4,7 +4,7 @@ namespace App\Services\Operations;
 
 use App\Models\Branch;
 use App\Models\Shift;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
@@ -19,9 +19,8 @@ class ShiftService
         }
 
         return Shift::query()->create([
-            'tenant_id' => $branch->tenant_id,
             'branch_id' => $branch->id,
-            'tenant_user_id' => $user->id,
+            'staff_user_id' => $user->id,
             'started_at' => Carbon::now(),
             'opening_cash_float' => max(0, round($openingCashFloat, 2)),
         ]);
@@ -47,8 +46,6 @@ class ShiftService
     public function openShiftForBranch(Branch $branch): ?Shift
     {
         return Shift::query()
-            ->withoutGlobalScopes()
-            ->where('tenant_id', $branch->tenant_id)
             ->where('branch_id', $branch->id)
             ->whereNull('ended_at')
             ->orderByDesc('started_at')

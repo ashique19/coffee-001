@@ -16,14 +16,14 @@ final class ReceiptThermalPresenter
      * @return array<string, mixed>
      */
     public static function compose(
-        Tenant $tenant,
+        BusinessSetting $tenant,
         PosOrder $order,
         Invoice $invoice,
         ?Branch $branch,
     ): array {
         $legal = $tenant->settings['legal_entity'] ?? [];
         $theme = $tenant->settings['theme'] ?? [];
-        $contentKey = $tenant->isPlumberTheme() ? 'plumber' : ($tenant->isCafeTheme() ? 'cafe' : null);
+        $contentKey = $tenant->isCafeTheme() ? 'cafe' : null;
         $content = $contentKey ? data_get($tenant->settings, "content.{$contentKey}", []) : [];
 
         $productSkus = self::productSkusForLines($order);
@@ -54,8 +54,7 @@ final class ReceiptThermalPresenter
 
         $storefrontUrl = null;
         if ($tenant->hasThemedStorefront()) {
-            $path = route('cafe.home', $tenant, false);
-            $storefrontUrl = url($path);
+            $storefrontUrl = url(route('cafe.home', absolute: false));
         }
 
         $branchLines = self::branchAddressLines($branch, $legal, $content);
@@ -287,7 +286,6 @@ final class ReceiptThermalPresenter
 
         return Product::query()
             ->withoutGlobalScopes()
-            ->where('tenant_id', $order->tenant_id)
             ->whereIn('id', $ids)
             ->pluck('sku', 'id');
     }
