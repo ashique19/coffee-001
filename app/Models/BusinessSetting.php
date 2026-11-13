@@ -1,0 +1,180 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\InvoiceDocumentType;
+use Illuminate\Database\Eloquent\Model;
+
+class BusinessSetting extends Model
+{
+  protected $table = 'business_settings';
+
+  protected $fillable = [
+    'name',
+    'settings',
+  ];
+
+  protected function casts(): array
+  {
+    return [
+      'settings' => 'array',
+    ];
+  }
+
+  public static function singleton(): self
+  {
+    return self::query()->findOrFail(1);
+  }
+
+  public static function zheartApiKeyPrefixFromEnv(): ?string
+  {
+    $key = config('zheart.api_key');
+    if (! is_string($key) || $key === '') {
+      return null;
+    }
+
+    if (preg_match('/^(zh_[a-z0-9]{8})\./', $key, $matches) === 1) {
+      return $matches[1].'.…';
+    }
+
+    return 'zh_….…';
+  }
+
+  public static function defaultSettings(): array
+  {
+    return [
+      'theme' => [
+        'layout_key' => 'cafe',
+        'logo_url' => null,
+        'colors' => [
+          'primary' => '#2C1810',
+          'secondary' => '#6F4E37',
+          'espresso' => '#2C1810',
+          'cream' => '#FAF6F0',
+          'latte' => '#E8DCC8',
+          'caramel' => '#C68B59',
+        ],
+        'font' => 'system-ui',
+      ],
+      'default_locale' => 'ar',
+      'legal_entity' => [
+        'name_ar' => '',
+        'name_en' => '',
+        'vat_number' => '',
+        'cr_number' => '',
+        'address' => '',
+        'national_address' => [
+          'building' => '',
+          'street' => '',
+          'district' => '',
+          'city' => '',
+          'postal_code' => '',
+          'additional' => '',
+        ],
+      ],
+      'invoicing' => [
+        'default_document_type' => 'simplified',
+        'integration_enabled' => false,
+      ],
+      'content' => [
+        'cafe' => [],
+      ],
+    ];
+  }
+
+  public function invoicingIntegrationEnabled(): bool
+  {
+    return (bool) data_get($this->settings, 'invoicing.integration_enabled', false);
+  }
+
+  public function defaultInvoiceDocumentType(): InvoiceDocumentType
+  {
+    $stored = data_get($this->settings, 'invoicing.default_document_type', 'simplified');
+
+    return (string) $stored === 'simplified'
+      ? InvoiceDocumentType::Simplified
+      : InvoiceDocumentType::Standard;
+  }
+
+  public function alternateInvoiceDocumentType(): InvoiceDocumentType
+  {
+    return $this->defaultInvoiceDocumentType() === InvoiceDocumentType::Simplified
+      ? InvoiceDocumentType::Standard
+      : InvoiceDocumentType::Simplified;
+  }
+
+  /**
+   * @param  array<string, mixed>  $patch
+   */
+  public function mergeLegalEntity(array $patch): void
+  {
+    $settings = $this->settings ?? self::defaultSettings();
+    $current = (array) ($settings['legal_entity'] ?? self::defaultSettings()['legal_entity']);
+    $settings['legal_entity'] = array_replace_recursive($current, $patch);
+    $this->forceFill(['settings' => $settings])->save();
+  }
+
+  public function themeLayout(): string
+  {
+    return (string) data_get($this->settings, 'theme.layout_key', 'cafe');
+  }
+
+  public function isCafeTheme(): bool
+  {
+    return $this->themeLayout() === 'cafe';
+  }
+
+  public function hasThemedStorefront(): bool
+  {
+    return $this->isCafeTheme();
+  }
+
+  public function displayName(?string $locale = null): string
+  {
+    $locale ??= app()->getLocale();
+    $legal = data_get($this->settings, 'legal_entity', []);
+
+    if ($locale === 'ar' && filled($legal['name_ar'] ?? null)) {
+      return (string) $legal['name_ar'];
+    }
+
+    if (filled($legal['name_en'] ?? null)) {
+      return (string) $legal['name_en'];
+    }
+
+    return $this->name;
+  }
+
+  public function thumbnailAccentColor(): string
+  {
+    $colors = $this->themeColors();
+
+    return (string) ($colors['espresso'] ?? $colors['primary'] ?? '#2C1810');
+  }
+
+  public function thumbnailSurfaceColor(): string
+  {
+    $colors = $this->themeColors();
+
+    return (string) ($colors['cream'] ?? $colors['latte'] ?? '#FAF6F0');
+  }
+
+  /**
+   * @return array<string, mixed>
+   */
+  public function cafeContent(): array
+  {
+    $content = (array) data_get($this->settings, 'content.cafe', []);
+    $content = \App\Support\Storefront\StorefrontBusinessMirror::overlay($this, $content);
+
+    return \App\Support\Themes\CafeStorefrontImages::enrich($this, $content);
+  }
+
+  /**
+   * @return array<string, string>
+   */
+  public function themeColors(): array
+  {
+    return (array) data_get($this->settings, 'theme.colors', []);
+  }
+}
