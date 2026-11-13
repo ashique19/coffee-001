@@ -72,6 +72,7 @@ return [
     'map_directions' => 'الاتجاهات',
     'cta_band_title' => 'زُر :name اليوم',
     'footer_explore' => 'استكشف',
+    'footer_staff_login' => 'دخول الموظفين',
     'menu_categories_aria' => 'أقسام القائمة',
     'quick_view' => 'معاينة سريعة',
     'sheet_close' => 'إغلاق',
