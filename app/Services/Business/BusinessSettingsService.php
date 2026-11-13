@@ -141,6 +141,12 @@ class BusinessSettingsService
         $content = (array) data_get($settings, $contentKey, []);
         $content['tagline_en'] = (string) ($brand['tagline_en'] ?? '');
         $content['tagline_ar'] = (string) ($brand['tagline_ar'] ?? '');
+        if (array_key_exists('story_en', $input)) {
+            $content['about_en'] = (string) $input['story_en'];
+        }
+        if (array_key_exists('story_ar', $input)) {
+            $content['about_ar'] = (string) $input['story_ar'];
+        }
         data_set($settings, $contentKey, $content);
 
         $colorKey = (string) ($brand['brand_color_key'] ?? TenantBusinessProfile::primaryColorKey($tenant));

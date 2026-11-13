@@ -30,6 +30,14 @@ return [
     'section_branches' => 'Our branches',
     'branches_sample_note' => 'Sample branch names and addresses for demonstration only.',
     'section_about' => 'Our story',
+    'default_story' => [
+        'pull_quote' => 'Coffee tastes better when you stay awhile.',
+        'paragraphs' => [
+            'Fancy Coffee is a neighbourhood café in Saudi Arabia where mornings open with the scent of freshly ground beans and afternoons stretch into easy conversation. We choose coffees for clarity and warmth—not hype.',
+            'Our baristas take pride in every cup, from Arabic gahwa served with genuine Saudi hospitality to espresso tuned with quiet skill. The craft lives in steady recipes, thoughtful sourcing, and a welcome that remembers your name.',
+            'This is a place to slow down together. Step in for a quiet moment, meet a friend, or simply watch the room breathe—we want you to feel at home in the rhythm of the bar.',
+        ],
+    ],
     'section_featured' => 'Featured drinks',
     'view_full_menu' => 'Full menu',
     'section_visit' => 'Location & hours',

@@ -4,6 +4,7 @@ namespace App\Livewire\Cafe;
 
 use App\Business\BusinessContext;
 use App\Models\BusinessSetting;
+use App\Support\Storefront\CafeStoryCopy;
 use App\Support\Storefront\StorefrontCatalog;
 use App\Support\Storefront\StorefrontSeo;
 use App\Support\Themes\CafeThemePreset;
@@ -40,12 +41,17 @@ class HomePage extends Component
             $featuredSource = 'content';
         }
 
+        $galleryItems = array_values($content['gallery'] ?? []);
+
         return view('livewire.cafe.home-page', [
             'business' => $this->business,
             'tenant' => $this->business,
             'content' => $content,
             'featured' => $featured,
             'featuredSource' => $featuredSource,
+            'story' => CafeStoryCopy::resolve($content, app()->getLocale()),
+            'galleryItems' => $galleryItems,
+            'galleryCount' => count($galleryItems),
         ])->layout('layouts.cafe', [
             'tenant' => $this->business,
             'seo' => StorefrontSeo::forPage($this->business, StorefrontSeo::PAGE_HOME, app()->getLocale(), $content),

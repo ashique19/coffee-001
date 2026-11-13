@@ -42,6 +42,10 @@ class BusinessSettings extends Component
 
     public string $taglineAr = '';
 
+    public string $storyEn = '';
+
+    public string $storyAr = '';
+
     public string $brandColorKey = '';
 
     public $logoUpload = null;
@@ -206,6 +210,8 @@ class BusinessSettings extends Component
             'displayNameBn' => 'nullable|string|max:160',
             'taglineEn' => 'nullable|string|max:240',
             'taglineAr' => 'nullable|string|max:240',
+            'storyEn' => 'nullable|string|max:4000',
+            'storyAr' => 'nullable|string|max:4000',
             'brandColorKey' => ['required', Rule::in(array_keys(TenantBusinessProfile::brandColorOptions($tenant)))],
             'logoUpload' => LogoUploadConstraints::componentRules(),
         ];
@@ -222,6 +228,8 @@ class BusinessSettings extends Component
                 'display_name_bn' => $this->displayNameBn,
                 'tagline_en' => $this->taglineEn,
                 'tagline_ar' => $this->taglineAr,
+                'story_en' => $this->storyEn,
+                'story_ar' => $this->storyAr,
                 'brand_color_key' => $this->brandColorKey,
             ], auth('tenant')->user(), $this->logoUpload);
         } catch (\InvalidArgumentException $e) {
@@ -473,6 +481,9 @@ class BusinessSettings extends Component
         $this->displayNameBn = (string) ($brand['display_name_bn'] ?? '');
         $this->taglineEn = (string) ($brand['tagline_en'] ?? '');
         $this->taglineAr = (string) ($brand['tagline_ar'] ?? '');
+        $cafeContent = (array) data_get($settings, 'content.cafe', []);
+        $this->storyEn = (string) ($cafeContent['about_en'] ?? '');
+        $this->storyAr = (string) ($cafeContent['about_ar'] ?? '');
         $this->brandColorKey = (string) ($brand['brand_color_key'] ?? TenantBusinessProfile::primaryColorKey($tenant));
         $this->currentLogo = data_get($settings, 'theme.logo_url');
 

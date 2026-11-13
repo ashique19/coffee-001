@@ -62,7 +62,7 @@
                 <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary w-full sm:w-auto">
                     {{ __('cafe.cta_menu') }}
                 </a>
-                <a href="#visit" class="cafe-pill-cta cafe-pill-cta--ghost w-full sm:w-auto">
+                <a href="#visit" class="cafe-pill-cta cafe-pill-cta--ghost cafe-pill-cta--on-dark w-full sm:w-auto">
                     {{ __('cafe.cta_visit') }}
                 </a>
             </div>
@@ -142,35 +142,48 @@
                 <div class="lg:col-span-7 lg:p-12" data-reveal>
                     <p class="text-xs font-bold uppercase tracking-[0.25em] text-cafe-caramel">{{ __('cafe.section_about') }}</p>
                     <h2 class="cafe-display mt-4 text-cafe-espresso">{{ $displayName }}</h2>
-                    <p class="mt-6 text-lg leading-relaxed text-cafe-mocha">
-                        {{ $isAr ? ($content['about_ar'] ?? '') : ($content['about_en'] ?? '') }}
-                    </p>
+                    <div class="mt-6 space-y-4 text-lg leading-relaxed text-cafe-mocha">
+                        @if(($story['mode'] ?? 'default') === 'custom')
+                            <p>{{ $story['body'] ?? '' }}</p>
+                        @else
+                            @if (filled($story['pull_quote'] ?? null))
+                                <p class="border-s-4 border-cafe-caramel ps-4 font-display text-xl font-semibold leading-snug text-cafe-espresso">{{ $story['pull_quote'] }}</p>
+                            @endif
+                            @foreach ($story['paragraphs'] ?? [] as $paragraph)
+                                <p>{{ $paragraph }}</p>
+                            @endforeach
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    @if (! empty($content['gallery']))
+    @if ($galleryCount > 0)
         <section id="gallery" class="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8" data-cafe-gallery>
             <h2 data-reveal class="cafe-display text-cafe-espresso">{{ __('cafe.section_gallery') }}</h2>
             @if (! empty($content['sales_demo']))
                 <p data-reveal class="mt-2 text-sm text-cafe-mocha">{{ __('cafe.gallery_intro') }}</p>
             @endif
-            <div class="cafe-masonry mt-10" data-reveal-stagger>
-                @foreach ($content['gallery'] as $shot)
-                    <figure data-reveal-child class="cafe-masonry-item group">
+            <div class="cafe-gallery-grid mt-10" data-reveal-stagger data-gallery-count="{{ $galleryCount }}">
+                @foreach ($galleryItems as $index => $shot)
+                    <figure
+                        data-reveal-child
+                        class="cafe-gallery-grid__cell group {{ $galleryCount >= 3 && $index === 0 ? 'cafe-gallery-grid__cell--lead' : '' }} {{ $galleryCount === 1 ? 'cafe-gallery-grid__cell--solo' : '' }}"
+                    >
                         <button
                             type="button"
-                            class="block w-full overflow-hidden rounded-2xl ring-1 ring-cafe-latte transition hover:ring-cafe-caramel"
+                            class="cafe-gallery-grid__button"
                             data-gallery-open="{{ e(asset($shot['image'])) }}"
-                            data-gallery-alt="{{ $isAr ? ($shot['alt_ar'] ?? '') : ($shot['alt_en'] ?? '') }}"
+                            data-gallery-alt="{{ $preferArabic ? ($shot['alt_ar'] ?? $shot['alt_en'] ?? '') : ($shot['alt_en'] ?? $shot['alt_ar'] ?? '') }}"
                         >
                             <x-cafe.photo
                                 :src="$shot['image']"
-                                :alt="$isAr ? ($shot['alt_ar'] ?? '') : ($shot['alt_en'] ?? '')"
-                                class="w-full object-cover transition duration-500 group-hover:scale-105"
+                                :alt="$preferArabic ? ($shot['alt_ar'] ?? $shot['alt_en'] ?? '') : ($shot['alt_en'] ?? $shot['alt_ar'] ?? '')"
+                                class="cafe-gallery-grid__media transition duration-500 group-hover:scale-105"
                                 width="800"
                                 height="600"
+                                loading="lazy"
                             />
                         </button>
                     </figure>
@@ -268,7 +281,12 @@
             <p class="mx-auto mt-4 max-w-lg text-cafe-latte">{{ $tagline }}</p>
             <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <a href="{{ route('cafe.menu') }}" class="cafe-pill-cta cafe-pill-cta--primary">{{ __('cafe.cta_menu') }}</a>
-                <a href="tel:{{ preg_replace('/\s+/', '', $content['contact']['phone'] ?? '') }}" class="cafe-pill-cta cafe-pill-cta--ghost">{{ $content['contact']['phone'] ?? '' }}</a>
+                <a
+                    href="tel:{{ preg_replace('/\s+/', '', $content['contact']['phone'] ?? '') }}"
+                    class="cafe-pill-cta cafe-pill-cta--ghost cafe-pill-cta--on-dark"
+                    dir="ltr"
+                    aria-label="{{ __('cafe.phone_label') }}"
+                >{{ $content['contact']['phone'] ?? '' }}</a>
             </div>
         </div>
     </section>
