@@ -35,16 +35,30 @@ final class ZHeartInvoicePayloadBuilder
             'totals' => $this->totals($request->lines),
         ];
 
-        if (in_array($documentType, ['credit', 'debit'], true) && $request->referencedInvoiceNumber) {
-            $payload['billing_reference'] = $request->referencedInvoiceNumber;
+        if (in_array($documentType, ['credit', 'debit'], true)) {
+            if (filled($request->referencedInvoiceUuid)) {
+                $payload['billing_reference_uuid'] = $request->referencedInvoiceUuid;
+            }
+            if (filled($request->noteReason)) {
+                $payload['payment_means_note'] = $request->noteReason;
+            }
         }
 
         if ($type === 'standard') {
-            $buyerVat = (string) ($request->invoicePayload['buyer_vat'] ?? '');
+            $buyerVat = preg_replace('/\D/', '', (string) ($request->invoicePayload['buyer_vat'] ?? '')) ?? '';
+            if ($buyerVat === '') {
+                throw new \InvalidArgumentException(__('invoices.errors.standard_buyer_vat_required'));
+            }
+
+            $buyerCr = trim((string) ($request->invoicePayload['buyer_cr'] ?? ''));
+            $address = $this->buyerAddress($request->invoicePayload);
+
             $payload['buyer'] = array_filter([
                 'name' => $request->invoicePayload['buyer_name'] ?? null,
-                'vat_number' => $buyerVat !== '' ? $buyerVat : null,
-            ]);
+                'vat_number' => $buyerVat,
+                'cr_number' => $buyerCr !== '' ? $buyerCr : null,
+                'address' => $address,
+            ], fn ($value) => $value !== null && $value !== [] && $value !== '');
         } elseif (filled($request->invoicePayload['buyer_name'] ?? null)) {
             $payload['buyer'] = [
                 'name' => (string) $request->invoicePayload['buyer_name'],
@@ -62,17 +76,43 @@ final class ZHeartInvoicePayloadBuilder
     }
 
     /**
+     * @param  array<string, mixed>  $invoicePayload
+     * @return array<string, string|null>
+     */
+    private function buyerAddress(array $invoicePayload): array
+    {
+        $na = (array) ($invoicePayload['buyer_national_address'] ?? []);
+
+        return array_filter([
+            'building' => isset($na['building']) ? trim((string) $na['building']) : null,
+            'street' => isset($na['street']) ? trim((string) $na['street']) : null,
+            'district' => isset($na['district']) ? trim((string) $na['district']) : null,
+            'city' => isset($na['city']) ? trim((string) $na['city']) : null,
+            'postal_code' => isset($na['postal_code']) ? trim((string) $na['postal_code']) : null,
+            'additional' => isset($na['additional']) ? trim((string) $na['additional']) : null,
+        ], fn ($value) => $value !== null && $value !== '');
+    }
+
+    /**
      * @param  list<InvoiceLineData>  $lines
      * @return list<array<string, mixed>>
      */
     private function mapLines(array $lines): array
     {
-        return array_map(fn (InvoiceLineData $line) => [
-            'name' => $line->name,
-            'quantity' => $line->quantity,
-            'unit_price' => round($line->unitPriceExVat, 2),
-            'vat_rate' => $line->vatRate,
-        ], $lines);
+        return array_map(function (InvoiceLineData $line) {
+            $row = [
+                'name' => $line->name,
+                'quantity' => $line->quantity,
+                'unit_price' => round($line->unitPriceExVat, 2),
+                'vat_rate' => $line->vatRate,
+            ];
+
+            if ($line->discountExVat > 0) {
+                $row['discount'] = round($line->discountExVat, 2);
+            }
+
+            return $row;
+        }, $lines);
     }
 
     /**

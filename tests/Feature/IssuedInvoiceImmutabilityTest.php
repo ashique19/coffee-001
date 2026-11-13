@@ -22,6 +22,18 @@ it('blocks updates to issued invoices', function () {
     $line = [['name' => 'Service', 'quantity' => 1, 'unit_price_ex_vat' => 200, 'vat_rate' => 15]];
 
     $invoice = $issuer->issueDraft($branch, 'INV-IM-1', InvoiceDocumentType::Standard, $line);
+    $invoice->forceFill([
+        'payload' => array_merge($invoice->payload ?? [], [
+            'buyer_name' => 'Test Buyer',
+            'buyer_vat' => '300000000000003',
+            'buyer_national_address' => [
+                'building' => '1234',
+                'street' => 'King Fahd Rd',
+                'city' => 'Riyadh',
+                'postal_code' => '12345',
+            ],
+        ]),
+    ])->save();
     $invoice = $issuer->issue($invoice);
 
     expect(fn () => $invoice->update(['document_number' => 'HACKED']))

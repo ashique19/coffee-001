@@ -7,14 +7,14 @@
     <label class="mb-4 block min-w-0 sm:hidden">
         <span class="sr-only">{{ __('business.title') }}</span>
         <select class="app-toolbar-select w-full max-w-full" x-model="sectionTab" aria-label="{{ __('business.title') }}">
-            @foreach (['brand', 'legal', 'contact', 'hours', 'branches', 'extras'] as $key)
+            @foreach (['brand', 'legal', 'contact', 'hours', 'branches', 'extras', 'invoicing'] as $key)
                 <option value="{{ $key }}">{{ __('business.sections.'.$key) }}</option>
             @endforeach
         </select>
     </label>
 
     <nav class="app-section-tabs app-section-tabs--scroll mb-4 hidden min-w-0 sm:flex" aria-label="{{ __('business.title') }}">
-        @foreach (['brand', 'legal', 'contact', 'hours', 'branches', 'extras'] as $key)
+        @foreach (['brand', 'legal', 'contact', 'hours', 'branches', 'extras', 'invoicing'] as $key)
             <button
                 type="button"
                 wire:click="setSection('{{ $key }}')"
@@ -190,6 +190,18 @@
             <p class="text-sm text-[var(--app-muted)]">{{ __('business.branches.intro') }}</p>
             <a href="{{ $teamUrl }}" class="tap-action-primary min-h-11 w-full text-center sm:w-auto">{{ __('business.branches.open_team') }}</a>
         </section>
+    @elseif ($section === 'invoicing')
+        <form wire:submit="saveInvoicing" class="app-card flex flex-col gap-4 p-4">
+            <p class="text-sm text-[var(--app-muted)]">{{ __('business.invoicing.intro') }}</p>
+            @if (! $zheartKeyConfigured)
+                <p class="text-sm text-amber-700">{{ __('business.invoicing.key_missing') }}</p>
+            @endif
+            <x-form.toggle :label="__('business.invoicing.integration_enabled')" name="invoicingIntegrationEnabled" wire:model="invoicingIntegrationEnabled" />
+            <p class="text-sm text-[var(--app-muted)]">{{ __('business.invoicing.integration_hint') }}</p>
+            <div class="flex justify-end">
+                <button type="submit" class="tap-action-primary min-h-11 w-full sm:w-auto" wire:loading.attr="disabled">{{ __('business.save') }}</button>
+            </div>
+        </form>
     @else
         <form wire:submit="saveExtras" class="app-card flex flex-col gap-4 p-4">
             <x-form.toggle :label="__('business.extras.cafe_wifi')" name="cafeWifi" wire:model="cafeWifi" />

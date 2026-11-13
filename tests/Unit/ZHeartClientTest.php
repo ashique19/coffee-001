@@ -51,8 +51,62 @@ it('maps 401 to a safe user-facing exception', function () {
         ], 401),
     ]);
 
-    expect(fn () => app(ZHeartClient::class)->sign(minimalZHeartInvoicePayload()))
+    try {
+        app(ZHeartClient::class)->sign(minimalZHeartInvoicePayload());
+        expect(false)->toBeTrue();
+    } catch (ZHeartApiException $e) {
+        expect($e->getMessage())->toContain('Invalid API key.');
+    }
+});
+
+it('maps 403 client_not_active from data.error', function () {
+    Http::fake([
+        'https://z-heart.test/api/v1/invoices/sign' => Http::response([
+            'status' => 'error',
+            'message' => 'Client inactive.',
+            'data' => ['error' => 'client_not_active'],
+        ], 403),
+    ]);
+
+    try {
+        app(ZHeartClient::class)->sign(minimalZHeartInvoicePayload());
+        expect(false)->toBeTrue();
+    } catch (ZHeartApiException $e) {
+        expect($e->getMessage())->toContain('not active');
+    }
+});
+
+it('does not retry report on 500', function () {
+    Http::fake([
+        'https://z-heart.test/api/v1/invoices/report' => Http::response([
+            'status' => 'error',
+            'message' => 'Server blew up',
+        ], 500),
+    ]);
+
+    expect(fn () => app(ZHeartClient::class)->report(minimalZHeartInvoicePayload()))
         ->toThrow(ZHeartApiException::class);
+
+    Http::assertSentCount(1);
+});
+
+it('retries sign on 500 when configured', function () {
+    config(['zheart.retry_times' => 2]);
+
+    $calls = 0;
+    Http::fake(function () use (&$calls) {
+        $calls++;
+
+        return Http::response(['status' => 'error', 'message' => 'fail'], 500);
+    });
+
+    try {
+        app(ZHeartClient::class)->sign(minimalZHeartInvoicePayload());
+    } catch (ZHeartApiException) {
+        // expected
+    }
+
+    expect($calls)->toBe(3);
 });
 
 it('health checks the remote service', function () {

@@ -16,7 +16,7 @@ final class ZHeartClient
      */
     public function sign(array $invoicePayload): array
     {
-        return $this->invoiceCall('invoices/sign', $invoicePayload, (int) config('zheart.timeout_sign_seconds', 45));
+        return $this->invoiceCall('invoices/sign', $invoicePayload, (int) config('zheart.timeout_sign_seconds', 45), allowRetry: true);
     }
 
     /**
@@ -25,7 +25,7 @@ final class ZHeartClient
      */
     public function report(array $invoicePayload): array
     {
-        return $this->invoiceCall('invoices/report', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120));
+        return $this->invoiceCall('invoices/report', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120), allowRetry: false);
     }
 
     /**
@@ -34,7 +34,7 @@ final class ZHeartClient
      */
     public function clear(array $invoicePayload): array
     {
-        return $this->invoiceCall('invoices/clear', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120));
+        return $this->invoiceCall('invoices/clear', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120), allowRetry: false);
     }
 
     public function health(): bool
@@ -44,22 +44,35 @@ final class ZHeartClient
             return false;
         }
 
-        try {
-            $response = Http::timeout((int) config('zheart.timeout_health_seconds', 5))
-                ->acceptJson()
-                ->get($base.'/api/v1/health');
+        $attempts = 1 + max(0, (int) config('zheart.retry_times', 2));
+        $sleepMs = max(0, (int) config('zheart.retry_sleep_ms', 500));
 
-            return $response->successful() && ($response->json('status') === 'ok');
-        } catch (\Throwable) {
-            return false;
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            try {
+                $response = Http::timeout((int) config('zheart.timeout_health_seconds', 5))
+                    ->acceptJson()
+                    ->get($base.'/api/v1/health');
+
+                if ($response->successful() && ($response->json('status') === 'ok')) {
+                    return true;
+                }
+            } catch (\Throwable) {
+                // try again when retries remain
+            }
+
+            if ($attempt < $attempts) {
+                usleep($sleepMs * 1000);
+            }
         }
+
+        return false;
     }
 
     /**
      * @param  array<string, mixed>  $invoicePayload
      * @return array{data: array<string, mixed>, request_id: ?string}
      */
-    private function invoiceCall(string $path, array $invoicePayload, int $timeoutSeconds): array
+    private function invoiceCall(string $path, array $invoicePayload, int $timeoutSeconds, bool $allowRetry): array
     {
         $base = $this->baseUrl();
         $apiKey = $this->resolveApiKey();
@@ -69,7 +82,7 @@ final class ZHeartClient
 
         $url = $base.'/api/v1/'.$path;
         $body = ['invoice' => $invoicePayload];
-        $attempts = 1 + max(0, (int) config('zheart.retry_times', 2));
+        $attempts = $allowRetry ? 1 + max(0, (int) config('zheart.retry_times', 2)) : 1;
         $sleepMs = max(0, (int) config('zheart.retry_sleep_ms', 500));
 
         $lastException = null;
@@ -97,7 +110,7 @@ final class ZHeartClient
                 $message = ZHeartApiUserMessage::fromResponse($status, is_array($json) ? $json : null, is_string($requestId) ? $requestId : null);
                 $errorCode = is_string(data_get($json, 'data.error')) ? (string) data_get($json, 'data.error') : null;
 
-                if ($status >= 500 && $attempt < $attempts) {
+                if ($allowRetry && $status >= 500 && $attempt < $attempts) {
                     usleep($sleepMs * 1000);
 
                     continue;
@@ -106,13 +119,13 @@ final class ZHeartClient
                 throw new ZHeartApiException($message, $status, is_string($requestId) ? $requestId : null, $errorCode);
             } catch (ConnectionException $e) {
                 $lastException = $e;
-                if ($attempt < $attempts) {
+                if ($allowRetry && $attempt < $attempts) {
                     usleep($sleepMs * 1000);
 
                     continue;
                 }
             } catch (RequestException $e) {
-                if ($e->response !== null && $e->response->status() >= 500 && $attempt < $attempts) {
+                if ($allowRetry && $e->response !== null && $e->response->status() >= 500 && $attempt < $attempts) {
                     usleep($sleepMs * 1000);
 
                     continue;
@@ -128,7 +141,7 @@ final class ZHeartClient
             'attempts' => $attempts,
         ]);
 
-        throw new ZHeartApiException(__('zheart_api.server_error', ['id' => '—']), 503, null, null, $lastException);
+        throw new ZHeartApiException(__('zheart_api.server_error', ['id' => '—', 'detail' => '']), 503, null, null, $lastException);
     }
 
     private function baseUrl(): string

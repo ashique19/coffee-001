@@ -42,9 +42,10 @@ return [
     'remove_line' => 'Remove line',
     'issue_submit' => 'Issue invoice',
     'issue_success' => 'Invoice :number issued.',
-    'buyer_id_hint' => 'Provide a VAT number for VAT-registered buyers, or a CR number when not registered.',
+    'buyer_id_hint' => 'Standard invoices require the buyer VAT number. CR is optional.',
     'errors' => [
         'buyer_id_required' => 'Enter a VAT number or CR number for the buyer.',
+        'standard_buyer_vat_required' => 'Standard invoices require the buyer VAT number before sending to Z-Heart.',
         'buyer_cr_invalid' => 'CR number must be up to 10 digits.',
         'signing_failed' => 'This invoice could not be cryptographically signed. Check Z-Heart configuration, then try again.',
         'signing_credentials_invalid' => 'Signing credentials could not be loaded. Share the technical detail below with support if needed.',
