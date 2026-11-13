@@ -3,8 +3,7 @@
 namespace App\Services\Tenant;
 
 use App\Models\BusinessSetting;
-use App\Models\BusinessSettingSettingsAuditLog;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use Illuminate\Support\Facades\Schema;
 
 class TenantSettingsAuditService
@@ -12,18 +11,18 @@ class TenantSettingsAuditService
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function record(BusinessSetting $tenant, string $event, array $payload = [], ?StaffUser $actor = null): void
+    public function record(BusinessSetting $business, string $event, array $payload = [], ?StaffUser $actor = null): void
     {
-        if (! Schema::hasTable('tenant_settings_audit_logs')) {
+        if (! Schema::hasTable('business_settings_audit_logs')) {
             return;
         }
 
-        TenantSettingsAuditLog::query()->create([
-            'tenant_id' => $tenant->id,
-            'tenant_user_id' => $actor?->id,
-            'event' => $event,
-            'payload' => $payload,
+        \DB::table('business_settings_audit_logs')->insert([
+            'staff_user_id' => $actor?->id,
+            'tab' => $event,
+            'snapshot' => json_encode($payload),
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Livewire\Catalog;
 
 use App\Livewire\Concerns\DispatchesToasts;
 use App\Livewire\Concerns\ValidatesFieldsLive;
+use App\Models\Branch;
 use App\Models\Ingredient;
 use App\Models\InventoryMovement;
 use App\Livewire\Concerns\ResolvesBusinessContext;
@@ -161,11 +162,13 @@ class InventoryManager extends Component
         $user = auth('tenant')->user();
         abort_unless($user !== null, 403);
 
+        $branch = $user->branch ?? Branch::query()->first();
         $stock->adjustStock(
             $ingredient,
             (float) $validated['adjustAmount'],
             $validated['adjustMode'],
             $user,
+            $branch,
         );
 
         $this->showAdjust = false;

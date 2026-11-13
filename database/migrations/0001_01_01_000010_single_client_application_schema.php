@@ -216,6 +216,21 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('recipes', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+            $table->unique('product_id');
+        });
+
+        Schema::create('recipe_ingredients', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('recipe_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('ingredient_id')->constrained()->cascadeOnDelete();
+            $table->decimal('quantity', 12, 3);
+            $table->unique(['recipe_id', 'ingredient_id']);
+        });
+
         Schema::create('product_ingredients', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
@@ -252,6 +267,8 @@ return new class extends Migration
         foreach ([
             'business_settings_audit_logs',
             'shifts',
+            'recipe_ingredients',
+            'recipes',
             'product_ingredients',
             'inventory_movements',
             'ingredients',

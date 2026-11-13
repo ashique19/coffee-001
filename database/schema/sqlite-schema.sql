@@ -309,6 +309,26 @@ CREATE TABLE IF NOT EXISTS "inventory_movements"(
   foreign key("user_id") references "staff_users"("id") on delete set null,
   foreign key("pos_order_id") references "pos_orders"("id") on delete set null
 );
+CREATE TABLE IF NOT EXISTS "recipes"(
+  "id" integer primary key autoincrement not null,
+  "product_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("product_id") references "products"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "recipes_product_id_unique" on "recipes"("product_id");
+CREATE TABLE IF NOT EXISTS "recipe_ingredients"(
+  "id" integer primary key autoincrement not null,
+  "recipe_id" integer not null,
+  "ingredient_id" integer not null,
+  "quantity" numeric not null,
+  foreign key("recipe_id") references "recipes"("id") on delete cascade,
+  foreign key("ingredient_id") references "ingredients"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "recipe_ingredients_recipe_id_ingredient_id_unique" on "recipe_ingredients"(
+  "recipe_id",
+  "ingredient_id"
+);
 CREATE TABLE IF NOT EXISTS "product_ingredients"(
   "id" integer primary key autoincrement not null,
   "product_id" integer not null,

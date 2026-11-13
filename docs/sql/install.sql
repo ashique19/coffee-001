@@ -315,6 +315,26 @@ CREATE TABLE IF NOT EXISTS `inventory_movements`(
   foreign key(`user_id`) references `staff_users`(`id`) on delete set null,
   foreign key(`pos_order_id`) references `pos_orders`(`id`) on delete set null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS `recipes`(
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `product_id` BIGINT NOT NULL,
+  `created_at` datetime,
+  `updated_at` datetime,
+  foreign key(`product_id`) references `products`(`id`) on delete cascade
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE UNIQUE INDEX `recipes_product_id_unique` on `recipes`(`product_id`) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS `recipe_ingredients`(
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `recipe_id` BIGINT NOT NULL,
+  `ingredient_id` BIGINT NOT NULL,
+  `quantity` DECIMAL(12,2) NOT NULL,
+  foreign key(`recipe_id`) references `recipes`(`id`) on delete cascade,
+  foreign key(`ingredient_id`) references `ingredients`(`id`) on delete cascade
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE UNIQUE INDEX `recipe_ingredients_recipe_id_ingredient_id_unique` on `recipe_ingredients`(
+  `recipe_id`,
+  `ingredient_id`
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `product_ingredients`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `product_id` BIGINT NOT NULL,

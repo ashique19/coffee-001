@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Ingredient extends Model
 {
 
-    protected $fillable = [        'branch_id',
-        'name',
+    protected $fillable = [
+        'branch_id',
         'name_en',
         'name_ar',
         'name_bn',
@@ -33,17 +33,6 @@ class Ingredient extends Model
         ];
     }
 
-    protected static function booted(): void
-    {
-        static::saving(function (Ingredient $ingredient): void {
-            if (filled($ingredient->name_en)) {
-                $ingredient->name = $ingredient->name_en;
-            } elseif (filled($ingredient->name)) {
-                $ingredient->name_en = $ingredient->name;
-            }
-        });
-    }
-
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
@@ -60,7 +49,7 @@ class Ingredient extends Model
 
         if (IngredientInventorySchema::hasI18nColumns()) {
             return CatalogLocalizedText::pick(
-                (string) ($this->name_en ?: $this->name),
+                (string) $this->name_en,
                 (string) ($this->name_ar ?? ''),
                 (string) ($this->name_bn ?? ''),
                 $locale,

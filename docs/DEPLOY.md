@@ -5,21 +5,33 @@
 ```bash
 git pull origin main
 composer install --no-dev --optimize-autoloader
+```
+
+Assets are built in CI/commits (`public/build`). Rebuild only if you change front-end sources:
+
+```bash
 npm ci && npm run build
 ```
 
 ## Permissions (cPanel)
 
 ```bash
-bash scripts/cpanel-permissions.sh
-```
-
-Or manually:
-
-```bash
+find public -type d -exec chmod 755 {} \;
+find public -type f -exec chmod 644 {} \;
 chmod -R ug+rwx storage bootstrap/cache
 find storage -type d -exec chmod 775 {} \;
 find storage -type f -exec chmod 664 {} \;
+```
+
+## Database
+
+On hosts without reliable `php artisan migrate`, import **`docs/sql/install.sql`** in phpMyAdmin (idempotent). It creates schema, seed data, and migration rows.
+
+When Artisan is available:
+
+```bash
+php artisan migrate --force
+php artisan db:seed --class=OwnerAdminSeeder --force
 ```
 
 ## Environment keys (no values)
@@ -33,6 +45,7 @@ Copy `.env.example` to `.env` and set:
 - `APP_URL`
 - `APP_LOCALE`
 - `APP_ENABLED_LOCALES`
+- `AUTH_GUARD`
 - `DB_CONNECTION`
 - `DB_HOST`
 - `DB_PORT`
@@ -55,14 +68,13 @@ Copy `.env.example` to `.env` and set:
 - `ZHEART_ALLOW_SELLER_OVERRIDE`
 - `MAIL_*` (as needed)
 
-## Optimize & migrate
+## Optimize
 
 ```bash
-php artisan migrate --force
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-Point the domain document root to `public/`. Schedule cron for `php artisan schedule:run` if you enable queued jobs.
+Point the domain document root to `public/`.
