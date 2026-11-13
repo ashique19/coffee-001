@@ -20,6 +20,8 @@ return [
         'display_name_bn' => 'Display name (Bengali, optional)',
         'tagline_en' => 'Tagline (English)',
         'tagline_ar' => 'Tagline (Arabic)',
+        'story_en' => 'Our story (English, homepage “About”)',
+        'story_ar' => 'Our story (Arabic, homepage “About”)',
         'logo' => 'Logo',
         'logo_hint' => 'PNG, JPG, WebP, or safe SVG · resized in your browser to fit within 256×256 px (about 100 KB) before upload · server limit 1 MB',
         'brand_color' => 'Brand color',
