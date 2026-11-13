@@ -27,6 +27,8 @@ find storage -type f -exec chmod 664 {} \;
 
 On hosts without reliable `php artisan migrate`, import **`docs/sql/install.sql`** in phpMyAdmin (idempotent). It creates schema, seed data, and migration rows.
 
+If the database was created from an **older** `install.sql`, run **`docs/sql/2026-11-14-schema-fix.sql`** once after deploy (idempotent) before relying on inventory, loyalty, or POS features.
+
 When Artisan is available:
 
 ```bash

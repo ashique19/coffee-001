@@ -12,6 +12,9 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <testsuite name="InstallSql">
+            <directory>tests/InstallSql</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
@@ -37,5 +40,9 @@
         <env name="APP_ENABLED_LOCALES" value="en,ar,bn"/>
         <env name="ZHEART_BASE_URL" value="https://z-heart.test"/>
         <env name="ZHEART_API_KEY" value="zh_test1234.testkey"/>
+        <env name="INSTALL_SQL_MYSQL_HOST" value="127.0.0.1"/>
+        <env name="INSTALL_SQL_MYSQL_DATABASE" value="coffee_install_sql_test"/>
+        <env name="INSTALL_SQL_MYSQL_USER" value="coffee_test"/>
+        <env name="INSTALL_SQL_MYSQL_PASSWORD" value="coffee_test"/>
     </php>
 </phpunit>

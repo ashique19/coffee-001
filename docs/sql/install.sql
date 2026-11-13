@@ -7,21 +7,18 @@ SET FOREIGN_KEY_CHECKS=0;
 CREATE TABLE IF NOT EXISTS `migrations`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `migration` VARCHAR(255) NOT NULL,
-  `batch` BIGINT NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `batch` BIGINT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `cache`(
   `key` VARCHAR(255) NOT NULL,
   `value` TEXT NOT NULL,
   `expiration` BIGINT NOT NULL,
-  primary key(`key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  primary key(`key`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `cache_expiration_index` on `cache`(`expiration`);
 CREATE TABLE IF NOT EXISTS `cache_locks`(
   `key` VARCHAR(255) NOT NULL,
   `owner` VARCHAR(255) NOT NULL,
   `expiration` BIGINT NOT NULL,
-  primary key(`key`)
-);
+  primary key(`key`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `cache_locks_expiration_index` on `cache_locks`(`expiration`);
 CREATE TABLE IF NOT EXISTS `jobs`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -30,8 +27,7 @@ CREATE TABLE IF NOT EXISTS `jobs`(
   `attempts` BIGINT NOT NULL,
   `reserved_at` BIGINT,
   `available_at` BIGINT NOT NULL,
-  `created_at` BIGINT NOT NULL
-);
+  `created_at` BIGINT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `jobs_queue_index` on `jobs`(`queue`);
 CREATE TABLE IF NOT EXISTS `job_batches`(
   `id` VARCHAR(255) NOT NULL,
@@ -44,8 +40,7 @@ CREATE TABLE IF NOT EXISTS `job_batches`(
   `cancelled_at` BIGINT,
   `created_at` BIGINT NOT NULL,
   `finished_at` BIGINT,
-  primary key(`id`)
-);
+  primary key(`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `failed_jobs`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `uuid` VARCHAR(255) NOT NULL,
@@ -53,8 +48,7 @@ CREATE TABLE IF NOT EXISTS `failed_jobs`(
   `queue` VARCHAR(255) NOT NULL,
   `payload` TEXT NOT NULL,
   `exception` TEXT NOT NULL,
-  `failed_at` datetime not null default CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `failed_at` datetime not null default CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `failed_jobs_connection_queue_failed_at_index` on `failed_jobs`(
   `connection`,
   `queue`,
@@ -66,8 +60,7 @@ CREATE TABLE IF NOT EXISTS `business_settings`(
   `name` VARCHAR(255) NOT NULL,
   `settings` JSON NOT NULL,
   `created_at` datetime,
-  `updated_at` datetime
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `sessions`(
   `id` VARCHAR(255) NOT NULL,
   `user_id` BIGINT UNSIGNED,
@@ -75,26 +68,24 @@ CREATE TABLE IF NOT EXISTS `sessions`(
   `user_agent` TEXT,
   `payload` TEXT NOT NULL,
   `last_activity` BIGINT NOT NULL,
-  primary key(`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  primary key(`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `sessions_user_id_index` on `sessions`(`user_id`);
 CREATE INDEX `sessions_last_activity_index` on `sessions`(`last_activity`);
 CREATE TABLE IF NOT EXISTS `password_reset_tokens`(
   `email` VARCHAR(255) NOT NULL,
   `token` VARCHAR(255) NOT NULL,
   `created_at` datetime,
-  primary key(`email`)
-);
+  primary key(`email`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `branches`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `code` VARCHAR(255) NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `name_ar` VARCHAR(255),
+  `address` TEXT,
   `is_active` tinyint(1) not null default '1',
   `settings` JSON,
   `created_at` datetime,
-  `updated_at` datetime
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `branches_code_unique` on `branches`(`code`);
 CREATE TABLE IF NOT EXISTS `staff_users`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -107,8 +98,7 @@ CREATE TABLE IF NOT EXISTS `staff_users`(
   `remember_token` VARCHAR(255),
   `created_at` datetime,
   `updated_at` datetime,
-  foreign key(`branch_id`) references `branches`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`branch_id`) references `branches`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `staff_users_email_unique` on `staff_users`(`email`);
 CREATE TABLE IF NOT EXISTS `customers`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -116,11 +106,17 @@ CREATE TABLE IF NOT EXISTS `customers`(
   `phone` VARCHAR(255),
   `email` VARCHAR(255),
   `vat_number` VARCHAR(255),
-  `loyalty_points` BIGINT NOT NULL default '0',
+  `referral_code` VARCHAR(255),
+  `referred_by_customer_id` BIGINT UNSIGNED,
+  `points_balance` BIGINT NOT NULL default '0',
+  `profile` TEXT,
   `created_at` datetime,
-  `updated_at` datetime
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` datetime,
+  foreign key(`referred_by_customer_id`) references `customers`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `customers_phone_unique` on `customers`(`phone`);
+CREATE UNIQUE INDEX `customers_referral_code_unique` on `customers`(
+  `referral_code`
+);
 CREATE TABLE IF NOT EXISTS `product_categories`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `branch_id` BIGINT UNSIGNED,
@@ -135,8 +131,7 @@ CREATE TABLE IF NOT EXISTS `product_categories`(
   `is_active` tinyint(1) not null default '1',
   `created_at` datetime,
   `updated_at` datetime,
-  foreign key(`branch_id`) references `branches`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`branch_id`) references `branches`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `product_categories_branch_id_is_active_index` on `product_categories`(
   `branch_id`,
   `is_active`
@@ -163,8 +158,7 @@ CREATE TABLE IF NOT EXISTS `products`(
   `created_at` datetime,
   `updated_at` datetime,
   foreign key(`branch_id`) references `branches`(`id`) on delete set null,
-  foreign key(`product_category_id`) references `product_categories`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`product_category_id`) references `product_categories`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `products_branch_id_is_active_index` on `products`(
   `branch_id`,
   `is_active`
@@ -185,15 +179,13 @@ CREATE TABLE IF NOT EXISTS `product_modifiers`(
   `vat_rate` DECIMAL(12,2) NOT NULL default '15',
   `is_active` tinyint(1) not null default '1',
   `created_at` datetime,
-  `updated_at` datetime
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `product_product_modifier`(
   `product_id` BIGINT UNSIGNED NOT NULL,
   `product_modifier_id` BIGINT UNSIGNED NOT NULL,
   foreign key(`product_id`) references `products`(`id`) on delete cascade,
   foreign key(`product_modifier_id`) references `product_modifiers`(`id`) on delete cascade,
-  primary key(`product_id`, `product_modifier_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  primary key(`product_id`, `product_modifier_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `invoices`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `branch_id` BIGINT UNSIGNED,
@@ -213,8 +205,7 @@ CREATE TABLE IF NOT EXISTS `invoices`(
   `created_at` datetime,
   `updated_at` datetime,
   foreign key(`branch_id`) references `branches`(`id`) on delete set null,
-  foreign key(`referenced_invoice_id`) references `invoices`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`referenced_invoice_id`) references `invoices`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `invoices_source_type_source_id_index` on `invoices`(
   `source_type`,
   `source_id`
@@ -233,8 +224,7 @@ CREATE TABLE IF NOT EXISTS `invoice_audit_logs`(
   `context` TEXT,
   `created_at` datetime,
   `updated_at` datetime,
-  foreign key(`invoice_id`) references `invoices`(`id`) on delete cascade
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`invoice_id`) references `invoices`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `pos_orders`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `branch_id` BIGINT UNSIGNED NOT NULL,
@@ -262,8 +252,7 @@ CREATE TABLE IF NOT EXISTS `pos_orders`(
   foreign key(`customer_id`) references `customers`(`id`) on delete set null,
   foreign key(`cashier_id`) references `staff_users`(`id`) on delete set null,
   foreign key(`invoice_id`) references `invoices`(`id`) on delete set null,
-  foreign key(`refund_credit_note_id`) references `invoices`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`refund_credit_note_id`) references `invoices`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `pos_orders_branch_id_status_index` on `pos_orders`(
   `branch_id`,
   `status`
@@ -275,13 +264,15 @@ CREATE TABLE IF NOT EXISTS `loyalty_transactions`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `customer_id` BIGINT UNSIGNED NOT NULL,
   `pos_order_id` BIGINT UNSIGNED,
+  `type` VARCHAR(255) NOT NULL,
   `points_delta` BIGINT NOT NULL,
-  `reason` VARCHAR(255),
+  `monetary_value_ex_vat` DECIMAL(12,2),
+  `metadata` TEXT,
+  `occurred_at` datetime not null,
   `created_at` datetime,
   `updated_at` datetime,
   foreign key(`customer_id`) references `customers`(`id`) on delete cascade,
-  foreign key(`pos_order_id`) references `pos_orders`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`pos_order_id`) references `pos_orders`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `ingredients`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `branch_id` BIGINT UNSIGNED,
@@ -295,8 +286,7 @@ CREATE TABLE IF NOT EXISTS `ingredients`(
   `is_active` tinyint(1) not null default '1',
   `created_at` datetime,
   `updated_at` datetime,
-  foreign key(`branch_id`) references `branches`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`branch_id`) references `branches`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `inventory_movements`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `branch_id` BIGINT UNSIGNED NOT NULL,
@@ -313,15 +303,13 @@ CREATE TABLE IF NOT EXISTS `inventory_movements`(
   foreign key(`branch_id`) references `branches`(`id`) on delete cascade,
   foreign key(`ingredient_id`) references `ingredients`(`id`) on delete cascade,
   foreign key(`user_id`) references `staff_users`(`id`) on delete set null,
-  foreign key(`pos_order_id`) references `pos_orders`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`pos_order_id`) references `pos_orders`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `recipes`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `product_id` BIGINT UNSIGNED NOT NULL,
   `created_at` datetime,
   `updated_at` datetime,
-  foreign key(`product_id`) references `products`(`id`) on delete cascade
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`product_id`) references `products`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `recipes_product_id_unique` on `recipes`(`product_id`);
 CREATE TABLE IF NOT EXISTS `recipe_ingredients`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -329,8 +317,7 @@ CREATE TABLE IF NOT EXISTS `recipe_ingredients`(
   `ingredient_id` BIGINT UNSIGNED NOT NULL,
   `quantity` DECIMAL(12,2) NOT NULL,
   foreign key(`recipe_id`) references `recipes`(`id`) on delete cascade,
-  foreign key(`ingredient_id`) references `ingredients`(`id`) on delete cascade
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`ingredient_id`) references `ingredients`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `recipe_ingredients_recipe_id_ingredient_id_unique` on `recipe_ingredients`(
   `recipe_id`,
   `ingredient_id`
@@ -343,8 +330,7 @@ CREATE TABLE IF NOT EXISTS `product_ingredients`(
   `created_at` datetime,
   `updated_at` datetime,
   foreign key(`product_id`) references `products`(`id`) on delete cascade,
-  foreign key(`ingredient_id`) references `ingredients`(`id`) on delete cascade
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`ingredient_id`) references `ingredients`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `product_ingredients_product_id_ingredient_id_unique` on `product_ingredients`(
   `product_id`,
   `ingredient_id`
@@ -362,8 +348,7 @@ CREATE TABLE IF NOT EXISTS `shifts`(
   `created_at` datetime,
   `updated_at` datetime,
   foreign key(`branch_id`) references `branches`(`id`) on delete cascade,
-  foreign key(`staff_user_id`) references `staff_users`(`id`) on delete cascade
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`staff_user_id`) references `staff_users`(`id`) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `business_settings_audit_logs`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `staff_user_id` BIGINT UNSIGNED,
@@ -371,15 +356,13 @@ CREATE TABLE IF NOT EXISTS `business_settings_audit_logs`(
   `snapshot` TEXT,
   `created_at` datetime,
   `updated_at` datetime,
-  foreign key(`staff_user_id`) references `staff_users`(`id`) on delete set null
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  foreign key(`staff_user_id`) references `staff_users`(`id`) on delete set null) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE IF NOT EXISTS `permissions`(
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL,
   `guard_name` VARCHAR(255) NOT NULL,
   `created_at` datetime,
-  `updated_at` datetime
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `permissions_name_guard_name_unique` on `permissions`(
   `name`,
   `guard_name`
@@ -389,8 +372,7 @@ CREATE TABLE IF NOT EXISTS `roles`(
   `name` VARCHAR(255) NOT NULL,
   `guard_name` VARCHAR(255) NOT NULL,
   `created_at` datetime,
-  `updated_at` datetime
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` datetime) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE UNIQUE INDEX `roles_name_guard_name_unique` on `roles`(
   `name`,
   `guard_name`
@@ -400,8 +382,7 @@ CREATE TABLE IF NOT EXISTS `model_has_permissions`(
   `model_type` VARCHAR(255) NOT NULL,
   `model_id` BIGINT UNSIGNED NOT NULL,
   foreign key(`permission_id`) references `permissions`(`id`) on delete cascade,
-  primary key(`permission_id`, `model_id`, `model_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  primary key(`permission_id`, `model_id`, `model_type`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `model_has_permissions_model_id_model_type_index` on `model_has_permissions`(
   `model_id`,
   `model_type`
@@ -411,8 +392,7 @@ CREATE TABLE IF NOT EXISTS `model_has_roles`(
   `model_type` VARCHAR(255) NOT NULL,
   `model_id` BIGINT UNSIGNED NOT NULL,
   foreign key(`role_id`) references `roles`(`id`) on delete cascade,
-  primary key(`role_id`, `model_id`, `model_type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  primary key(`role_id`, `model_id`, `model_type`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX `model_has_roles_model_id_model_type_index` on `model_has_roles`(
   `model_id`,
   `model_type`
@@ -422,8 +402,7 @@ CREATE TABLE IF NOT EXISTS `role_has_permissions`(
   `role_id` BIGINT UNSIGNED NOT NULL,
   foreign key(`permission_id`) references `permissions`(`id`) on delete cascade,
   foreign key(`role_id`) references `roles`(`id`) on delete cascade,
-  primary key(`permission_id`, `role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  primary key(`permission_id`, `role_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT IGNORE INTO migrations (migration, batch) VALUES
 ('0001_01_01_000001_create_cache_table', 1),

@@ -19,3 +19,5 @@ pest()->extend(TestCase::class)
     ->in('Feature');
 
 pest()->extend(TestCase::class)->in('Unit');
+
+require_once __DIR__.'/InstallSql/Pest.php';

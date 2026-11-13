@@ -56,7 +56,11 @@ class Ingredient extends Model
             );
         }
 
-        return (string) ($this->name_en ?: $this->name);
+        if (IngredientInventorySchema::hasLegacyNameColumn()) {
+            return (string) ($this->name_en ?: $this->getAttribute('name') ?? '');
+        }
+
+        return (string) $this->name_en;
     }
 
     public function isLowStock(): bool

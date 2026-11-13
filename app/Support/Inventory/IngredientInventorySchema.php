@@ -33,6 +33,31 @@ final class IngredientInventorySchema
         return self::ingredientsReady() && Schema::hasColumn('ingredients', 'name_en');
     }
 
+    public static function hasLegacyNameColumn(): bool
+    {
+        return self::ingredientsReady() && Schema::hasColumn('ingredients', 'name');
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function orderByColumns(): array
+    {
+        if (! self::ingredientsReady()) {
+            return ['id'];
+        }
+
+        $columns = [];
+        if (Schema::hasColumn('ingredients', 'name_en')) {
+            $columns[] = 'name_en';
+        }
+        if (Schema::hasColumn('ingredients', 'name')) {
+            $columns[] = 'name';
+        }
+
+        return $columns !== [] ? $columns : ['id'];
+    }
+
     public static function hasLowStockThreshold(): bool
     {
         return self::ingredientsReady() && Schema::hasColumn('ingredients', 'low_stock_threshold');
