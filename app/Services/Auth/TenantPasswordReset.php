@@ -3,7 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Models\BusinessSetting;
-use App\Models\BusinessSettingUser;
+use App\Models\StaffUser;
 use App\Notifications\StaffResetPasswordNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -12,84 +12,80 @@ use Illuminate\Support\Str;
 
 class StaffPasswordReset
 {
-    public function tokenStorageKey(Tenant $tenant, string $email): string
-    {
-        return $tenant->id.':'.$email;
+  public function tokenStorageKey(string $email): string
+  {
+    return 'staff:'.$email;
+  }
+
+  public function sendResetLink(BusinessSetting $business, string $email): bool
+  {
+    $user = StaffUser::query()
+      ->where('email', $email)
+      ->first();
+
+    if ($user === null || ! $user->is_active) {
+      return true;
     }
 
-    public function sendResetLink(Tenant $tenant, string $email): bool
-    {
-        $user = StaffUser::query()
-            ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
-            ->where('email', $email)
-            ->first();
+    $token = Str::random(64);
+    $key = $this->tokenStorageKey($email);
 
-        if ($user === null || ! $user->is_active) {
-            return true;
-        }
+    DB::table($this->table())->updateOrInsert(
+      ['email' => $key],
+      [
+        'token' => Hash::make($token),
+        'created_at' => now(),
+      ],
+    );
 
-        $token = Str::random(64);
-        $key = $this->tokenStorageKey($tenant, $email);
+    $user->notify(new StaffResetPasswordNotification($business, $token));
 
-        DB::table($this->table())->updateOrInsert(
-            ['email' => $key],
-            [
-                'token' => Hash::make($token),
-                'created_at' => now(),
-            ],
-        );
+    return true;
+  }
 
-        $user->notify(new StaffResetPasswordNotification($tenant, $token));
-
-        return true;
+  public function resetPassword(BusinessSetting $business, string $email, string $token, string $password): bool
+  {
+    if (! $this->tokenIsValid($email, $token)) {
+      return false;
     }
 
-    public function resetPassword(Tenant $tenant, string $email, string $token, string $password): bool
-    {
-        if (! $this->tokenIsValid($tenant, $email, $token)) {
-            return false;
-        }
+    $user = StaffUser::query()
+      ->where('email', $email)
+      ->first();
 
-        $user = StaffUser::query()
-            ->withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
-            ->where('email', $email)
-            ->first();
-
-        if ($user === null || ! $user->is_active) {
-            return false;
-        }
-
-        $user->forceFill(['password' => $password])->save();
-
-        DB::table($this->table())->where('email', $this->tokenStorageKey($tenant, $email))->delete();
-
-        return true;
+    if ($user === null || ! $user->is_active) {
+      return false;
     }
 
-    public function tokenIsValid(Tenant $tenant, string $email, string $token): bool
-    {
-        $record = DB::table($this->table())
-            ->where('email', $this->tokenStorageKey($tenant, $email))
-            ->first();
+    $user->forceFill(['password' => $password])->save();
 
-        if ($record === null) {
-            return false;
-        }
+    DB::table($this->table())->where('email', $this->tokenStorageKey($email))->delete();
 
-        if (! Hash::check($token, $record->token)) {
-            return false;
-        }
+    return true;
+  }
 
-        $created = Carbon::parse($record->created_at);
-        $expiry = (int) config('auth.passwords.tenant_users.expire', 60);
+  public function tokenIsValid(string $email, string $token): bool
+  {
+    $record = DB::table($this->table())
+      ->where('email', $this->tokenStorageKey($email))
+      ->first();
 
-        return $created->addMinutes($expiry)->isFuture();
+    if ($record === null) {
+      return false;
     }
 
-    protected function table(): string
-    {
-        return (string) config('auth.passwords.tenant_users.table', 'password_reset_tokens');
+    if (! Hash::check($token, $record->token)) {
+      return false;
     }
+
+    $created = Carbon::parse($record->created_at);
+    $expiry = (int) config('auth.passwords.tenant_users.expire', 60);
+
+    return $created->addMinutes($expiry)->isFuture();
+  }
+
+  protected function table(): string
+  {
+    return (string) config('auth.passwords.tenant_users.table', 'password_reset_tokens');
+  }
 }

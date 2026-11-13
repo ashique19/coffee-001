@@ -109,16 +109,6 @@ class BusinessSettings extends Component
 
     public string $deliveryAppsRaw = '';
 
-    public bool $plumberEmergency = false;
-
-    public string $plumberLicense = '';
-
-    public string $plumberServiceAreas = '';
-
-    public string $plumberResponseEn = '';
-
-    public string $plumberResponseAr = '';
-
     /** @var list<string> */
     public array $tabsWithErrors = [];
 
@@ -402,43 +392,23 @@ class BusinessSettings extends Component
         $this->resetErrorBag();
         $this->tabsWithErrors = [];
         $tenant = $this->tenant();
-        if ($tenant->isCafeTheme()) {
-            try {
-                $this->runSectionValidation([
+        try {
+            $this->runSectionValidation([
                 'cafeSeatingEn' => 'nullable|string|max:240',
                 'cafeSeatingAr' => 'nullable|string|max:240',
                 'deliveryAppsRaw' => 'nullable|string|max:4000',
-                ], 'extras');
-            } catch (ValidationException) {
-                return;
-            }
-            $lines = preg_split('/\r\n|\r|\n/', trim($this->deliveryAppsRaw)) ?: [];
-            $apps = array_values(array_filter(array_map('trim', $lines)));
-            $service->saveThemeExtras($tenant, [
-                'wifi_available' => $this->cafeWifi,
-                'seating_note_en' => $this->cafeSeatingEn,
-                'seating_note_ar' => $this->cafeSeatingAr,
-                'delivery_apps' => $apps,
-            ], auth('tenant')->user());
-        } else {
-            try {
-                $this->runSectionValidation([
-                'plumberLicense' => 'nullable|string|max:80',
-                'plumberServiceAreas' => 'nullable|string|max:1000',
-                'plumberResponseEn' => 'nullable|string|max:240',
-                'plumberResponseAr' => 'nullable|string|max:240',
-                ], 'extras');
-            } catch (ValidationException) {
-                return;
-            }
-            $service->saveThemeExtras($tenant, [
-                'emergency_24_7' => $this->plumberEmergency,
-                'license_number' => $this->plumberLicense,
-                'service_areas' => $this->plumberServiceAreas,
-                'response_time_en' => $this->plumberResponseEn,
-                'response_time_ar' => $this->plumberResponseAr,
-            ], auth('tenant')->user());
+            ], 'extras');
+        } catch (ValidationException) {
+            return;
         }
+        $lines = preg_split('/\r\n|\r|\n/', trim($this->deliveryAppsRaw)) ?: [];
+        $apps = array_values(array_filter(array_map('trim', $lines)));
+        $service->saveThemeExtras($tenant, [
+            'wifi_available' => $this->cafeWifi,
+            'seating_note_en' => $this->cafeSeatingEn,
+            'seating_note_ar' => $this->cafeSeatingAr,
+            'delivery_apps' => $apps,
+        ], auth('tenant')->user());
 
         $this->toastSuccess(__('business.messages.saved'));
     }
@@ -551,11 +521,6 @@ class BusinessSettings extends Component
         $apps = (array) ($extras['delivery_apps'] ?? []);
         $this->deliveryAppsRaw = implode("\n", $apps);
 
-        $this->plumberEmergency = (bool) ($extras['emergency_24_7'] ?? false);
-        $this->plumberLicense = (string) ($extras['license_number'] ?? '');
-        $this->plumberServiceAreas = (string) ($extras['service_areas'] ?? '');
-        $this->plumberResponseEn = (string) ($extras['response_time_en'] ?? '');
-        $this->plumberResponseAr = (string) ($extras['response_time_ar'] ?? '');
     }
 
     /**

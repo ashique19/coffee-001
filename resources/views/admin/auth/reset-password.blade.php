@@ -1,4 +1,4 @@
-<x-auth.tenant-shell :tenant="$tenant" :title="__('auth.reset_title')">
+<x-auth.tenant-shell :tenant="$business" :title="__('auth.reset_title')">
     <h1 class="text-xl font-bold text-cafe-espresso sm:text-2xl">{{ __('auth.reset_title') }}</h1>
     <p class="mt-2 text-sm text-cafe-mocha">{{ __('auth.reset_lead') }}</p>
 

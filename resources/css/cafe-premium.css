@@ -418,7 +418,7 @@
         @apply rounded-[1.5rem] border border-white/40 bg-cafe-cream/90 shadow-[0_24px_60px_-12px_rgba(44,24,16,0.45)] backdrop-blur-xl;
     }
 
-    .auth-shell--platform .auth-shell__gradient {
+    .auth-shell--elevated .auth-shell__gradient {
         background: linear-gradient(
             160deg,
             color-mix(in srgb, var(--cafe-espresso) 92%, #0f0a08) 0%,

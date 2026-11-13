@@ -20,7 +20,7 @@ afterEach(function () {
     BusinessContext::clear();
 });
 
-it('issues a simplified ZATCA invoice from a paid POS order with loyalty discount affecting VAT base', function () {
+it('issues a simplified invoice from a paid POS order with loyalty discount affecting VAT base', function () {
     $tenant = BusinessSetting::query()->create([
         'name' => 'Fancy Coffee',
         'settings' => CafeThemePreset::settings('Fancy Coffee', 'فانسي كوفي'),

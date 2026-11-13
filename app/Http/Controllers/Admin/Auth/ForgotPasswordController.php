@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
+use App\Business\BusinessContext;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
 use App\Services\Auth\StaffPasswordReset;
@@ -11,19 +12,22 @@ use Illuminate\View\View;
 
 class ForgotPasswordController extends Controller
 {
-    public function create(Tenant $tenant): View
-    {
-        return view('tenant.auth.forgot-password', ['tenant' => $tenant]);
-    }
+  public function create(): View
+  {
+    $business = BusinessContext::get() ?? BusinessSetting::singleton();
 
-    public function store(Request $request, Tenant $tenant, StaffPasswordReset $resets): RedirectResponse
-    {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
+    return view('admin.auth.forgot-password', ['business' => $business]);
+  }
 
-        $resets->sendResetLink($tenant, $request->string('email')->toString());
+  public function store(Request $request, StaffPasswordReset $resets): RedirectResponse
+  {
+    $request->validate([
+      'email' => ['required', 'email'],
+    ]);
 
-        return back()->with('status', __('auth.reset_link_sent'));
-    }
+    $business = BusinessContext::get() ?? BusinessSetting::singleton();
+    $resets->sendResetLink($business, $request->string('email')->toString());
+
+    return back()->with('status', __('auth.reset_link_sent'));
+  }
 }

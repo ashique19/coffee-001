@@ -67,7 +67,7 @@ class StorefrontSettings extends Component
     {
         $tenant = BusinessSetting::query()->findOrFail($this->tenantId);
 
-        return view('livewire.tenant.storefront-settings', [
+        return view('livewire.admin.storefront-settings', [
             'tenant' => $tenant,
             'publicHomeUrl' => route('cafe.home'),
             'sitemapUrl' => route('storefront.sitemap'),

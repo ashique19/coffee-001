@@ -10,7 +10,7 @@ return [
     'generating_csr' => 'Generating CSR…',
     'submitting_otp' => 'Submitting OTP…',
     'compliance_check' => 'Running compliance check…',
-    'requesting_production' => 'Requesting production CSID…',
+    'requesting_production' => 'Submitting to Z-Heart…',
     'importing_credentials' => 'Saving credentials…',
     'adding_product' => 'Adding…',
     'updating_category' => 'Updating…',

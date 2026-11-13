@@ -1,6 +1,6 @@
 # Fancy Coffee — single-client POS & storefront
 
-Laravel 13 + Livewire 3 café app: public menu/home, staff admin at `/admin`, POS, catalog, inventory, and invoicing signed via **Z-Heart** (no local ZATCA crypto in this repo).
+Laravel 13 + Livewire 3 café app: public menu/home, staff admin at `/admin`, POS, catalog, inventory, and invoicing signed via **Z-Heart** (no in-repo signing crypto).
 
 ## Quick start
 

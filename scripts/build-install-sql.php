@@ -27,6 +27,7 @@ function sqliteSchemaToMysql(string $sql): string
 
     $sql = preg_replace('/`(\w+)`\s+integer\s+not\s+null/i', '`$1` BIGINT NOT NULL', $sql) ?? $sql;
     $sql = preg_replace('/`(\w+)`\s+integer\b/i', '`$1` BIGINT', $sql) ?? $sql;
+    $sql = preg_replace('/`(\w+_id)`\s+BIGINT\b/i', '`$1` BIGINT UNSIGNED', $sql) ?? $sql;
 
     $sql = preg_replace('/\bvarchar\s+not\s+null\b/', 'VARCHAR(255) NOT NULL', $sql) ?? $sql;
     $sql = preg_replace('/\bvarchar\b/', 'VARCHAR(255)', $sql) ?? $sql;
@@ -56,15 +57,15 @@ function sqliteSchemaToMysql(string $sql): string
         1
     ) ?? $sql;
 
-    $sql = preg_replace(
-        '/\)\s*;\s*\n(?=CREATE )/i',
-        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n",
+    $sql = preg_replace_callback(
+        '/^(CREATE TABLE\b[\s\S]*?\)\s*);(\s*(?:\n|$))/mi',
+        static fn (array $m): string => $m[1].') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;'.$m[2],
         $sql
     ) ?? $sql;
 
     $sql = preg_replace(
-        '/\)\s*;\s*$/',
-        ') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+        '/\bCREATE (?:UNIQUE )?INDEX\b[\s\S]*?\)\s*ENGINE=InnoDB[^;]*;/i',
+        static fn (array $m): string => preg_replace('/\s+ENGINE=InnoDB[^;]+/i', '', $m[0]) ?? $m[0],
         $sql
     ) ?? $sql;
 

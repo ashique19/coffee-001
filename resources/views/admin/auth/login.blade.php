@@ -1,8 +1,8 @@
-<x-auth.tenant-shell :tenant="$tenant" :title="__('pos.login_title')">
+<x-auth.tenant-shell :tenant="$business" :title="__('pos.login_title')">
     <h1 class="text-xl font-bold text-cafe-espresso sm:text-2xl">{{ __('pos.login_title') }}</h1>
-    <p class="mt-1 text-sm text-cafe-mocha">{{ data_get($tenant->settings, 'legal_entity.name_en', $tenant->name) }}</p>
+    <p class="mt-1 text-sm text-cafe-mocha">{{ data_get($business->settings, 'legal_entity.name_en', $business->name) }}</p>
 
-    <form method="POST" action="{{ route('tenant.login.store') }}" class="mt-6 space-y-4">
+    <form method="POST" action="{{ route('admin.login.store') }}" class="mt-6 space-y-4">
         @csrf
         <label @class(['auth-field', 'auth-field--invalid' => $errors->has('email')])>
             {{ __('pos.email') }}

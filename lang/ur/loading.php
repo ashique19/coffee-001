@@ -10,7 +10,7 @@ return [
     'generating_csr' => 'CSR بن رہا ہے…',
     'submitting_otp' => 'OTP بھیجا جا رہا ہے…',
     'compliance_check' => 'تطابق کی جانچ…',
-    'requesting_production' => 'پروڈکشن CSID مانگی جا رہی ہے…',
+    'requesting_production' => 'پروڈکشن signing service',
     'importing_credentials' => 'اسناد محفوظ ہو رہی ہیں…',
     'adding_product' => 'شامل ہو رہا ہے…',
     'updating_category' => 'اپڈیٹ ہو رہا ہے…',

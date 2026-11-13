@@ -33,7 +33,7 @@ return [
     ],
     'queue_link' => 'signing service رپورٹنگ',
     'errors' => [
-        'signing_failed' => 'اس انوائس پر cryptographic دستخط نہیں ہو سکا۔ ایڈمن میں کیز اور signing service CSID چیک کریں اور دوبارہ کوشش کریں.',
-        'signing_credentials_invalid' => 'اس پر compliance CSID دستخط کے لیے لوڈ نہیں ہو سکا۔ signing service ایڈمن میں سرٹیفکیٹ چیک کریں یا سپورٹ کو نیچے والی تکنیکی تفصیل بھیجیں۔',
+        'signing_failed' => 'اس انوائس پر cryptographic دستخط نہیں ہو سکا۔ ایڈمن میں کیز اور signing service signing service',
+        'signing_credentials_invalid' => 'اس پر compliance signing service',
     ],
 ];

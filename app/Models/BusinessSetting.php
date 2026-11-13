@@ -124,11 +124,6 @@ class BusinessSetting extends Model
     return $this->themeLayout() === 'cafe';
   }
 
-  public function isPlumberTheme(): bool
-  {
-    return false;
-  }
-
   public function hasThemedStorefront(): bool
   {
     return $this->isCafeTheme();

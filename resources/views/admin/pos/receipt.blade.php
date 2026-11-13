@@ -54,7 +54,7 @@
                 <span class="text-[var(--app-muted)]">{{ __('pos.receipt') }} · {{ $order->order_number }}</span>
                 <span class="hidden h-4 w-px bg-[var(--app-border)] sm:inline" aria-hidden="true"></span>
                 @php
-                    $localeLink = fn (string $code) => route('admin.pos.receipt', array_merge(['tenant' => $tenant, 'order' => $order], $receiptQuery, ['locale' => $code]));
+                    $localeLink = fn (string $code) => route('admin.pos.receipt', array_merge(['order' => $order], $receiptQuery, ['locale' => $code]));
                 @endphp
                 @foreach ($receiptLocales as $code)
                     <a href="{{ $localeLink($code) }}" @class(['tap-action-muted min-h-10 px-3 text-xs', 'ring-2 ring-[var(--cafe-caramel)]' => $locale === $code])>{{ strtoupper($code) }}</a>

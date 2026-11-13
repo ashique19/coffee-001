@@ -8,7 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('zatca:retry-submissions')->everyFiveMinutes();
-Schedule::command('zatca:reporting-deadline-warnings')->hourly();
-Schedule::command('zatca:csid-renewal-reminders')->daily();
 Schedule::command('loyalty:expire-points')->daily();

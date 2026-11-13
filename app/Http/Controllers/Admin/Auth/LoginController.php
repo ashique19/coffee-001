@@ -20,7 +20,7 @@ class LoginController extends Controller
     {
         $business = BusinessSetting::query()->find(1) ?? BusinessSetting::query()->first();
 
-        return view('tenant.auth.login', ['tenant' => $business]);
+        return view('admin.auth.login', ['business' => $business]);
     }
 
     public function store(Request $request): RedirectResponse

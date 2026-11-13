@@ -177,12 +177,6 @@
                     <x-form.textarea :label="__('catalog.description_bn')" name="productDescriptionBn" wire:model="productDescriptionBn" wrapperClass="sm:col-span-2" />
                 @endif
                 <x-form.input :label="__('catalog.sku')" name="productSku" wire:model="productSku" />
-                @if ($tenant->isPlumberTheme())
-                    <x-form.select :label="__('catalog.item_type')" name="productItemType" wire:model="productItemType">
-                        <option value="service">{{ __('catalog.item_type_service') }}</option>
-                        <option value="part">{{ __('catalog.item_type_part') }}</option>
-                    </x-form.select>
-                @endif
                 <x-form.select :label="__('catalog.category')" name="productCategoryId" wire:model="productCategoryId">
                     <option value="">—</option>
                     @foreach($categories as $cat)

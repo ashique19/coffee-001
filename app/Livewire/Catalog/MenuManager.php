@@ -553,7 +553,7 @@ class MenuManager extends Component
         $this->productActive = true;
         $this->productShowOnHomepage = false;
         $this->productShowOnMenu = true;
-        $this->productItemType = $this->tenant->isPlumberTheme() ? ProductItemType::Service->value : ProductItemType::Item->value;
+        $this->productItemType = ProductItemType::Item->value;
         $this->productModifierIds = [];
     }
 

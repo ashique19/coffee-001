@@ -15,14 +15,12 @@ final class TenantBusinessProfile
    */
   public static function contentSlice(BusinessSetting $tenant): array
   {
-      return $tenant->isCafeTheme()
-          ? (array) data_get($tenant->settings, 'content.cafe', [])
-          : (array) data_get($tenant->settings, 'content.plumber', []);
+      return (array) data_get($tenant->settings, 'content.cafe', []);
   }
 
   public static function contentKey(BusinessSetting $tenant): string
   {
-      return $tenant->isCafeTheme() ? 'content.cafe' : 'content.plumber';
+      return 'content.cafe';
   }
 
   /**
@@ -31,19 +29,12 @@ final class TenantBusinessProfile
   public static function brandColorOptions(BusinessSetting $tenant): array
   {
       $colors = $tenant->themeColors();
-      $labels = $tenant->isCafeTheme()
-          ? [
-              'espresso' => __('business.colors.espresso'),
-              'caramel' => __('business.colors.caramel'),
-              'accent' => __('business.colors.accent'),
-              'mocha' => __('business.colors.mocha'),
-          ]
-          : [
-              'navy' => __('business.colors.navy'),
-              'steel' => __('business.colors.steel'),
-              'safety' => __('business.colors.safety'),
-              'accent' => __('business.colors.accent'),
-          ];
+      $labels = [
+          'espresso' => __('business.colors.espresso'),
+          'caramel' => __('business.colors.caramel'),
+          'accent' => __('business.colors.accent'),
+          'mocha' => __('business.colors.mocha'),
+      ];
 
       $out = [];
       foreach ($labels as $key => $label) {
@@ -57,7 +48,7 @@ final class TenantBusinessProfile
 
   public static function primaryColorKey(BusinessSetting $tenant): string
   {
-      return $tenant->isCafeTheme() ? 'espresso' : 'navy';
+      return 'espresso';
   }
 
     /**

@@ -20,10 +20,10 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
     public function signIssuedInvoice(InvoiceSigningRequest $request, Invoice $invoice): array
     {
         $payload = $this->payloadBuilder->build($request);
-        $submitToZatca = config('zheart.auto_submit_signed') && $request->business->invoicingIntegrationEnabled();
+        $autoSubmitSigned = config('zheart.auto_submit_signed') && $request->business->invoicingIntegrationEnabled();
 
         try {
-            if ($submitToZatca) {
+            if ($autoSubmitSigned) {
                 $result = $request->invoiceCategory === 'simplified'
                     ? $this->client->report($payload)
                     : $this->client->clear($payload);
@@ -47,8 +47,8 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
             'icv' => (int) ($data['icv'] ?? 0),
             'previous_invoice_hash' => (string) ($data['pih'] ?? ''),
             'invoice_uuid' => (string) ($data['uuid'] ?? $request->invoiceUuid),
-            'zatca_submitted' => $submitToZatca,
-            'zatca_response' => is_array($data['zatca'] ?? null) ? $data['zatca'] : null,
+            'remote_submitted' => $autoSubmitSigned,
+            'remote_submission' => is_array($data['zatca'] ?? null) ? $data['zatca'] : null,
             'reporting_status' => isset($data['reporting_status']) ? (string) $data['reporting_status'] : null,
             'cleared_xml' => isset($data['cleared_xml']) ? $this->decodeSignedXml((string) $data['cleared_xml']) : null,
             'request_id' => $result['request_id'] ?? null,

@@ -7,7 +7,7 @@ use App\Models\BusinessSetting;
 final class StorefrontAnalytics
 {
     /**
-     * SEO/analytics payload for storefront layout components (cafe + plumber).
+     * SEO/analytics payload for café storefront layout components.
      *
      * @return array{
      *     ga_measurement_id: ?string,

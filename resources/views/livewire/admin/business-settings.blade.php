@@ -190,18 +190,10 @@
         </section>
     @else
         <form wire:submit="saveExtras" class="app-card flex flex-col gap-4 p-4">
-            @if ($tenant->isCafeTheme())
-                <x-form.toggle :label="__('business.extras.cafe_wifi')" name="cafeWifi" wire:model="cafeWifi" />
-                <x-form.input :label="__('business.extras.cafe_seating_en')" name="cafeSeatingEn" wire:model.blur="cafeSeatingEn" :liveValidate="false" />
-                <x-form.input :label="__('business.extras.cafe_seating_ar')" name="cafeSeatingAr" wire:model.blur="cafeSeatingAr" :liveValidate="false" />
-                <x-form.textarea :label="__('business.extras.delivery_apps')" name="deliveryAppsRaw" wire:model.blur="deliveryAppsRaw" rows="4" :liveValidate="false" />
-            @else
-                <x-form.toggle :label="__('business.extras.plumber_emergency')" name="plumberEmergency" wire:model="plumberEmergency" />
-                <x-form.input :label="__('business.extras.plumber_license')" name="plumberLicense" wire:model.blur="plumberLicense" :liveValidate="false" />
-                <x-form.textarea :label="__('business.extras.plumber_areas')" name="plumberServiceAreas" wire:model.blur="plumberServiceAreas" rows="3" :liveValidate="false" />
-                <x-form.input :label="__('business.extras.plumber_response_en')" name="plumberResponseEn" wire:model.blur="plumberResponseEn" :liveValidate="false" />
-                <x-form.input :label="__('business.extras.plumber_response_ar')" name="plumberResponseAr" wire:model.blur="plumberResponseAr" :liveValidate="false" />
-            @endif
+            <x-form.toggle :label="__('business.extras.cafe_wifi')" name="cafeWifi" wire:model="cafeWifi" />
+            <x-form.input :label="__('business.extras.cafe_seating_en')" name="cafeSeatingEn" wire:model.blur="cafeSeatingEn" :liveValidate="false" />
+            <x-form.input :label="__('business.extras.cafe_seating_ar')" name="cafeSeatingAr" wire:model.blur="cafeSeatingAr" :liveValidate="false" />
+            <x-form.textarea :label="__('business.extras.delivery_apps')" name="deliveryAppsRaw" wire:model.blur="deliveryAppsRaw" rows="4" :liveValidate="false" />
             <div class="flex justify-end">
                 <button type="submit" class="tap-action-primary min-h-11 w-full sm:w-auto" wire:loading.attr="disabled">{{ __('business.save') }}</button>
             </div>
