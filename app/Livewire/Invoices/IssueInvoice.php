@@ -181,14 +181,16 @@ class IssueInvoice extends Component
             $previewTotal += round($qty * $price * (1 + $vat / 100), 2);
         }
 
+        $pageTitle = $isStandard
+            ? __('invoices.issue_standard_title')
+            : __('invoices.issue_simplified_title');
+
         return view('livewire.invoices.issue-invoice', [
-            'pageTitle' => $isStandard
-                ? __('invoices.issue_standard_title')
-                : __('invoices.issue_simplified_title'),
+            'pageTitle' => $pageTitle,
             'isStandard' => $isStandard,
             'previewTotal' => $previewTotal,
             'defaultIssueMode' => $this->tenant->defaultInvoiceDocumentType()->value,
-        ]);
+        ])->layout('layouts.pos', ['pageTitle' => $pageTitle]);
     }
 
     /**

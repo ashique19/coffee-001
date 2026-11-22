@@ -5,6 +5,7 @@
     use App\Models\BusinessSetting;
     use App\Support\AppShellNav;
     use App\Support\BusinessSettingDisplayName;
+    use App\Support\DocumentTitle;
 
     $tenant = \App\Business\BusinessContext::get() ?? BusinessSetting::query()->find(1);
     $branch = $branch ?? request()->route('branch');
@@ -38,9 +39,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow">
     @php
-        $documentTitle = $pageTitle ?? __('pos.title');
+        $documentTitle = DocumentTitle::join(DocumentTitle::page($pageTitle ?? null), (string) $displayName);
     @endphp
-    <title>{{ $documentTitle }} — {{ $displayName }}</title>
+    <title>{{ $documentTitle }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
     @livewireStyles

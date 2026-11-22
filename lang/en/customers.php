@@ -9,6 +9,7 @@ return [
     'search_placeholder' => 'Name, phone, email, or referral code',
     'empty_list' => 'No customers match your search.',
     'pick_one' => 'Select a customer to see points and history.',
+    'guest' => 'Guest',
     'guest_label' => 'Guest',
     'points' => ':count pts',
     'phone' => 'Phone',

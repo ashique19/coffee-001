@@ -5,6 +5,7 @@ return [
     'subtitle' => 'Today’s sales, invoices, and signing service submission status for your business.',
     'nav' => 'Dashboard',
     'open_analytics' => 'Full analytics',
+    'signing_queue_link' => 'Signing queue',
     'signing_queue' => 'signing service queue',
     'today_orders' => 'Orders today',
     'today_sales' => 'Sales today',

@@ -4,6 +4,7 @@ namespace App\Support\Storefront;
 
 use App\Models\BusinessSetting;
 use App\Support\BusinessSettingDisplayName;
+use App\Support\DocumentTitle;
 use Illuminate\Support\Facades\URL;
 
 final class StorefrontSeo
@@ -62,10 +63,10 @@ final class StorefrontSeo
     public static function pageTitle(string $page, string $displayName, string $locale): string
     {
         if ($page === self::PAGE_MENU) {
-            return $displayName.' — '.__('cafe.menu_title', [], $locale);
+            return DocumentTitle::join($displayName, (string) __('cafe.menu_title', [], $locale));
         }
 
-        return $displayName.' — '.__('cafe.meta_suffix', [], $locale);
+        return DocumentTitle::join($displayName, (string) __('cafe.meta_suffix', [], $locale));
     }
 
     /**

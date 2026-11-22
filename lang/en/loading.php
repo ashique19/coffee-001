@@ -2,6 +2,8 @@
 
 return [
     'generic' => 'Working…',
+    'issue' => 'Issuing…',
+    'issueAndPrint' => 'Issuing and printing…',
     'saving' => 'Saving…',
     'processing_payment' => 'Processing payment…',
     'new_order' => 'Starting new order…',

@@ -78,4 +78,8 @@ return [
         'signing_credentials_invalid' => 'تعذّر تحميل signing service',
         'lines_required' => 'أضف بنداً واحداً على الأقل قبل الإصدار.',
     ],
+    'zatca_precheck' => [
+        'buyer_postal' => 'الرمز البريدي يجب أن يكون 5 أرقام (السعودية)',
+        'buyer_address_country_sa' => 'عنوان المشتري الوطني يجب أن يتضمن الدولة SA (السعودية)',
+    ],
 ];

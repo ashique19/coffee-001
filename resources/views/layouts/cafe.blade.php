@@ -1,5 +1,6 @@
 @php
     use App\Support\BusinessSettingDisplayName;
+    use App\Support\DocumentTitle;
 
     $locale = app()->getLocale();
     $dir = config("locales.supported.{$locale}.dir", 'ltr');
@@ -38,7 +39,7 @@
             $metaDescription = $tagline !== '' ? $tagline : __('cafe.meta_description');
             $heroImage = data_get($content, 'media.hero');
             $ogImage = $heroImage ? asset($heroImage) : asset('images/fancy-coffee/hero.webp');
-            $pageTitle = $displayName.' — '.__('cafe.meta_suffix');
+            $pageTitle = DocumentTitle::join((string) $displayName, __('cafe.meta_suffix'));
         @endphp
         <title>{{ $pageTitle }}</title>
         <meta name="description" content="{{ $metaDescription }}">
