@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/cafe-storefront.js',
                 'resources/css/receipt.css',
+                'resources/css/invoice-print.css',
                 'resources/js/receipt.js',
                 'resources/css/analytics-dashboard.css',
                 'resources/js/analytics-dashboard.js',
