@@ -29,6 +29,8 @@ On hosts without reliable `php artisan migrate`, import **`docs/sql/install.sql`
 
 If the database was created from an **older** `install.sql`, run **`docs/sql/2026-11-14-schema-fix.sql`** once after deploy (idempotent) before relying on inventory, loyalty, or POS features.
 
+Before the invoice issue/receipt ports, also run **`docs/sql/2026-11-23-invoice-port-schema.sql`** once in phpMyAdmin (idempotent). It adds `staff_users.locale`, `invoices.due_date`, `product_units`, and `products.product_unit_id`.
+
 When Artisan is available:
 
 ```bash
