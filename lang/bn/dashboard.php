@@ -1,0 +1,31 @@
+<?php
+
+return [
+    'title' => 'ড্যাশবোর্ড',
+    'subtitle' => 'আজকের বিক্রি, ইনভয়েস এবং আপনার ব্যবসার সাইনিং সার্ভিস জমার অবস্থা।',
+    'nav' => 'ড্যাশবোর্ড',
+    'open_analytics' => 'পূর্ণ বিশ্লেষণ',
+    'signing_queue_link' => 'জমার তালিকা',
+    'today_orders' => 'আজকের অর্ডার',
+    'today_sales' => 'আজকের বিক্রি',
+    'today_vat' => 'আজকের ভ্যাট',
+    'today_aov' => 'আজকের গড় অর্ডার',
+    'sar' => 'সৌদি রিয়াল',
+    'recent_sales' => 'সাম্প্রতিক বিক্রি',
+    'last_7_days' => 'গত ৭ দিন',
+    'no_sales_yet' => 'এই সময়ে এখনও কোনো পরিশোধিত অর্ডার নেই।',
+    'invoices_by_type' => 'ধরন অনুযায়ী ইনভয়েস',
+    'invoices_issued_hint' => 'এই ব্যবসার সব ইস্যুকৃত ইনভয়েস।',
+    'invoice_type' => [
+        'simplified' => 'সরলীকৃত',
+        'standard' => 'স্ট্যান্ডার্ড',
+        'credit_note' => 'ক্রেডিট নোট',
+        'debit_note' => 'ডেবিট নোট',
+    ],
+    'signing_queue' => 'সাইনিং সার্ভিস জমা',
+    'signing_queue_hint' => 'রিপোর্টিং ও ক্লিয়ারেন্স কিউয়ের ফলাফল।',
+    'signing_pending' => 'অপেক্ষমাণ',
+    'signing_reported' => 'রিপোর্ট / ক্লিয়ার্ড',
+    'signing_failed' => 'ব্যর্থ',
+    'no_submissions' => 'এখনও কোনো সাইনিং সার্ভিস জমা নেই।',
+];

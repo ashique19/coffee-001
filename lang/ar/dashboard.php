@@ -5,6 +5,7 @@ return [
     'subtitle' => 'مبيعات اليوم والفواتير وحالة إرسال signing service لنشاطك.',
     'nav' => 'الرئيسية',
     'open_analytics' => 'تحليلات كاملة',
+    'signing_queue_link' => 'طابور الإرسال',
     'signing_queue' => 'طابور signing service',
     'today_orders' => 'طلبات اليوم',
     'today_sales' => 'مبيعات اليوم',

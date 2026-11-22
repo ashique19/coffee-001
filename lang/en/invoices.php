@@ -70,4 +70,8 @@ return [
         'signing_credentials_invalid' => 'Signing credentials could not be loaded. Share the technical detail below with support if needed.',
         'lines_required' => 'Add at least one line item before issuing.',
     ],
+    'zatca_precheck' => [
+        'buyer_postal' => 'Buyer postal code must be a 5-digit Saudi code',
+        'buyer_address_country_sa' => 'Buyer national address must include country SA (Saudi Arabia)',
+    ],
 ];
