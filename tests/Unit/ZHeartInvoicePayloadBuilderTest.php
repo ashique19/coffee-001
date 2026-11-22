@@ -42,7 +42,7 @@ it('includes buyer address vat and cr on standard invoices', function () {
 
     expect($payload['buyer']['vat_number'])->toBe('300000000000003')
         ->and($payload['buyer']['cr_number'])->toBe('1234567890')
-        ->and($payload['buyer']['address']['building'])->toBe('1234');
+        ->and($payload['buyer']['address']['buildingNumber'])->toBe('1234');
 });
 
 it('adds billing_reference_uuid and payment_means_note on credit notes', function () {
@@ -69,7 +69,7 @@ it('adds billing_reference_uuid and payment_means_note on credit notes', functio
 
     expect($payload['billing_reference_uuid'])->toBe('550e8400-e29b-41d4-a716-446655440099')
         ->and($payload['payment_means_note'])->toBe('Customer return')
-        ->and($payload)->not->toHaveKey('billing_reference');
+        ->and($payload['billing_reference'])->toBe('POS-1');
 });
 
 it('includes line discount when present', function () {
@@ -97,7 +97,7 @@ it('includes line discount when present', function () {
     expect($payload['lines'][0]['discount'])->toBe(10.0);
 });
 
-it('requires buyer vat on standard invoices', function () {
+it('requires buyer identity on standard invoices', function () {
     $business = new BusinessSetting([
         'name' => 'No VAT',
         'settings' => CafeThemePreset::settings('No VAT', 'ب'),
@@ -111,7 +111,6 @@ it('requires buyer vat on standard invoices', function () {
         lines: [new InvoiceLineData('Item', 1, 100, 15)],
         invoicePayload: [
             'buyer_name' => 'Buyer',
-            'buyer_cr' => '123',
             'buyer_national_address' => ['building' => '1', 'street' => 'S', 'city' => 'Riyadh', 'postal_code' => '12345'],
         ],
         issueDateTimeUtc: Carbon::now('UTC'),

@@ -16,7 +16,6 @@ interface InvoiceSigningGateway
      *     previous_invoice_hash: string,
      *     invoice_uuid: string,
      *     remote_submitted?: bool,
-     *     submission_skip_reason?: string|null,
      *     remote_submission?: array<string, mixed>|null,
      *     reporting_status?: string|null,
      *     cleared_xml?: string|null,
@@ -24,4 +23,18 @@ interface InvoiceSigningGateway
      * }
      */
     public function signIssuedInvoice(InvoiceSigningRequest $request, Invoice $invoice): array;
+
+    /**
+     * Z-Heart sign endpoint only (no clearance/report).
+     *
+     * @return array<string, mixed>
+     */
+    public function signLocally(InvoiceSigningRequest $request): array;
+
+    /**
+     * Z-Heart clearance/report for an already signed invoice (resubmit-equivalent).
+     *
+     * @return array<string, mixed>
+     */
+    public function submitInvoiceToZatca(InvoiceSigningRequest $request): array;
 }

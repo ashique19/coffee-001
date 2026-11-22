@@ -2,9 +2,14 @@
 
 namespace App\Services\Invoicing\ZHeart;
 
+use App\Models\BusinessSetting;
 use App\Support\Invoicing\ZHeartApiUserMessage;
+use App\Support\Invoicing\ZHeartConnectionTestReport;
+use App\Support\Invoicing\ZHeartCredentials;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use App\Business\BusinessContext;
+use App\Support\Invoicing\ZHeartZatcaPayloadNormalizer;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -16,7 +21,7 @@ final class ZHeartClient
      */
     public function sign(array $invoicePayload): array
     {
-        return $this->invoiceCall('invoices/sign', $invoicePayload, (int) config('zheart.timeout_sign_seconds', 45), allowRetry: true);
+        return $this->invoiceCall('invoices/sign', $invoicePayload, (int) config('zheart.timeout_sign_seconds', 45));
     }
 
     /**
@@ -25,7 +30,7 @@ final class ZHeartClient
      */
     public function report(array $invoicePayload): array
     {
-        return $this->invoiceCall('invoices/report', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120), allowRetry: false);
+        return $this->invoiceCall('invoices/report', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120));
     }
 
     /**
@@ -34,7 +39,7 @@ final class ZHeartClient
      */
     public function clear(array $invoicePayload): array
     {
-        return $this->invoiceCall('invoices/clear', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120), allowRetry: false);
+        return $this->invoiceCall('invoices/clear', $invoicePayload, (int) config('zheart.timeout_submit_seconds', 120));
     }
 
     public function health(): bool
@@ -44,35 +49,146 @@ final class ZHeartClient
             return false;
         }
 
-        $attempts = 1 + max(0, (int) config('zheart.retry_times', 2));
-        $sleepMs = max(0, (int) config('zheart.retry_sleep_ms', 500));
+        try {
+            $response = Http::timeout((int) config('zheart.timeout_health_seconds', 5))
+                ->acceptJson()
+                ->get($base.'/api/v1/health');
 
-        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
-            try {
-                $response = Http::timeout((int) config('zheart.timeout_health_seconds', 5))
-                    ->acceptJson()
-                    ->get($base.'/api/v1/health');
+            return $response->successful() && ($response->json('status') === 'ok');
+        } catch (\Throwable) {
+            return false;
+        }
+    }
 
-                if ($response->successful() && ($response->json('status') === 'ok')) {
-                    return true;
-                }
-            } catch (\Throwable) {
-                // try again when retries remain
-            }
+    /**
+     * @return array{
+     *     ok: bool,
+     *     health_ok: bool,
+     *     auth_ok: bool,
+     *     message: string,
+     *     http_status: ?int,
+     *     severity: 'ok'|'error'|'warn',
+     *     reason: ?string,
+     *     card: ?array<string, mixed>,
+     *     warnings: list<string>
+     * }
+     */
+    public function testConnection(?string $baseUrl = null, ?string $apiKey = null, ?BusinessSetting $business = null): array
+    {
+        $base = rtrim($baseUrl ?? $this->baseUrl(), '/');
+        $apiKey ??= $this->resolveApiKey();
+        $business ??= BusinessContext::get();
 
-            if ($attempt < $attempts) {
-                usleep($sleepMs * 1000);
-            }
+        if ($base === '' || $apiKey === null || $apiKey === '') {
+            return [
+                'ok' => false,
+                'health_ok' => false,
+                'auth_ok' => false,
+                'message' => __('business.zheart.test_reason_not_configured'),
+                'http_status' => null,
+                'severity' => 'error',
+                'reason' => 'not_configured',
+                'card' => null,
+                'warnings' => [],
+            ];
         }
 
-        return false;
+        $timeout = (int) config('zheart.timeout_health_seconds', 5);
+        $healthOk = false;
+
+        try {
+            $health = Http::timeout($timeout)
+                ->acceptJson()
+                ->get($base.'/api/v1/health');
+            $healthOk = $health->successful() && ($health->json('status') === 'ok');
+        } catch (\Throwable) {
+            $healthOk = false;
+        }
+
+        $authStatus = null;
+        /** @var array<string, mixed>|null $authBody */
+        $authBody = null;
+
+        try {
+            $auth = Http::timeout($timeout)
+                ->acceptJson()
+                ->withToken($apiKey)
+                ->get($base.'/api/v1/auth');
+            $authStatus = $auth->status();
+            $payload = $auth->json();
+            $authBody = is_array($payload) ? $payload : null;
+        } catch (\Throwable) {
+            $authStatus = null;
+        }
+
+        if ($authStatus === 200 && is_array($authBody) && ($authBody['status'] ?? '') === 'ok') {
+            $report = ZHeartConnectionTestReport::successFromAuthPayload($authBody, $business);
+
+            return [
+                'ok' => true,
+                'health_ok' => $healthOk,
+                'auth_ok' => true,
+                'message' => $report['message'],
+                'http_status' => 200,
+                'severity' => 'ok',
+                'reason' => null,
+                'card' => $report['card'],
+                'warnings' => $report['warnings'],
+            ];
+        }
+
+        if ($authStatus === 404) {
+            $failure = ZHeartConnectionTestReport::failureReason(404, $healthOk, $authBody);
+
+            return [
+                'ok' => false,
+                'health_ok' => $healthOk,
+                'auth_ok' => false,
+                'message' => $failure['message'],
+                'http_status' => 404,
+                'severity' => 'warn',
+                'reason' => $failure['reason'],
+                'card' => null,
+                'warnings' => [],
+            ];
+        }
+
+        if (in_array($authStatus, [401, 403], true)) {
+            $failure = ZHeartConnectionTestReport::failureReason($authStatus, $healthOk, $authBody);
+
+            return [
+                'ok' => false,
+                'health_ok' => $healthOk,
+                'auth_ok' => false,
+                'message' => $failure['message'],
+                'http_status' => $authStatus,
+                'severity' => 'error',
+                'reason' => $failure['reason'],
+                'card' => null,
+                'warnings' => [],
+            ];
+        }
+
+        $failure = ZHeartConnectionTestReport::failureReason($authStatus, $healthOk, $authBody);
+
+        return [
+            'ok' => false,
+            'health_ok' => $healthOk,
+            'auth_ok' => false,
+            'message' => $failure['message'],
+            'http_status' => $authStatus,
+            'severity' => $failure['reason'] === 'outdated' ? 'warn' : 'error',
+            'reason' => $failure['reason'],
+            'card' => null,
+            'warnings' => [],
+        ];
     }
 
     /**
      * @param  array<string, mixed>  $invoicePayload
      * @return array{data: array<string, mixed>, request_id: ?string}
      */
-    private function invoiceCall(string $path, array $invoicePayload, int $timeoutSeconds, bool $allowRetry): array
+    private function invoiceCall(string $path, array $invoicePayload, int $timeoutSeconds): array
     {
         $base = $this->baseUrl();
         $apiKey = $this->resolveApiKey();
@@ -82,7 +198,10 @@ final class ZHeartClient
 
         $url = $base.'/api/v1/'.$path;
         $body = ['invoice' => $invoicePayload];
-        $attempts = $allowRetry ? 1 + max(0, (int) config('zheart.retry_times', 2)) : 1;
+        $submitPath = str_contains($path, 'report') || str_contains($path, 'clear');
+        $attempts = $submitPath
+            ? 1
+            : 1 + max(0, (int) config('zheart.retry_times', 2));
         $sleepMs = max(0, (int) config('zheart.retry_sleep_ms', 500));
 
         $lastException = null;
@@ -100,6 +219,20 @@ final class ZHeartClient
                 if ($response->successful() && is_array($json) && ($json['status'] ?? '') === 'ok') {
                     $data = is_array($json['data'] ?? null) ? $json['data'] : [];
 
+                    if ($submitPath) {
+                        $normalized = ZHeartZatcaPayloadNormalizer::normalize($data);
+                        Log::info('zheart.invoice_submit', [
+                            'path' => $path,
+                            'invoice_uuid' => $invoicePayload['uuid'] ?? null,
+                            'request_id' => is_string($requestId) ? $requestId : null,
+                            'reporting_status' => $normalized['reporting_status'],
+                            'clearance_status' => $normalized['remote_submission']['clearance_status'] ?? null,
+                            'zatca_ok' => $normalized['zatca_ok'],
+                            'zatca_http_status' => $normalized['zatca_http_status'],
+                            'delivery' => $normalized['delivery'],
+                        ]);
+                    }
+
                     return [
                         'data' => $data,
                         'request_id' => is_string($requestId) ? $requestId : null,
@@ -110,22 +243,34 @@ final class ZHeartClient
                 $message = ZHeartApiUserMessage::fromResponse($status, is_array($json) ? $json : null, is_string($requestId) ? $requestId : null);
                 $errorCode = is_string(data_get($json, 'data.error')) ? (string) data_get($json, 'data.error') : null;
 
-                if ($allowRetry && $status >= 500 && $attempt < $attempts) {
+                if (! $submitPath && $status >= 500 && $attempt < $attempts) {
                     usleep($sleepMs * 1000);
 
                     continue;
                 }
 
-                throw new ZHeartApiException($message, $status, is_string($requestId) ? $requestId : null, $errorCode);
+                throw new ZHeartApiException(
+                    $message,
+                    $status,
+                    is_string($requestId) ? $requestId : null,
+                    $errorCode,
+                    null,
+                    is_array($json) ? $json : null,
+                );
             } catch (ConnectionException $e) {
                 $lastException = $e;
-                if ($allowRetry && $attempt < $attempts) {
+                if (! $submitPath && $attempt < $attempts) {
                     usleep($sleepMs * 1000);
 
                     continue;
                 }
             } catch (RequestException $e) {
-                if ($allowRetry && $e->response !== null && $e->response->status() >= 500 && $attempt < $attempts) {
+                if (
+                    ! $submitPath
+                    && $e->response !== null
+                    && $e->response->status() >= 500
+                    && $attempt < $attempts
+                ) {
                     usleep($sleepMs * 1000);
 
                     continue;
@@ -141,18 +286,16 @@ final class ZHeartClient
             'attempts' => $attempts,
         ]);
 
-        throw new ZHeartApiException(__('zheart_api.server_error', ['id' => '—', 'detail' => '']), 503, null, null, $lastException);
+        throw new ZHeartApiException(__('zheart_api.server_error', ['id' => '—']), 503, null, null, $lastException);
     }
 
     private function baseUrl(): string
     {
-        return rtrim((string) config('zheart.base_url', ''), '/');
+        return ZHeartCredentials::baseUrl();
     }
 
     private function resolveApiKey(): ?string
     {
-        $fromEnv = config('zheart.api_key');
-
-        return is_string($fromEnv) && $fromEnv !== '' ? $fromEnv : null;
+        return ZHeartCredentials::apiKey();
     }
 }
