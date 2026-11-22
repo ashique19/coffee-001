@@ -34,7 +34,7 @@ it('blocks updates to issued invoices', function () {
             ],
         ]),
     ])->save();
-    $invoice = $issuer->issue($invoice);
+    $invoice = $issuer->issue($invoice)->invoice;
 
     expect(fn () => $invoice->update(['document_number' => 'HACKED']))
         ->toThrow(IssuedInvoiceImmutableException::class);

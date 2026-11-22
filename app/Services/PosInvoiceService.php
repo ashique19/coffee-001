@@ -65,7 +65,7 @@ class PosInvoiceService
             ]),
         ])->save();
 
-        $issued = $this->invoiceIssueService->issue($draft);
+        $issued = $this->invoiceIssueService->issue($draft)->invoice;
 
         $order->forceFill(['invoice_id' => $issued->id])->save();
 
@@ -108,7 +108,7 @@ class PosInvoiceService
             ]),
         ])->save();
 
-        $issued = $this->invoiceIssueService->issue($draft);
+        $issued = $this->invoiceIssueService->issue($draft)->invoice;
 
         $order->forceFill(['invoice_id' => $issued->id])->save();
 
@@ -145,7 +145,7 @@ class PosInvoiceService
             ])),
         ])->save();
 
-        $issued = $this->invoiceIssueService->issue($credit);
+        $issued = $this->invoiceIssueService->issue($credit)->invoice;
 
         $order->forceFill([
             'status' => PosOrderStatus::Refunded,
@@ -162,14 +162,18 @@ class PosInvoiceService
     {
         $items = [];
         foreach ($order->line_items as $line) {
-            $items[] = [
-                'name' => (string) ($line['name'] ?? 'Item'),
+            $items[] = array_filter([
+                'name' => self::lineNameWithModifiers($line),
+                'name_ar' => filled($line['name_ar'] ?? null) ? (string) $line['name_ar'] : null,
                 'quantity' => (float) ($line['quantity'] ?? 1),
                 'unit_price_ex_vat' => (float) ($line['unit_price_ex_vat'] ?? 0),
                 'vat_rate' => (float) ($line['vat_rate'] ?? 15),
                 'discount_ex_vat' => (float) ($line['discount_ex_vat'] ?? 0),
                 'item_type' => (string) ($line['item_type'] ?? 'item'),
-            ];
+                'product_id' => isset($line['product_id']) ? (int) $line['product_id'] : null,
+                'modifier_ids' => isset($line['modifier_ids']) && is_array($line['modifier_ids']) ? $line['modifier_ids'] : null,
+                'modifier_names' => self::modifierNames($line) ?: null,
+            ], static fn ($v) => $v !== null);
         }
 
         $orderDiscount = (float) $order->promo_discount_ex_vat + (float) $order->loyalty_discount_ex_vat;
@@ -189,5 +193,45 @@ class PosInvoiceService
         }
 
         return $items;
+    }
+
+    /**
+     * @param  array<string, mixed>  $line
+     */
+    private static function lineNameWithModifiers(array $line): string
+    {
+        $name = trim((string) ($line['name'] ?? 'Item'));
+        if ($name === '') {
+            $name = 'Item';
+        }
+
+        $modifiers = self::modifierNames($line);
+        if ($modifiers === []) {
+            return $name;
+        }
+
+        return $name.' ('.implode(', ', $modifiers).')';
+    }
+
+    /**
+     * @param  array<string, mixed>  $line
+     * @return list<string>
+     */
+    private static function modifierNames(array $line): array
+    {
+        $names = $line['modifier_names'] ?? [];
+        if (! is_array($names)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($names as $name) {
+            $trimmed = trim((string) $name);
+            if ($trimmed !== '') {
+                $out[] = $trimmed;
+            }
+        }
+
+        return array_values($out);
     }
 }

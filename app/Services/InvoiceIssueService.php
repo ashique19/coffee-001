@@ -3,14 +3,15 @@
 namespace App\Services;
 
 use App\Business\BusinessContext;
-use App\Data\InvoiceLineData;
 use App\Enums\InvoiceDocumentType;
 use App\Enums\InvoiceStatus;
 use App\Models\Branch;
-use App\Models\BusinessSetting;
 use App\Models\Invoice;
+use App\Services\Invoicing\InvoiceIssueResult;
 use App\Services\Invoicing\Signing\InvoiceSigningGatewayFactory;
 use App\Services\Invoicing\Signing\InvoiceSigningRequest;
+use App\Support\Invoicing\InvoiceDocumentTotals;
+use App\Support\Invoicing\InvoicePayloadLines;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -22,7 +23,7 @@ class InvoiceIssueService
     ) {}
 
     /**
-     * @param  list<array{name: string, quantity: float, unit_price_ex_vat: float, vat_rate: float}>  $lineItems
+     * @param  list<array<string, mixed>>  $lineItems
      */
     public function issueDraft(
         ?Branch $branch,
@@ -49,19 +50,22 @@ class InvoiceIssueService
         return $invoice;
     }
 
-    public function issue(Invoice $invoice): Invoice
+    public function issue(Invoice $invoice): InvoiceIssueResult
     {
         if ($invoice->isIssued()) {
-            return $invoice;
+            return new InvoiceIssueResult($invoice, true);
         }
 
         $business = BusinessContext::require();
-        $lines = $this->linesFromInvoice($invoice);
+        $lines = InvoicePayloadLines::fromInvoice($invoice);
 
         $now = Carbon::now('UTC');
         $referenced = $invoice->referencedInvoice;
         $invoiceCategory = $this->resolveInvoiceCategory($invoice, $referenced);
-        $invoiceUuid = (string) (($invoice->payload['invoice_uuid'] ?? null) ?: Str::uuid());
+        $payload = $invoice->payload ?? [];
+        $invoiceUuid = (string) (($payload['invoice_uuid'] ?? null) ?: Str::uuid());
+        $documentDiscount = (float) ($payload['invoice_discount_ex_vat'] ?? 0);
+        $dueDate = $this->resolveDueDate($invoice, $now);
 
         $signingRequest = new InvoiceSigningRequest(
             business: $business,
@@ -69,7 +73,7 @@ class InvoiceIssueService
             documentType: $invoice->document_type,
             invoiceCategory: $invoiceCategory,
             lines: $lines,
-            invoicePayload: $invoice->payload ?? [],
+            invoicePayload: $payload,
             issueDateTimeUtc: $now,
             invoiceUuid: $invoiceUuid,
             referencedInvoiceNumber: $referenced?->document_number,
@@ -77,13 +81,21 @@ class InvoiceIssueService
                 ? (string) ($referenced->payload['invoice_uuid'] ?? '')
                 : null,
             noteReason: $this->resolveNoteReason($invoice),
+            documentDiscountExVat: $documentDiscount,
         );
 
         $signed = $this->signingFactory->gateway()->signIssuedInvoice($signingRequest, $invoice);
 
-        $payloadMerge = array_merge($invoice->payload ?? [], [
-            'lines' => $invoice->payload['lines'] ?? [],
+        $totals = InvoiceDocumentTotals::compute($lines, $documentDiscount);
+
+        $payloadMerge = array_merge($payload, [
+            'lines' => $payload['lines'] ?? [],
             'invoice_uuid' => $signed['invoice_uuid'],
+            'totals' => [
+                'subtotal_ex_vat' => $totals['subtotal_ex_vat'],
+                'total_vat' => $totals['total_vat'],
+                'total_inc_vat' => $totals['total_inc_vat'],
+            ],
         ]);
 
         if (! empty($signed['request_id'])) {
@@ -106,6 +118,7 @@ class InvoiceIssueService
             'signed_xml' => $signed['cleared_xml'] ?? $signed['xml'],
             'qr_tlv_base64' => $signed['qr'],
             'issued_at' => $now,
+            'due_date' => $dueDate,
             'payload' => $payloadMerge,
         ])->save();
 
@@ -114,7 +127,7 @@ class InvoiceIssueService
             'invoice_hash' => $signed['hash'],
         ]);
 
-        return $invoice->fresh();
+        return new InvoiceIssueResult($invoice->fresh(), true);
     }
 
     private function resolveInvoiceCategory(Invoice $invoice, ?Invoice $referenced): string
@@ -141,21 +154,17 @@ class InvoiceIssueService
         return is_string($reason) && $reason !== '' ? $reason : null;
     }
 
-    /**
-     * @return list<InvoiceLineData>
-     */
-    private function linesFromInvoice(Invoice $invoice): array
+    private function resolveDueDate(Invoice $invoice, Carbon $now): string
     {
-        $raw = $invoice->payload['lines'] ?? [];
+        $payloadDue = trim((string) (($invoice->payload['buyer_due_date'] ?? '')));
+        if ($payloadDue !== '') {
+            try {
+                return Carbon::parse($payloadDue, 'Asia/Riyadh')->toDateString();
+            } catch (\Throwable) {
+                // fall through
+            }
+        }
 
-        return array_map(function (array $line): InvoiceLineData {
-            return new InvoiceLineData(
-                name: (string) $line['name'],
-                quantity: (float) $line['quantity'],
-                unitPriceExVat: (float) $line['unit_price_ex_vat'],
-                vatRate: (float) ($line['vat_rate'] ?? 15),
-                discountExVat: (float) ($line['discount_ex_vat'] ?? 0),
-            );
-        }, is_array($raw) ? $raw : []);
+        return $now->copy()->timezone('Asia/Riyadh')->toDateString();
     }
 }

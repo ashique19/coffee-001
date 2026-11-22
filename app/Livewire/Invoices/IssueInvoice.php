@@ -117,7 +117,7 @@ class IssueInvoice extends Component
 
         $draft->forceFill(['payload' => $payload])->save();
 
-        $issued = $issuer->issue($draft->fresh());
+        $issued = $issuer->issue($draft->fresh())->invoice;
         $this->toastSuccess(__('invoices.issue_success', ['number' => $issued->document_number]));
         $this->redirect(route('admin.invoices'), navigate: true);
     }

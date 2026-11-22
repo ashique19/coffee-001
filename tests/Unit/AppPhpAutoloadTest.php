@@ -22,18 +22,20 @@ it('autoloads every declared class, interface, trait, and enum under app/', func
 
         $namespace = trim($namespaceMatch[1]);
 
-        if (! preg_match_all('/\b(?:abstract\s+)?(?:class|interface|trait|enum)\s+(\w+)/', $contents, $symbolMatches)) {
+        if (! preg_match_all('/\b(?:abstract\s+)?(class|interface|trait|enum)\s+(\w+)/', $contents, $symbolMatches, PREG_SET_ORDER)) {
             continue;
         }
 
-        foreach ($symbolMatches[1] as $shortName) {
+        foreach ($symbolMatches as $match) {
+            $kind = $match[1];
+            $shortName = $match[2];
             $fqcn = $namespace.'\\'.$shortName;
 
             try {
-                $loaded = match (true) {
-                    enum_exists($fqcn, false) => enum_exists($fqcn, true),
-                    trait_exists($fqcn, false) => trait_exists($fqcn, true),
-                    interface_exists($fqcn, false) => interface_exists($fqcn, true),
+                $loaded = match ($kind) {
+                    'enum' => enum_exists($fqcn, true),
+                    'trait' => trait_exists($fqcn, true),
+                    'interface' => interface_exists($fqcn, true),
                     default => class_exists($fqcn, true),
                 };
 

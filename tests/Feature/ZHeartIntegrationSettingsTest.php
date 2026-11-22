@@ -51,7 +51,7 @@ it('stores submission skip when integration is disabled but env submit is on', f
         [['name' => 'Coffee', 'quantity' => 1, 'unit_price_ex_vat' => 10, 'vat_rate' => 15]],
     );
 
-    $issued = app(InvoiceIssueService::class)->issue($draft);
+    $issued = app(InvoiceIssueService::class)->issue($draft)->invoice;
 
     expect($issued->payload['zheart_submission_skip'])->toBe('integration_disabled');
 
