@@ -8,6 +8,7 @@ use App\Livewire\Concerns\ValidatesFieldsLive;
 use App\Models\BusinessSetting;
 use App\Models\Branch;
 use App\Services\InvoiceIssueService;
+use App\Support\Invoicing\DocumentCreateUiSupport;
 use App\Support\Validation\FieldValidationRules;
 use App\Business\BusinessContext;
 use Illuminate\View\View;
@@ -26,10 +27,10 @@ class IssueInvoice extends Component
 
     public string $mode;
 
-    /** @var list<array{name: string, quantity: string, unit_price: string, vat_rate: string}> */
-    public array $lines = [
-        ['name' => '', 'quantity' => '1', 'unit_price' => '', 'vat_rate' => '15'],
-    ];
+    /** @var list<array<string, mixed>> */
+    public array $lines = [];
+
+    public bool $pendingPrintAfterIssue = false;
 
     public string $buyerName = '';
 
@@ -54,9 +55,11 @@ class IssueInvoice extends Component
     public function mount(string $mode): void
     {
         $this->resolveBusiness();
-        abort_unless(in_array($mode, ['standard', 'simplified'], true), 404);
-
         $tenant = $this->tenant;
+        if (! in_array($mode, ['standard', 'simplified'], true)) {
+            $mode = $tenant->defaultInvoiceDocumentType()->value;
+        }
+        abort_unless(in_array($mode, ['standard', 'simplified'], true), 404);
         $this->mode = $mode;
         BusinessContext::set($tenant);
 
@@ -65,7 +68,12 @@ class IssueInvoice extends Component
 
     public function addLine(): void
     {
-        $this->lines[] = ['name' => '', 'quantity' => '1', 'unit_price' => '', 'vat_rate' => '15'];
+        $this->addCustomLine();
+    }
+
+    public function addCustomLine(): void
+    {
+        $this->lines[] = DocumentCreateUiSupport::decorateCustomLine(DocumentCreateUiSupport::emptyFormLine());
     }
 
     public function removeLine(int $index): void
@@ -79,6 +87,29 @@ class IssueInvoice extends Component
 
     public function issue(InvoiceIssueService $issuer): void
     {
+        $this->performIssue($issuer, printAfter: false);
+    }
+
+    public function issueAndPrint(InvoiceIssueService $issuer): void
+    {
+        $this->performIssue($issuer, printAfter: true);
+    }
+
+    private function performIssue(InvoiceIssueService $issuer, bool $printAfter): void
+    {
+        $this->pendingPrintAfterIssue = $printAfter;
+        $this->lines = DocumentCreateUiSupport::applySharedCustomLineNames($this->lines);
+        $this->lines = array_values(array_filter(
+            $this->lines,
+            static fn (array $row): bool => DocumentCreateUiSupport::lineIsPresent($row) || filled($row['name'] ?? null),
+        ));
+
+        if ($this->lines === []) {
+            $this->addError('document', __('invoices.errors.lines_required'));
+
+            return;
+        }
+
         $this->validate($this->rulesForMode());
 
         $branch = Branch::query()->where('is_active', true)->orderBy('id')->first();
@@ -86,12 +117,10 @@ class IssueInvoice extends Component
         $documentNumber = strtoupper($this->mode === 'standard' ? 'STD' : 'SIMP')
             .'-'.now('Asia/Riyadh')->format('Ymd-His');
 
-        $lineItems = array_map(fn (array $row) => [
-            'name' => trim($row['name']),
-            'quantity' => (float) $row['quantity'],
-            'unit_price_ex_vat' => (float) $row['unit_price'],
-            'vat_rate' => (float) $row['vat_rate'],
-        ], $this->lines);
+        $lineItems = array_map(
+            static fn (array $row): array => DocumentCreateUiSupport::payloadLineFromFormRow($row),
+            $this->lines,
+        );
 
         $draft = $issuer->issueDraft($branch, $documentNumber, $type, $lineItems);
 
@@ -119,6 +148,21 @@ class IssueInvoice extends Component
 
         $issued = $issuer->issue($draft->fresh())->invoice;
         $this->toastSuccess(__('invoices.issue_success', ['number' => $issued->document_number]));
+        $this->redirectAfterIssue((int) $issued->id);
+    }
+
+    private function redirectAfterIssue(int $invoiceId): void
+    {
+        if ($this->pendingPrintAfterIssue) {
+            $this->redirect(route('admin.invoices.print', [
+                'invoice' => $invoiceId,
+                'layout' => 'cash',
+                'autoprint' => 1,
+            ]), navigate: true);
+
+            return;
+        }
+
         $this->redirect(route('admin.invoices'), navigate: true);
     }
 
@@ -126,11 +170,24 @@ class IssueInvoice extends Component
     {
         $isStandard = $this->mode === 'standard';
 
+        $previewTotal = 0.0;
+        foreach ($this->lines as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $qty = (float) ($row['quantity'] ?? 0);
+            $price = (float) ($row['unit_price'] ?? 0);
+            $vat = (float) ($row['vat_rate'] ?? 15);
+            $previewTotal += round($qty * $price * (1 + $vat / 100), 2);
+        }
+
         return view('livewire.invoices.issue-invoice', [
             'pageTitle' => $isStandard
                 ? __('invoices.issue_standard_title')
                 : __('invoices.issue_simplified_title'),
             'isStandard' => $isStandard,
+            'previewTotal' => $previewTotal,
+            'defaultIssueMode' => $this->tenant->defaultInvoiceDocumentType()->value,
         ]);
     }
 
@@ -139,13 +196,7 @@ class IssueInvoice extends Component
      */
     private function rulesForMode(): array
     {
-        $lineRules = [
-            'lines' => ['required', 'array', 'min:1'],
-            'lines.*.name' => ['required', 'string', 'max:200'],
-            'lines.*.quantity' => ['required', 'numeric', 'min:0.01'],
-            'lines.*.unit_price' => ['required', 'numeric', 'min:0'],
-            'lines.*.vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
-        ];
+        $lineRules = DocumentCreateUiSupport::lineValidationRules();
 
         if ($this->mode === 'simplified') {
             return array_merge($lineRules, [
@@ -172,6 +223,17 @@ class IssueInvoice extends Component
     protected function liveValidationRules(): array
     {
         return $this->rulesForMode();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function messages(): array
+    {
+        return array_merge(DocumentCreateUiSupport::lineValidationMessages($this->lines), [
+            'lines.required' => __('invoices.errors.lines_required'),
+            'lines.min' => __('invoices.errors.lines_required'),
+        ]);
     }
 
     /**
