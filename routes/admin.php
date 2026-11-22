@@ -69,6 +69,11 @@ Route::prefix('admin')->middleware('auth:tenant')->group(function (): void {
 
     Route::middleware('invoices.access')->group(function (): void {
         Route::get('/invoices', InvoiceHub::class)->name('admin.invoices');
+        Route::get('/invoices/issue', function () {
+            $mode = \App\Models\BusinessSetting::singleton()->defaultInvoiceDocumentType()->value;
+
+            return redirect()->route('admin.invoices.issue', ['mode' => $mode]);
+        })->name('admin.invoices.issue.default');
         Route::get('/invoices/issue/{mode}', IssueInvoice::class)
             ->where('mode', 'standard|simplified')
             ->name('admin.invoices.issue');

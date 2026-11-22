@@ -136,7 +136,7 @@
                         <span class="app-sidebar__label">{{ __('invoices.nav') }}</span>
                     </a>
                     @can('invoices.issue')
-                        @php $altInvoiceMode = $tenant->alternateInvoiceDocumentType()->value; @endphp
+                        @php $altInvoiceMode = $tenant->defaultInvoiceDocumentType()->value; @endphp
                         <a href="{{ route('admin.invoices.issue', [ $altInvoiceMode]) }}" @class(['app-nav-link', 'app-nav-link--active' => $active === 'invoices-issue'])>
                             <x-app.icon name="clipboard" class="h-5 w-5 shrink-0" />
                             <span class="app-sidebar__label">{{ __('invoices.nav_issue_'.$altInvoiceMode) }}</span>
@@ -258,7 +258,7 @@
                             <li><a class="app-nav-link" href="{{ route('admin.invoices') }}">{{ __('invoices.nav') }}</a></li>
                         @endif
                         @can('invoices.issue')
-                            @php $altInvoiceMode = $tenant->alternateInvoiceDocumentType()->value; @endphp
+                            @php $altInvoiceMode = $tenant->defaultInvoiceDocumentType()->value; @endphp
                             <li><a class="app-nav-link" href="{{ route('admin.invoices.issue', [ $altInvoiceMode]) }}">{{ __('invoices.nav_issue_'.$altInvoiceMode) }}</a></li>
                         @endcan
                         <li>
