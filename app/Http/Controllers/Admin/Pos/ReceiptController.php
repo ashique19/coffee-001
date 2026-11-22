@@ -6,8 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BusinessSetting;
 use App\Models\PosOrder;
 use App\Support\EnabledLocales;
-use App\Support\Pos\ReceiptThermalPresenter;
-use App\Support\ReceiptSigningStatusLabel;
+use App\Support\Invoicing\InvoicePrintSheet;
 use Illuminate\View\View;
 
 class ReceiptController extends Controller
@@ -18,21 +17,25 @@ class ReceiptController extends Controller
             abort(404, 'Invoice not issued for this order.');
         }
 
-        $tenant = BusinessSetting::singleton();
-
         $order->loadMissing(['branch', 'cashier', 'customer']);
         $invoice = $order->invoice()->firstOrFail();
         $locale = EnabledLocales::resolve(request()->query('locale', app()->getLocale()));
         app()->setLocale($locale);
 
-        return view('admin.pos.receipt', [
-            'tenant' => $tenant,
-            'order' => $order,
+        $t = InvoicePrintSheet::forInvoice($invoice, $order, BusinessSetting::singleton());
+
+        return view('admin.invoices.print-cash', [
             'invoice' => $invoice,
-            'locale' => $locale,
-            'branch' => $order->branch,
-            'compliance' => ReceiptSigningStatusLabel::forInvoice($invoice),
-            'thermal' => ReceiptThermalPresenter::compose($tenant, $order, $invoice, $order->branch),
+            'order' => $order,
+            't' => $t,
+            'receiptUrl' => null,
+            'cashUrl' => route('admin.invoices.print', ['invoice' => $invoice, 'layout' => 'cash', 'locale' => $locale]),
+            'a4Url' => null,
+            'pdfUrl' => null,
+            'canDownloadPdf' => false,
+            'canResubmitZatca' => false,
+            'zatcaNotSent' => false,
+            'fallbackBackUrl' => route('admin.pos.home'),
         ]);
     }
 }
