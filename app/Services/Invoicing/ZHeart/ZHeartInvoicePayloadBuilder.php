@@ -60,14 +60,42 @@ final class ZHeartInvoicePayloadBuilder
             $payload['buyer'] = $buyerBlock;
         }
 
-        if (config('zheart.allow_seller_override', false)) {
-            $payload['seller'] = array_filter([
-                'name' => $legal['name_en'] ?? $request->business->name,
-                'vat_number' => $legal['vat_number'] ?? null,
-            ]);
-        }
+        $payload['seller'] = $this->sellerBlock($request, $legal);
 
         return $payload;
+    }
+
+    /**
+     * Seller block required by Z-Heart when the API client profile does not
+     * already supply one. Field mapping matches plumber-001 (legal_entity, with
+     * business.legal as a coffee settings fallback).
+     *
+     * @param  array<string, mixed>  $legal
+     * @return array<string, mixed>
+     */
+    private function sellerBlock(InvoiceSigningRequest $request, array $legal): array
+    {
+        if (! filled($legal['name_en'] ?? null) && ! filled($legal['vat_number'] ?? null)) {
+            $alt = data_get($request->business->settings, 'business.legal', []);
+            if (is_array($alt) && $alt !== []) {
+                $legal = array_merge($legal, $alt);
+            }
+        }
+
+        $name = trim((string) ($legal['name_en'] ?? $request->business->name));
+        $vatNumber = trim((string) ($legal['vat_number'] ?? ''));
+
+        if ($name === '') {
+            throw new \InvalidArgumentException(__('invoices.errors.seller_name_required'));
+        }
+        if ($vatNumber === '') {
+            throw new \InvalidArgumentException(__('invoices.errors.seller_vat_required'));
+        }
+
+        return array_filter([
+            'name' => $name,
+            'vat_number' => $vatNumber,
+        ]);
     }
 
     /**

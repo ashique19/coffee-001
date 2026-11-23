@@ -77,6 +77,8 @@ return [
         'signing_failed' => 'تعذّر التوقيع المشفّر لهذه الفاتورة. تحقق من مفاتيح جهاز وsigning service',
         'signing_credentials_invalid' => 'تعذّر تحميل signing service',
         'lines_required' => 'أضف بنداً واحداً على الأقل قبل الإصدار.',
+        'seller_name_required' => 'أدخل الاسم القانوني للبائع (بالإنجليزية) في إعدادات المنشأة قبل إصدار الفاتورة.',
+        'seller_vat_required' => 'أدخل الرقم الضريبي للبائع في إعدادات المنشأة قبل إصدار الفاتورة.',
     ],
     'zatca_precheck' => [
         'buyer_postal' => 'الرمز البريدي يجب أن يكون 5 أرقام (السعودية)',
