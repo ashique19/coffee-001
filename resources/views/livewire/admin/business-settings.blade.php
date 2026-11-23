@@ -44,9 +44,9 @@
             <x-form.input :label="__('business.brand.tagline_ar')" name="taglineAr" wire:model.blur="taglineAr" :liveValidate="false" />
             <x-form.textarea :label="__('business.brand.story_en')" name="storyEn" wire:model.blur="storyEn" rows="5" :liveValidate="false" />
             <x-form.textarea :label="__('business.brand.story_ar')" name="storyAr" wire:model.blur="storyAr" rows="5" :liveValidate="false" />
-            <x-form.select :label="__('business.brand.brand_color')" name="brandColorKey" wire:model="brandColorKey" :liveValidate="false" required>
+            <x-form.select :label="__('business.brand.brand_color')" name="brandColorKey" wire:model="brandColorKey" :liveValidate="false" required data-testid="business-brand-color">
                 @foreach ($colorOptions as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
+                    <option value="{{ $key }}" @selected($brandColorKey === $key)>{{ $label }}</option>
                 @endforeach
             </x-form.select>
             <x-form.logo-upload

@@ -24,11 +24,55 @@ final class TenantBusinessProfile
   }
 
   /**
+   * Cafe palette first. Always code-defined so the Brand colour dropdown is never empty.
+   *
+   * @return list<string>
+   */
+  public static function selectableBrandColorKeys(): array
+  {
+      return ['espresso', 'caramel', 'accent', 'mocha'];
+  }
+
+  /**
+   * @return array<string, string>
+   */
+  public static function defaultThemeColors(): array
+  {
+      return [
+          'espresso' => '#2C1810',
+          'cream' => '#FAF6F0',
+          'caramel' => '#C68B59',
+          'latte' => '#E8D4C4',
+          'mocha' => '#5C3D2E',
+          'accent' => '#D4A574',
+          'primary' => '#2C1810',
+          'secondary' => '#6F4E37',
+      ];
+  }
+
+  /**
+   * @return array<string, string>
+   */
+  public static function brandColorPalette(BusinessSetting $tenant): array
+  {
+      $defaults = self::defaultThemeColors();
+      $stored = $tenant->themeColors();
+      $out = [];
+      foreach (self::selectableBrandColorKeys() as $key) {
+          $value = $stored[$key] ?? $defaults[$key] ?? null;
+          if (is_string($value) && $value !== '') {
+              $out[$key] = $value;
+          }
+      }
+
+      return $out !== [] ? $out : array_intersect_key($defaults, array_flip(self::selectableBrandColorKeys()));
+  }
+
+  /**
    * @return array<string, string>
    */
   public static function brandColorOptions(BusinessSetting $tenant): array
   {
-      $colors = $tenant->themeColors();
       $labels = [
           'espresso' => __('business.colors.espresso'),
           'caramel' => __('business.colors.caramel'),
@@ -37,13 +81,28 @@ final class TenantBusinessProfile
       ];
 
       $out = [];
-      foreach ($labels as $key => $label) {
-          if (isset($colors[$key])) {
-              $out[$key] = $label;
-          }
+      foreach (self::selectableBrandColorKeys() as $key) {
+          $out[$key] = $labels[$key] ?? ucfirst($key);
       }
 
       return $out;
+  }
+
+  public static function normalizeBrandColorKey(BusinessSetting $tenant, mixed $key): string
+  {
+      $key = self::scalarString($key);
+      $allowed = array_keys(self::brandColorOptions($tenant));
+
+      if ($key !== '' && in_array($key, $allowed, true)) {
+          return $key;
+      }
+
+      $stored = self::scalarString(data_get($tenant->settings, 'business.brand.brand_color_key'));
+      if ($stored !== '' && in_array($stored, $allowed, true)) {
+          return $stored;
+      }
+
+      return self::primaryColorKey($tenant);
   }
 
   public static function primaryColorKey(BusinessSetting $tenant): string

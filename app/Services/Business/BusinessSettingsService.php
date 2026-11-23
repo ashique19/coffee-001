@@ -149,16 +149,20 @@ class BusinessSettingsService
         }
         data_set($settings, $contentKey, $content);
 
-        $colorKey = (string) ($brand['brand_color_key'] ?? TenantBusinessProfile::primaryColorKey($tenant));
+        $colorKey = TenantBusinessProfile::normalizeBrandColorKey($tenant, $brand['brand_color_key'] ?? null);
+        $brand['brand_color_key'] = $colorKey;
+        $business['brand'] = $brand;
+        $settings['business'] = $business;
+
         $theme = (array) ($settings['theme'] ?? []);
-        $palette = $tenant->themeColors();
+        $palette = TenantBusinessProfile::brandColorPalette($tenant);
+        $colors = array_merge(TenantBusinessProfile::defaultThemeColors(), (array) ($theme['colors'] ?? []));
         if (isset($palette[$colorKey])) {
-            $primaryKey = TenantBusinessProfile::primaryColorKey($tenant);
-            $colors = (array) ($theme['colors'] ?? []);
-            $colors[$primaryKey] = $palette[$colorKey];
-            $theme['colors'] = $colors;
-            $settings['theme'] = $theme;
+            $colors[TenantBusinessProfile::primaryColorKey($tenant)] = $palette[$colorKey];
+            $colors['primary'] = $palette[$colorKey];
         }
+        $theme['colors'] = $colors;
+        $settings['theme'] = $theme;
 
         if ($logo !== null) {
             $previous = data_get($settings, 'theme.logo_url');

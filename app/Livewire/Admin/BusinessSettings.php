@@ -502,7 +502,7 @@ class BusinessSettings extends Component
         $cafeContent = (array) data_get($settings, 'content.cafe', []);
         $this->storyEn = (string) ($cafeContent['about_en'] ?? '');
         $this->storyAr = (string) ($cafeContent['about_ar'] ?? '');
-        $this->brandColorKey = (string) ($brand['brand_color_key'] ?? TenantBusinessProfile::primaryColorKey($tenant));
+        $this->brandColorKey = TenantBusinessProfile::normalizeBrandColorKey($tenant, $brand['brand_color_key'] ?? null);
         $this->currentLogo = data_get($settings, 'theme.logo_url');
 
         $this->legalNameEn = (string) ($legal['name_en'] ?? '');
