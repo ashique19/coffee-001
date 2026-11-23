@@ -83,7 +83,7 @@ final class ZHeartConnectionTestReport
             $warnings[] = __('business.zheart.test_warn_csid_expiring');
         }
 
-        $businessVat = trim((string) ($business !== null ? data_get($business->settings, 'legal.vat_number', '') : ''));
+        $businessVat = self::localVatNumber($business);
         $remoteVat = self::normalizeVat(self::firstScalar($client, ['vat_number', 'vat_no', 'vat'], '') ?? '');
         $localVat = self::normalizeVat($businessVat);
         if ($remoteVat !== '' && $localVat !== '' && $remoteVat !== $localVat) {
@@ -156,6 +156,26 @@ final class ZHeartConnectionTestReport
             'reason' => 'unreachable',
             'message' => __('business.zheart.test_reason_unreachable'),
         ];
+    }
+
+    private static function localVatNumber(?BusinessSetting $business): string
+    {
+        if ($business === null) {
+            return '';
+        }
+
+        foreach ([
+            'legal_entity.vat_number',
+            'business.legal.vat_number',
+            'legal.vat_number',
+        ] as $path) {
+            $value = trim((string) data_get($business->settings, $path, ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
     }
 
     private static function normalizeVat(mixed $value): string

@@ -2,30 +2,33 @@
 
 namespace App\Livewire\Admin;
 
+use App\Business\BusinessContext;
 use App\Livewire\Concerns\DispatchesToasts;
+use App\Livewire\Concerns\ResolvesBusinessContext;
 use App\Models\BusinessSetting;
 use App\Rules\SaudiVatNumber;
 use App\Services\Business\BusinessSettingsService;
+use App\Services\Invoicing\ZHeart\ZHeartClient;
 use App\Support\Geo\GeoMapsUrl;
+use App\Support\Invoicing\ZHeartCredentials;
 use App\Support\TenantBusinessHours;
 use App\Support\TenantBusinessProfile;
 use App\Support\Upload\LogoUploadConstraints;
-use Illuminate\Support\Facades\Log;
-use App\Business\BusinessContext;
-use App\Livewire\Concerns\ResolvesBusinessContext;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Throwable;
 
 #[Layout('layouts.pos')]
 class BusinessSettings extends Component
 {
-    use ResolvesBusinessContext;
     use DispatchesToasts;
+    use ResolvesBusinessContext;
     use WithFileUploads;
 
     public int $tenantId;
@@ -117,6 +120,36 @@ class BusinessSettings extends Component
 
     public bool $zheartKeyConfigured = false;
 
+    public string $zheartBaseUrl = '';
+
+    public string $zheartApiKeyInput = '';
+
+    public bool $zheartReplaceKeyOpen = false;
+
+    public bool $zheartHasStoredKey = false;
+
+    public ?string $zheartKeyLast4 = null;
+
+    public bool $zheartUsingEnvFallback = false;
+
+    public bool $zheartBaseUrlFromEnv = false;
+
+    public ?string $zheartTestStatus = null;
+
+    public string $zheartTestMessage = '';
+
+    public ?int $zheartTestHttpStatus = null;
+
+    public ?string $zheartTestReason = null;
+
+    /** @var array<string, mixed>|null */
+    public ?array $zheartTestCard = null;
+
+    /** @var list<string> */
+    public array $zheartTestWarnings = [];
+
+    public ?string $zheartTestRequestId = null;
+
     /** @var list<string> */
     public array $tabsWithErrors = [];
 
@@ -133,6 +166,9 @@ class BusinessSettings extends Component
     public function setSection(string $section): void
     {
         $allowed = ['brand', 'legal', 'contact', 'hours', 'branches', 'extras', 'invoicing'];
+        if ($section === 'zheart') {
+            $section = 'invoicing';
+        }
         if (in_array($section, $allowed, true)) {
             $this->section = $section;
             $this->dispatch('business-tab-shown', section: $section);
@@ -278,18 +314,18 @@ class BusinessSettings extends Component
         $this->tabsWithErrors = [];
         try {
             $this->runSectionValidation([
-            'legalNameEn' => 'required|string|max:200',
-            'legalNameAr' => 'required|string|max:200',
-            'vatNumber' => ['required', 'string', new SaudiVatNumber],
-            'crNumber' => 'required|string|max:32',
-            'addressEn' => 'required|string|max:500',
-            'addressAr' => 'required|string|max:500',
-            'naBuilding' => 'required|string|max:20',
-            'naStreet' => 'required|string|max:120',
-            'naDistrict' => 'required|string|max:120',
-            'naCity' => 'required|string|max:80',
-            'naPostal' => 'required|digits:5',
-            'naAdditional' => 'nullable|string|max:20',
+                'legalNameEn' => 'required|string|max:200',
+                'legalNameAr' => 'required|string|max:200',
+                'vatNumber' => ['required', 'string', new SaudiVatNumber],
+                'crNumber' => 'required|string|max:32',
+                'addressEn' => 'required|string|max:500',
+                'addressAr' => 'required|string|max:500',
+                'naBuilding' => 'required|string|max:20',
+                'naStreet' => 'required|string|max:120',
+                'naDistrict' => 'required|string|max:120',
+                'naCity' => 'required|string|max:80',
+                'naPostal' => 'required|digits:5',
+                'naAdditional' => 'nullable|string|max:20',
             ], 'legal');
         } catch (ValidationException) {
             return;
@@ -325,17 +361,17 @@ class BusinessSettings extends Component
         $this->lng = $this->normalizeCoordinate($this->lng);
         try {
             $this->runSectionValidation([
-            'phone' => 'nullable|string|max:40',
-            'whatsapp' => 'nullable|string|max:40',
-            'email' => ['nullable', 'email:rfc,filter', 'max:120'],
-            'website' => 'nullable|url|max:200',
-            'instagram' => 'nullable|string|max:80',
-            'socialX' => 'nullable|string|max:80',
-            'tiktok' => 'nullable|string|max:80',
-            'snapchat' => 'nullable|string|max:80',
-            'mapsUrl' => 'nullable|url|max:500',
-            'lat' => 'nullable|numeric',
-            'lng' => 'nullable|numeric',
+                'phone' => 'nullable|string|max:40',
+                'whatsapp' => 'nullable|string|max:40',
+                'email' => ['nullable', 'email:rfc,filter', 'max:120'],
+                'website' => 'nullable|url|max:200',
+                'instagram' => 'nullable|string|max:80',
+                'socialX' => 'nullable|string|max:80',
+                'tiktok' => 'nullable|string|max:80',
+                'snapchat' => 'nullable|string|max:80',
+                'mapsUrl' => 'nullable|url|max:500',
+                'lat' => 'nullable|numeric',
+                'lng' => 'nullable|numeric',
             ], 'contact');
         } catch (ValidationException) {
             return;
@@ -378,12 +414,12 @@ class BusinessSettings extends Component
         $this->weekdays = TenantBusinessProfile::normalizeWeekdays($this->weekdays);
         try {
             $this->runSectionValidation([
-            'hoursNote' => 'nullable|string|max:500',
-            'weekdays' => 'required|array',
-            'weekdays.*.key' => 'required|string|in:saturday,sunday,monday,tuesday,wednesday,thursday,friday',
-            'weekdays.*.closed' => 'boolean',
-            'weekdays.*.open' => 'nullable|date_format:H:i',
-            'weekdays.*.close' => 'nullable|date_format:H:i',
+                'hoursNote' => 'nullable|string|max:500',
+                'weekdays' => 'required|array',
+                'weekdays.*.key' => 'required|string|in:saturday,sunday,monday,tuesday,wednesday,thursday,friday',
+                'weekdays.*.closed' => 'boolean',
+                'weekdays.*.open' => 'nullable|date_format:H:i',
+                'weekdays.*.close' => 'nullable|date_format:H:i',
             ], 'hours');
         } catch (ValidationException) {
             return;
@@ -439,6 +475,136 @@ class BusinessSettings extends Component
         $this->toastSuccess(__('business.messages.saved'));
     }
 
+    public function beginZheartReplaceKey(): void
+    {
+        $this->assertOwner();
+        $this->zheartReplaceKeyOpen = true;
+        $this->zheartApiKeyInput = '';
+    }
+
+    public function updatedZheartBaseUrl(): void
+    {
+        $stored = trim((string) data_get($this->tenant()->settings, 'zheart.base_url', ''));
+        if ($stored !== '') {
+            $this->zheartBaseUrlFromEnv = false;
+
+            return;
+        }
+
+        $env = rtrim((string) config('zheart.base_url', ''), '/');
+        $current = rtrim(trim($this->zheartBaseUrl), '/');
+        $this->zheartBaseUrlFromEnv = $env !== '' && $current === $env;
+    }
+
+    public function saveZheart(BusinessSettingsService $service): void
+    {
+        $this->assertOwner();
+        $this->section = 'invoicing';
+        $this->tabsWithErrors = [];
+
+        $rules = [
+            'zheartBaseUrl' => ['nullable', 'string', 'max:255', 'regex:/^https?:\\/\\/.+/i'],
+        ];
+        if (trim($this->zheartApiKeyInput) !== '') {
+            $rules['zheartApiKeyInput'] = ['required', 'string', 'min:16', 'max:512'];
+        }
+
+        try {
+            $this->runSectionValidation($rules, 'invoicing');
+        } catch (ValidationException) {
+            return;
+        }
+
+        try {
+            $tenant = $service->saveZheart($this->tenant(), [
+                'base_url' => $this->zheartBaseUrl,
+                'api_key' => trim($this->zheartApiKeyInput) !== '' ? trim($this->zheartApiKeyInput) : null,
+            ], auth('tenant')->user());
+        } catch (Throwable $e) {
+            Log::warning('business.settings.zheart.save_failed', [
+                'message' => $e->getMessage(),
+            ]);
+            $this->toastError(__('business.validation.section_failed', [
+                'section' => __('business.sections.invoicing'),
+            ]));
+
+            return;
+        }
+
+        $this->zheartApiKeyInput = '';
+        $this->zheartReplaceKeyOpen = false;
+        $this->toastSuccess(__('business.messages.saved'));
+        $this->hydrateFromTenant($tenant);
+    }
+
+    public function removeZheartKey(BusinessSettingsService $service): void
+    {
+        $this->assertOwner();
+        $this->section = 'invoicing';
+
+        try {
+            $tenant = $service->saveZheart($this->tenant(), [
+                'remove_api_key' => true,
+            ], auth('tenant')->user());
+        } catch (Throwable $e) {
+            Log::warning('business.settings.zheart.remove_failed', [
+                'message' => $e->getMessage(),
+            ]);
+            $this->toastError(__('business.validation.section_failed', [
+                'section' => __('business.sections.invoicing'),
+            ]));
+
+            return;
+        }
+
+        $this->zheartApiKeyInput = '';
+        $this->zheartReplaceKeyOpen = false;
+        $this->toastSuccess(__('business.zheart.key_removed'));
+        $this->hydrateFromTenant($tenant);
+    }
+
+    public function testZheartConnection(ZHeartClient $client): void
+    {
+        $this->assertOwner();
+        $this->section = 'invoicing';
+
+        $tenant = $this->tenant();
+        $base = trim($this->zheartBaseUrl);
+        if ($base === '') {
+            $base = ZHeartCredentials::baseUrl($tenant);
+        } else {
+            $base = rtrim($base, '/');
+        }
+
+        $key = trim($this->zheartApiKeyInput);
+        if ($key === '') {
+            $key = ZHeartCredentials::apiKey($tenant);
+        }
+
+        $result = $client->testConnection($base, $key, $tenant);
+        $this->zheartTestStatus = match ($result['severity'] ?? 'error') {
+            'ok' => 'ok',
+            'warn' => 'warn',
+            default => 'error',
+        };
+        $this->zheartTestMessage = $result['message'];
+        $this->zheartTestHttpStatus = $result['http_status'] ?? null;
+        $this->zheartTestReason = $result['reason'] ?? null;
+        $this->zheartTestCard = is_array($result['card'] ?? null) ? $result['card'] : null;
+        $this->zheartTestWarnings = is_array($result['warnings'] ?? null) ? $result['warnings'] : [];
+        $this->zheartTestRequestId = is_string($result['request_id'] ?? null) && $result['request_id'] !== ''
+            ? $result['request_id']
+            : null;
+
+        if ($result['ok']) {
+            $this->toastSuccess($result['message']);
+        } elseif (($result['severity'] ?? 'error') === 'warn') {
+            $this->toastWarning($result['message']);
+        } else {
+            $this->toastError($result['message']);
+        }
+    }
+
     public function render(): View
     {
         $tenant = $this->tenant();
@@ -447,6 +613,7 @@ class BusinessSettings extends Component
             'tenant' => $tenant,
             'colorOptions' => TenantBusinessProfile::brandColorOptions($tenant),
             'teamUrl' => route('admin.team'),
+            'isOwner' => $this->isOwner(),
         ]);
     }
 
@@ -550,13 +717,48 @@ class BusinessSettings extends Component
         $apps = (array) ($extras['delivery_apps'] ?? []);
         $this->deliveryAppsRaw = implode("\n", $apps);
 
-        $this->zheartKeyConfigured = filled(config('zheart.api_key'));
+        $this->zheartKeyConfigured = filled(config('zheart.api_key')) || ZHeartCredentials::isConfigured($tenant);
         $storedIntegration = data_get($settings, 'invoicing.integration_enabled');
         if ($storedIntegration === null && $this->zheartKeyConfigured) {
             $this->invoicingIntegrationEnabled = true;
         } else {
             $this->invoicingIntegrationEnabled = (bool) $storedIntegration;
         }
+
+        $this->hydrateZheartCredentials($tenant);
+    }
+
+    private function hydrateZheartCredentials(BusinessSetting $tenant): void
+    {
+        $storedBaseUrl = trim((string) data_get($tenant->settings, 'zheart.base_url', ''));
+        $envBaseUrl = rtrim((string) config('zheart.base_url', ''), '/');
+        if ($storedBaseUrl !== '') {
+            $this->zheartBaseUrl = $storedBaseUrl;
+            $this->zheartBaseUrlFromEnv = false;
+        } elseif ($envBaseUrl !== '') {
+            $this->zheartBaseUrl = $envBaseUrl;
+            $this->zheartBaseUrlFromEnv = true;
+        } else {
+            $this->zheartBaseUrl = '';
+            $this->zheartBaseUrlFromEnv = false;
+        }
+        $this->zheartHasStoredKey = ZHeartCredentials::hasStoredApiKey($tenant);
+        $this->zheartKeyLast4 = ZHeartCredentials::last4ForDisplay($tenant);
+        $this->zheartUsingEnvFallback = ! $this->zheartHasStoredKey
+            && is_string(config('zheart.api_key'))
+            && config('zheart.api_key') !== '';
+        $this->zheartApiKeyInput = '';
+        $this->zheartReplaceKeyOpen = false;
+    }
+
+    private function isOwner(): bool
+    {
+        return auth('tenant')->user()?->hasRole('owner') ?? false;
+    }
+
+    private function assertOwner(): void
+    {
+        abort_unless($this->isOwner(), 403);
     }
 
     /**

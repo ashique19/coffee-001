@@ -184,6 +184,7 @@ return [
         'test_success_client' => 'Connected — :name (:environment). Onboarded: :onboarded.',
         'test_not_configured' => 'Add a base URL and API key before testing.',
         'test_http_status' => 'HTTP :status',
+        'test_request_id' => 'Request id: :id',
         'test_reason_not_configured' => 'Missing base URL or API key.',
         'test_reason_unreachable' => 'Could not reach Z-Heart — check the base URL and network.',
         'test_reason_bad_key' => 'Authentication failed — check the API key.',

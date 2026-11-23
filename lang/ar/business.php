@@ -170,6 +170,7 @@ return [
         'test_success_client' => 'متصل — :name (:environment). التسجيل: :onboarded.',
         'test_not_configured' => 'أضف عنوان الأساس ومفتاح API قبل الاختبار.',
         'test_http_status' => 'HTTP :status',
+        'test_request_id' => 'معرّف الطلب: :id',
         'test_reason_not_configured' => 'عنوان الأساس أو مفتاح API مفقود.',
         'test_reason_unreachable' => 'تعذّر الوصول إلى Z-Heart — تحقق من العنوان والشبكة.',
         'test_reason_bad_key' => 'فشلت المصادقة — تحقق من مفتاح API.',
