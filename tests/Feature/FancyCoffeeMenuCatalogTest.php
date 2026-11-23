@@ -114,11 +114,15 @@ it('lists the seeded catalog in the admin menu manager', function () {
         ->assertSee('images/menu/espresso.webp', false);
 });
 
-it('keeps the menu SQL scoped to Fancy Coffee and free of invoice writes', function () {
+it('uses only tables that exist in the coffee-001 schema and does not write invoices', function () {
     $sql = File::get(base_path('docs/sql/2026-11-23-fancy-coffee-menu.sql'));
+    $code = preg_replace('/^--.*$/m', '', $sql);
 
-    expect($sql)->toContain("name = 'Fancy Coffee'")
-        ->and($sql)->toContain("slug = 'fancy-coffee'")
+    expect($code)->not->toMatch('/\btenants\b/i')
+        ->and($sql)->not->toContain('@is_fancy')
+        ->and($code)->not->toMatch('/\bPREPARE\b/i')
+        ->and($code)->not->toMatch('/\bDELIMITER\b/i')
+        ->and($code)->not->toMatch('/\binformation_schema\b/i')
         ->and($sql)->toContain('images/menu/espresso.webp')
         ->and($sql)->toContain('NOT EXISTS')
         ->and($sql)->not->toMatch('/\bINSERT INTO invoices\b/i')
