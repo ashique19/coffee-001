@@ -33,7 +33,7 @@ return [
     ],
     'queue_link' => 'إبلاغ signing service',
     'nav_issue_standard' => 'فاتورة قياسية',
-    'nav_issue_simplified' => 'فاتورة مبسطة',
+    'nav_issue_simplified' => 'فاتورة جديدة',
     'issue_standard_title' => 'إصدار فاتورة قياسية',
     'issue_simplified_title' => 'إصدار فاتورة مبسطة',
     'issue_page_lead' => 'إنشاء وإصدار مستند موقّع. يُرسل إلى signing service للمقاصة أو الإبلاغ عند تفعيل التكامل.',

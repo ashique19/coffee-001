@@ -26,7 +26,7 @@ return [
         'submitted' => 'Submitted to Z-Heart',
     ],
     'nav_issue_standard' => 'Standard invoice',
-    'nav_issue_simplified' => 'Simplified invoice',
+    'nav_issue_simplified' => 'New invoice',
     'issue_standard_title' => 'Issue standard invoice',
     'issue_simplified_title' => 'Issue simplified invoice',
     'issue_page_lead' => 'Create and cryptographically issue a one-off document. Z-Heart submission runs after issue when integration is enabled.',

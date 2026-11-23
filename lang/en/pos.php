@@ -4,7 +4,7 @@ return [
     'title' => 'Point of sale',
     'nav_pos' => 'POS',
     'nav_orders' => 'Orders',
-    'nav_eod' => 'EOD',
+    'nav_eod' => 'End of day',
     'nav_ops' => 'Ops',
     'nav_more' => 'More',
     'nav_home' => 'POS home',
