@@ -69,7 +69,7 @@ return [
     'pay_and_print' => 'دفع وطباعة',
     'processing' => 'جاري المعالجة…',
     'empty_catalog' => 'لا توجد منتجات في هذا التصنيف.',
-    'new_order' => 'طلب جديد',
+    'new_order' => 'إعادة تعيين',
     'back_to_terminal' => 'العودة لنقطة البيع',
     'back_to_orders' => 'العودة للطلبات',
     'status' => 'الحالة',
