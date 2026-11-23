@@ -148,7 +148,12 @@ final class StorefrontCatalog
             'sold_out' => $soldOut,
             'slug' => $product->sku ?: 'product-'.$product->id,
             'name' => $product->displayName($locale),
+            'name_en' => $product->displayName('en'),
+            'name_ar' => $product->displayName('ar'),
+            'name_bn' => $product->displayName('bn'),
+            'desc' => $product->displayDescription($locale),
             'price_sar' => $priceInc,
+            'image' => PosProductImagery::relativePathForSku($product->sku, $product->image_url),
         ];
     }
 }
