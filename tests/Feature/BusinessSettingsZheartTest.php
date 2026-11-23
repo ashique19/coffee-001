@@ -28,6 +28,11 @@ it('shows the z-heart connection block on the invoicing tab for owners only', fu
         ->assertSee(__('business.zheart.base_url'), false)
         ->assertSee(__('business.zheart.api_key'), false)
         ->assertSee(__('business.zheart.test_connection'), false)
+        ->assertSee(__('business.zheart.lead'), false)
+        ->assertSee(__('business.invoicing.integration_hint'), false)
+        ->assertDontSee('DB values override', false)
+        ->assertDontSee('cryptographically signed locally', false)
+        ->assertDontSee('signed locally', false)
         ->html();
 
     expect($html)->not->toContain(__('business.sections.zheart'))

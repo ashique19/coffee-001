@@ -44,11 +44,26 @@
             <x-form.input :label="__('business.brand.tagline_ar')" name="taglineAr" wire:model.blur="taglineAr" :liveValidate="false" />
             <x-form.textarea :label="__('business.brand.story_en')" name="storyEn" wire:model.blur="storyEn" rows="5" :liveValidate="false" />
             <x-form.textarea :label="__('business.brand.story_ar')" name="storyAr" wire:model.blur="storyAr" rows="5" :liveValidate="false" />
-            <x-form.select :label="__('business.brand.brand_color')" name="brandColorKey" wire:model="brandColorKey" :liveValidate="false" required data-testid="business-brand-color">
-                @foreach ($colorOptions as $key => $label)
-                    <option value="{{ $key }}" @selected($brandColorKey === $key)>{{ $label }}</option>
-                @endforeach
-            </x-form.select>
+            @php
+                $brandPalette = \App\Support\TenantBusinessProfile::brandColorPalette($tenant);
+                $brandSwatch = $brandPalette[$brandColorKey] ?? (array_values($brandPalette)[0] ?? '#2C1810');
+            @endphp
+            <div class="flex items-end gap-3" data-testid="business-brand-color-row">
+                <div class="min-w-0 flex-1">
+                    <x-form.select :label="__('business.brand.brand_color')" name="brandColorKey" wire:model.live="brandColorKey" :liveValidate="false" required data-testid="business-brand-color">
+                        @foreach ($colorOptions as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </x-form.select>
+                </div>
+                <span
+                    class="shrink-0"
+                    style="background-color: {{ $brandSwatch }}; width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; border: 1px solid var(--app-border); margin-bottom: 1px;"
+                    title="{{ $colorOptions[$brandColorKey] ?? '' }}"
+                    aria-hidden="true"
+                    data-testid="business-brand-color-swatch"
+                ></span>
+            </div>
             <x-form.logo-upload
                 :label="__('business.brand.logo')"
                 wire-model="logoUpload"
