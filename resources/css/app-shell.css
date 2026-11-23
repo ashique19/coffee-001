@@ -134,6 +134,20 @@
         @apply sr-only;
     }
 
+    .app-sidebar__group {
+        @apply px-3 pb-0 pt-2 text-start text-[0.65rem] font-semibold uppercase tracking-wider;
+        color: var(--app-muted);
+    }
+
+    .app-sidebar--collapsed .app-sidebar__group {
+        @apply hidden;
+    }
+
+    .app-sidebar .app-nav-link,
+    .app-sheet .app-nav-link {
+        min-height: 2.25rem;
+    }
+
     .app-main {
         @apply min-h-dvh lg:ps-64;
         position: relative;
