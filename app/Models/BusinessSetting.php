@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\InvoiceDocumentType;
+use App\Support\TenantBusinessProfile;
 use Illuminate\Database\Eloquent\Model;
 
 class BusinessSetting extends Model
@@ -51,8 +52,10 @@ class BusinessSetting extends Model
           'secondary' => '#6F4E37',
           'espresso' => '#2C1810',
           'cream' => '#FAF6F0',
-          'latte' => '#E8DCC8',
+          'latte' => '#E8D4C4',
           'caramel' => '#C68B59',
+          'mocha' => '#5C3D2E',
+          'accent' => '#D4A574',
         ],
         'font' => 'system-ui',
       ],
@@ -182,6 +185,15 @@ class BusinessSetting extends Model
    */
   public function themeColors(): array
   {
-    return (array) data_get($this->settings, 'theme.colors', []);
+    $stored = (array) data_get($this->settings, 'theme.colors', []);
+    $defaults = TenantBusinessProfile::defaultThemeColors();
+    $out = [];
+    foreach (array_merge($defaults, $stored) as $key => $value) {
+      if (is_string($key) && is_string($value) && $value !== '') {
+        $out[$key] = $value;
+      }
+    }
+
+    return $out !== [] ? $out : $defaults;
   }
 }
