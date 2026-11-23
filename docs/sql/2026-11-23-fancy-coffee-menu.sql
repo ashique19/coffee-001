@@ -1,43 +1,28 @@
 -- Idempotent Fancy Coffee menu + inventory seed (MariaDB 10.4+ / MySQL 8+)
 -- Safe to re-run in phpMyAdmin. Does not touch invoices.
 --
--- Prerequisites:
---   docs/sql/install.sql (and 2026-11-14-schema-fix.sql if that was needed)
---   docs/sql/2026-11-23-invoice-port-schema.sql (for product_units / products.product_unit_id)
---   public/images/menu/* deployed via git pull (this file only stores relative image paths)
+-- This database belongs only to Fancy Coffee. The script references only
+-- tables that exist in the current coffee-001 schema (branches,
+-- product_categories, products, product_units, ingredients,
+-- product_ingredients, inventory_movements). There is no tenants table;
+-- MariaDB resolves every table in a statement at parse time, so optional
+-- table references cannot be guarded with information_schema checks.
 --
--- Scope: the single-client Fancy Coffee database. Identified by business_settings.name
--- or legal_entity.name_en = 'Fancy Coffee' (no tenants table in the current schema;
--- if a leftover tenants.slug = 'fancy-coffee' row exists, that also qualifies).
+-- Prerequisites:
+--   Current schema (php artisan migrate, or docs/sql/install.sql plus
+--   docs/sql/2026-11-23-invoice-port-schema.sql for product_units).
+--   public/images/menu/* deployed via git pull (this file only stores relative image paths).
+--
 -- Products are shared (branch_id NULL) so POS at every active branch can see them.
--- VAT 15% is standard-rated category S. Unit is PCS when product_units exists.
+-- VAT 15% is standard-rated category S. Unit is PCS (product_units.code).
+-- Opening inventory movements attach to the jad-main branch, or the first active branch.
+-- Ingredient on-hand quantities are set on first insert only; re-runs do not reset stock.
 --
 -- Inc-VAT shelf prices (SAR): Espresso 14, Americano 14, Cappuccino 18, Latte 18,
 -- Spanish latte 20, Flat white 18, Iced latte 20, Saudi coffee 15, Croissant 14,
 -- Cake slice 16. Stored as price_ex_vat so incFromEx(ex, 15) matches those amounts.
 
 SET NAMES utf8mb4;
-
-SET @is_fancy := (
-  SELECT CASE
-    WHEN EXISTS (
-      SELECT 1 FROM information_schema.TABLES
-      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'business_settings'
-    ) AND EXISTS (
-      SELECT 1 FROM business_settings
-      WHERE name = 'Fancy Coffee'
-         OR settings LIKE '%"name_en": "Fancy Coffee"%'
-         OR settings LIKE '%"name_en":"Fancy Coffee"%'
-    ) THEN 1
-    WHEN EXISTS (
-      SELECT 1 FROM information_schema.TABLES
-      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tenants'
-    ) AND EXISTS (
-      SELECT 1 FROM tenants WHERE slug = 'fancy-coffee'
-    ) THEN 1
-    ELSE 0
-  END
-);
 
 SET @branch_id := (
   SELECT id FROM branches WHERE code = 'jad-main' LIMIT 1
@@ -47,16 +32,8 @@ SET @branch_id := IFNULL(
   (SELECT id FROM branches WHERE is_active = 1 ORDER BY id LIMIT 1)
 );
 
-SET @has_unit_col := (
-  SELECT COUNT(*) FROM information_schema.COLUMNS
-  WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME = 'products'
-    AND COLUMN_NAME = 'product_unit_id'
-);
-SET @unit_pcs := IF(
-  @has_unit_col > 0,
-  (SELECT id FROM product_units WHERE code = 'PCS' LIMIT 1),
-  NULL
+SET @unit_pcs := (
+  SELECT id FROM product_units WHERE code = 'PCS' LIMIT 1
 );
 
 -- ---------------------------------------------------------------------------
@@ -67,24 +44,21 @@ SELECT 'Hot drinks', 'مشروبات ساخنة', 'গরম পানীয়'
        'Espresso-based drinks served hot.', 'مشروبات على أساس الإسبريسو تُقدّم ساخنة.', 'গরম এসপ্রেসো ভিত্তিক পানীয়।',
        'cup', 10, 1, NOW(), NOW()
 FROM DUAL
-WHERE @is_fancy = 1
-  AND NOT EXISTS (SELECT 1 FROM product_categories WHERE name_en = 'Hot drinks');
+WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE name_en = 'Hot drinks');
 
 INSERT INTO product_categories (name_en, name_ar, name_bn, description_en, description_ar, description_bn, icon_key, sort_order, is_active, created_at, updated_at)
 SELECT 'Cold drinks', 'مشروبات باردة', 'ঠান্ডা পানীয়',
        'Iced coffee drinks.', 'مشروبات قهوة مثلجة.', 'আইসড কফি পানীয়।',
        'snow', 20, 1, NOW(), NOW()
 FROM DUAL
-WHERE @is_fancy = 1
-  AND NOT EXISTS (SELECT 1 FROM product_categories WHERE name_en = 'Cold drinks');
+WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE name_en = 'Cold drinks');
 
 INSERT INTO product_categories (name_en, name_ar, name_bn, description_en, description_ar, description_bn, icon_key, sort_order, is_active, created_at, updated_at)
 SELECT 'Pastries & bites', 'مخبوزات ووجبات خفيفة', 'পেস্ট্রি ও স্ন্যাকস',
        'Fresh pastries and a cake slice.', 'مخبوزات طازجة وشريحة كيك.', 'তাজা পেস্ট্রি ও কেকের স্লাইস।',
        'cookie', 30, 1, NOW(), NOW()
 FROM DUAL
-WHERE @is_fancy = 1
-  AND NOT EXISTS (SELECT 1 FROM product_categories WHERE name_en = 'Pastries & bites');
+WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE name_en = 'Pastries & bites');
 
 UPDATE product_categories
 SET name_ar = COALESCE(NULLIF(name_ar, ''), 'مشروبات ساخنة'),
@@ -92,7 +66,7 @@ SET name_ar = COALESCE(NULLIF(name_ar, ''), 'مشروبات ساخنة'),
     icon_key = COALESCE(NULLIF(icon_key, ''), 'cup'),
     is_active = 1,
     updated_at = NOW()
-WHERE @is_fancy = 1 AND name_en = 'Hot drinks';
+WHERE name_en = 'Hot drinks';
 
 UPDATE product_categories
 SET name_ar = COALESCE(NULLIF(name_ar, ''), 'مشروبات باردة'),
@@ -100,7 +74,7 @@ SET name_ar = COALESCE(NULLIF(name_ar, ''), 'مشروبات باردة'),
     icon_key = COALESCE(NULLIF(icon_key, ''), 'snow'),
     is_active = 1,
     updated_at = NOW()
-WHERE @is_fancy = 1 AND name_en = 'Cold drinks';
+WHERE name_en = 'Cold drinks';
 
 UPDATE product_categories
 SET name_ar = COALESCE(NULLIF(name_ar, ''), 'مخبوزات ووجبات خفيفة'),
@@ -108,7 +82,7 @@ SET name_ar = COALESCE(NULLIF(name_ar, ''), 'مخبوزات ووجبات خفي�
     icon_key = COALESCE(NULLIF(icon_key, ''), 'cookie'),
     is_active = 1,
     updated_at = NOW()
-WHERE @is_fancy = 1 AND name_en = 'Pastries & bites';
+WHERE name_en = 'Pastries & bites';
 
 SET @cat_hot := (SELECT id FROM product_categories WHERE name_en = 'Hot drinks' ORDER BY id LIMIT 1);
 SET @cat_cold := (SELECT id FROM product_categories WHERE name_en = 'Cold drinks' ORDER BY id LIMIT 1);
@@ -159,8 +133,7 @@ SELECT * FROM (
          'A slice of the day’s café cake.', 'شريحة من كيك اليوم.', 'আজকের ক্যাফে কেকের একটি স্লাইস।',
          'images/menu/cake-slice.webp', 13.91, 15.00, 100, 1, 0, 1, NOW(), NOW()
 ) AS seed
-WHERE @is_fancy = 1
-  AND NOT EXISTS (SELECT 1 FROM products p WHERE p.sku = seed.sku);
+WHERE NOT EXISTS (SELECT 1 FROM products p WHERE p.sku = seed.sku);
 
 UPDATE products p
 JOIN (
@@ -211,17 +184,13 @@ SET
   p.is_active = 1,
   p.show_on_homepage = seed.home,
   p.show_on_menu = 1,
-  p.updated_at = NOW()
-WHERE @is_fancy = 1;
+  p.updated_at = NOW();
 
-SET @unit_sql := IF(
-  @is_fancy = 1 AND @has_unit_col > 0 AND @unit_pcs IS NOT NULL,
-  'UPDATE products SET product_unit_id = @unit_pcs WHERE sku LIKE ''FC-%''',
-  'SELECT 1'
-);
-PREPARE _fc_unit_stmt FROM @unit_sql;
-EXECUTE _fc_unit_stmt;
-DEALLOCATE PREPARE _fc_unit_stmt;
+UPDATE products
+SET product_unit_id = @unit_pcs
+WHERE sku LIKE 'FC-%'
+  AND @unit_pcs IS NOT NULL;
+
 
 -- ---------------------------------------------------------------------------
 -- Ingredients + opening quantities (inventory page) and recipes
@@ -235,8 +204,7 @@ SELECT * FROM (
   UNION ALL SELECT @branch_id, 'Butter croissant', 'كرواسون بالزبدة', 'মাখনের ক্রোয়াসাঁ', 'pcs', 80.000, 12.000, 12.000, 1, NOW(), NOW()
   UNION ALL SELECT @branch_id, 'Cake portion', 'حصة كيك', 'কেকের অংশ', 'pcs', 40.000, 8.000, 8.000, 1, NOW(), NOW()
 ) AS seed
-WHERE @is_fancy = 1
-  AND NOT EXISTS (SELECT 1 FROM ingredients i WHERE i.name_en = seed.ne);
+WHERE NOT EXISTS (SELECT 1 FROM ingredients i WHERE i.name_en = seed.ne);
 
 UPDATE ingredients i
 JOIN (
@@ -250,12 +218,10 @@ SET
   i.name_ar = seed.na,
   i.name_bn = seed.nb,
   i.unit = seed.unit,
-  i.quantity_on_hand = seed.qty,
   i.reorder_level = seed.low,
   i.low_stock_threshold = seed.low,
   i.is_active = 1,
-  i.updated_at = NOW()
-WHERE @is_fancy = 1;
+  i.updated_at = NOW();
 
 -- product_ingredients (recipe quantities per unit sold)
 INSERT INTO product_ingredients (product_id, ingredient_id, quantity_per_unit, created_at, updated_at)
@@ -279,8 +245,7 @@ FROM (
 ) AS seed
 JOIN products p ON p.sku = seed.sku
 JOIN ingredients i ON i.name_en = seed.ing
-WHERE @is_fancy = 1
-  AND NOT EXISTS (
+WHERE NOT EXISTS (
     SELECT 1 FROM product_ingredients pi
     WHERE pi.product_id = p.id AND pi.ingredient_id = i.id
   );
@@ -305,15 +270,13 @@ JOIN (
   UNION ALL SELECT 'FC-CROISSANT', 'Butter croissant', 1.000
   UNION ALL SELECT 'FC-CAKE-SLICE', 'Cake portion', 1.000
 ) AS seed ON p.sku = seed.sku AND i.name_en = seed.ing
-SET pi.quantity_per_unit = seed.qty, pi.updated_at = NOW()
-WHERE @is_fancy = 1;
+SET pi.quantity_per_unit = seed.qty, pi.updated_at = NOW();
 
 -- Opening stock movements (one per ingredient, skipped on re-run)
 INSERT INTO inventory_movements (branch_id, ingredient_id, type, reason, quantity_delta, created_at, updated_at)
 SELECT @branch_id, i.id, 'adjust', 'opening', i.quantity_on_hand, NOW(), NOW()
 FROM ingredients i
-WHERE @is_fancy = 1
-  AND @branch_id IS NOT NULL
+WHERE @branch_id IS NOT NULL
   AND i.name_en IN ('Espresso beans', 'Fresh milk', 'Arabic coffee blend', 'Butter croissant', 'Cake portion')
   AND NOT EXISTS (
     SELECT 1 FROM inventory_movements m
@@ -321,6 +284,8 @@ WHERE @is_fancy = 1
   );
 
 SELECT
-  IF(@is_fancy = 1, 'ok', 'skipped: Fancy Coffee business not found') AS status,
+  'ok' AS status,
   (SELECT COUNT(*) FROM products WHERE sku LIKE 'FC-%') AS products,
-  (SELECT COUNT(*) FROM ingredients WHERE name_en IN ('Espresso beans', 'Fresh milk', 'Arabic coffee blend', 'Butter croissant', 'Cake portion')) AS ingredients;
+  (SELECT COUNT(*) FROM ingredients WHERE name_en IN ('Espresso beans', 'Fresh milk', 'Arabic coffee blend', 'Butter croissant', 'Cake portion')) AS ingredients,
+  (SELECT COUNT(*) FROM product_ingredients pi JOIN products p ON p.id = pi.product_id WHERE p.sku LIKE 'FC-%') AS product_ingredients,
+  (SELECT COUNT(*) FROM inventory_movements m JOIN ingredients i ON i.id = m.ingredient_id WHERE i.name_en IN ('Espresso beans', 'Fresh milk', 'Arabic coffee blend', 'Butter croissant', 'Cake portion') AND m.reason = 'opening') AS opening_movements;
