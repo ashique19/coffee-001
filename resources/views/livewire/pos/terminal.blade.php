@@ -114,7 +114,7 @@
         </section>
 
         <aside
-            class="pos-cart-glass self-start max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(4.25rem+env(safe-area-inset-bottom))] max-lg:z-50 max-lg:mx-3 max-lg:max-h-[min(70vh,32rem)] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-[var(--app-surface)] max-lg:p-3 max-lg:shadow-xl max-lg:transition-transform max-lg:duration-300 lg:order-2 lg:sticky lg:top-20 lg:mx-0 lg:max-h-none lg:overflow-visible lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none"
+            class="pos-cart-glass self-start max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(4.25rem+env(safe-area-inset-bottom))] max-lg:z-50 max-lg:mx-3 max-lg:max-h-[min(70vh,32rem)] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:transition-transform max-lg:duration-300 lg:order-2 lg:sticky lg:top-20 lg:mx-0 lg:max-h-none lg:overflow-visible lg:rounded-2xl"
             :class="cartOpen ? 'max-lg:block max-lg:translate-y-0' : 'max-lg:hidden'"
             role="region"
             aria-label="{{ __('pos.cart_sheet') }}"

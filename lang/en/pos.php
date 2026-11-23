@@ -71,7 +71,7 @@ return [
     'empty_catalog' => 'No products in this category.',
     'empty_branches' => 'No branches configured for this business yet.',
     'empty_cart' => 'Tap a product to start an order.',
-    'new_order' => 'New order',
+    'new_order' => 'Reset',
     'back_to_terminal' => 'Back to POS',
     'back_to_orders' => 'Back to orders',
     'status' => 'Status',

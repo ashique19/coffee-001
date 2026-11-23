@@ -1,13 +1,15 @@
 @props(['order'])
 <div {{ $attributes->merge(['class' => 'space-y-3']) }}>
-    <h2 class="text-lg font-bold">{{ __('pos.current_order') }}</h2>
-    <p class="text-sm text-[var(--app-muted)]">#{{ $order->order_number }}</p>
+    <div>
+        <h2 class="text-lg font-bold">{{ __('pos.current_order') }}</h2>
+        <p class="mt-0.5 text-sm text-[var(--app-muted)]">#{{ $order->order_number }}</p>
+    </div>
     @php
         use App\Support\Invoicing\InvoiceLineGrouper;
         $groupedCart = InvoiceLineGrouper::sectionsForDisplay($order->line_items);
     @endphp
 
-    <div class="pos-cart-undo-slot" aria-live="polite">
+    <div class="pos-cart-undo-slot" aria-live="polite" @class(['hidden' => !($undoLineSnapshot ?? null)])>
         @if ($undoLineSnapshot ?? null)
             <div class="pos-cart-undo flex flex-wrap items-center justify-between gap-2 rounded-lg border px-2 py-1.5 text-xs" style="border-color: var(--app-border)">
                 <span class="text-[var(--app-muted)]">{{ __('pos.line_removed_toast', ['name' => $undoLineSnapshot['line']['name'] ?? '']) }}</span>
@@ -24,7 +26,14 @@
         @endif
     </div>
 
-    <div class="max-h-44 space-y-2 overflow-y-auto sm:max-h-56" wire:loading.class="opacity-60" wire:target="incrementLine,decrementLine,applyLineQuantity,removeLine,undoRemoveLine">
+    <div
+        @class([
+            'space-y-2',
+            'max-h-44 overflow-y-auto sm:max-h-56' => $order->line_items !== [],
+        ])
+        wire:loading.class="opacity-60"
+        wire:target="incrementLine,decrementLine,applyLineQuantity,removeLine,undoRemoveLine"
+    >
         @if ($order->line_items === [])
             <p class="text-sm text-[var(--app-muted)]">{{ __('pos.empty_cart') }}</p>
         @else

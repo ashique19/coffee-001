@@ -185,6 +185,10 @@
     }
 
     .pos-cart-undo-slot {
+        min-height: 0;
+    }
+
+    .pos-cart-undo-slot:has(.pos-cart-undo) {
         min-height: 2.75rem;
     }
 
