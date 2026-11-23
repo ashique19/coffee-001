@@ -37,7 +37,10 @@ it('renders cafe brand colour options and a default selection even when theme co
         ->html();
 
     expect($html)->toContain('>Espresso<')
-        ->and(substr_count($html, '<option'))->toBeGreaterThanOrEqual(4);
+        ->and(substr_count($html, '<option'))->toBeGreaterThanOrEqual(4)
+        ->and($html)->toContain('data-testid="business-brand-color-swatch"')
+        ->and(preg_match('/id="brandColorKey"[^>]*\ssize=/', $html))->toBe(0)
+        ->and(preg_match('/id="brandColorKey"[^>]*\smultiple/', $html))->toBe(0);
 });
 
 it('saves a selected brand colour when the stored palette was empty', function () {

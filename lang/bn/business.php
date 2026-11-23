@@ -2,9 +2,14 @@
 
 $en = require __DIR__.'/../en/business.php';
 
+$en['invoicing'] = array_merge($en['invoicing'] ?? [], [
+    'intro' => 'ইনভয়েস শুধু Z-Heart-এর মাধ্যমে স্বাক্ষরিত হবে, নাকি স্বাক্ষরের পর ZATCA-তেও পাঠানো হবে, তা বেছে নিন।',
+    'integration_hint' => 'এটি বন্ধ থাকলেও ইনভয়েস Z-Heart-এর মাধ্যমে স্বাক্ষরিত হয়, তবে ZATCA-তে পাঠানো হয় না।',
+]);
+
 $en['zheart'] = array_merge($en['zheart'] ?? [], [
     'connection_heading' => 'সংযোগ',
-    'lead' => 'ডাটাবেসের মান সার্ভার .env-কে ওভাররাইড করে; খালি রাখলে .env ব্যবহৃত হয়।',
+    'lead' => 'আপনার Z-Heart অ্যাকাউন্টের তথ্য লিখুন। সার্ভারের ডিফল্ট রাখতে খালি রাখুন।',
     'base_url' => 'বেস URL',
     'base_url_from_env' => 'সার্ভার .env থেকে',
     'api_key' => 'API কী',

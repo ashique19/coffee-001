@@ -14,9 +14,9 @@ return [
         'invoicing' => 'Invoicing',
     ],
     'invoicing' => [
-        'intro' => 'Control whether issued invoices are signed only or also reported/cleared to ZATCA through Z-Heart after signing.',
+        'intro' => 'Choose whether invoices are only signed through Z-Heart, or also sent to ZATCA after signing.',
         'integration_enabled' => 'Enable Z-Heart invoicing integration (report / clear after sign)',
-        'integration_hint' => 'When disabled, invoices are still cryptographically signed locally but not submitted to ZATCA. Receipts show this status explicitly.',
+        'integration_hint' => 'When this is off, invoices are still signed through Z-Heart, but they are not sent to ZATCA.',
         'key_missing' => 'No ZHEART_API_KEY is configured in the environment. Signing still requires base URL and key.',
     ],
     'brand' => [
@@ -167,7 +167,7 @@ return [
     ],
     'zheart' => [
         'connection_heading' => 'Connection',
-        'lead' => 'DB values override server .env; blanks keep .env.',
+        'lead' => 'Enter the details from your Z-Heart account. Leave blank to keep the server defaults.',
         'base_url' => 'Base URL',
         'base_url_from_env' => 'From server .env',
         'api_key' => 'API key',
