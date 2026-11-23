@@ -191,17 +191,73 @@
             <a href="{{ $teamUrl }}" class="tap-action-primary min-h-11 w-full text-center sm:w-auto">{{ __('business.branches.open_team') }}</a>
         </section>
     @elseif ($section === 'invoicing')
-        <form wire:submit="saveInvoicing" class="app-card flex flex-col gap-4 p-4">
-            <p class="text-sm text-[var(--app-muted)]">{{ __('business.invoicing.intro') }}</p>
-            @if (! $zheartKeyConfigured)
-                <p class="text-sm text-amber-700">{{ __('business.invoicing.key_missing') }}</p>
+        <div class="flex flex-col gap-4">
+            <form wire:submit="saveInvoicing" class="app-card flex flex-col gap-4 p-4">
+                <p class="text-sm text-[var(--app-muted)]">{{ __('business.invoicing.intro') }}</p>
+                @if (! $isOwner && ! $zheartKeyConfigured)
+                    <p class="text-sm text-amber-700">{{ __('business.invoicing.key_missing') }}</p>
+                @endif
+                <x-form.toggle :label="__('business.invoicing.integration_enabled')" name="invoicingIntegrationEnabled" wire:model="invoicingIntegrationEnabled" />
+                <p class="text-sm text-[var(--app-muted)]">{{ __('business.invoicing.integration_hint') }}</p>
+                <div class="flex justify-end">
+                    <button type="submit" class="tap-action-primary min-h-11 w-full sm:w-auto" wire:loading.attr="disabled">{{ __('business.save') }}</button>
+                </div>
+            </form>
+
+            @if ($isOwner)
+                <form class="app-card flex flex-col gap-4 p-4" novalidate wire:keydown.enter.prevent data-testid="business-zheart-form">
+                    <h2 class="text-sm font-semibold text-[var(--app-fg)]">{{ __('business.zheart.connection_heading') }}</h2>
+                    <p class="text-xs leading-snug text-[var(--app-muted)]">{{ __('business.zheart.lead') }}</p>
+                    <div class="space-y-1">
+                        <x-form.input
+                            type="url"
+                            inputmode="url"
+                            autocomplete="off"
+                            :label="__('business.zheart.base_url')"
+                            name="zheartBaseUrl"
+                            wire:model.live="zheartBaseUrl"
+                            :liveValidate="false"
+                            placeholder="https://z-heart.example.com"
+                            dir="ltr"
+                        />
+                        @if ($zheartBaseUrlFromEnv)
+                            <p class="text-xs text-[var(--app-muted)]" data-testid="business-zheart-base-env-hint">{{ __('business.zheart.base_url_from_env') }}</p>
+                        @endif
+                    </div>
+                    <div class="space-y-2" data-testid="business-zheart-api-key">
+                        @if ($zheartHasStoredKey && ! $zheartReplaceKeyOpen)
+                            <p class="text-sm text-[var(--app-fg)]" dir="ltr" data-testid="business-zheart-key-status">
+                                {{ __('business.zheart.key_status_saved', ['last4' => $zheartKeyLast4 ?? '????']) }}
+                            </p>
+                            <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                                <button type="button" class="tap-action-muted min-h-10 w-full px-3 text-sm sm:w-auto" wire:click="beginZheartReplaceKey">{{ __('business.zheart.replace_key') }}</button>
+                                <button type="button" class="tap-action-muted min-h-10 w-full px-3 text-sm text-red-700 sm:w-auto" wire:click="removeZheartKey" wire:confirm="{{ __('business.zheart.remove_confirm') }}">{{ __('business.zheart.remove_key') }}</button>
+                            </div>
+                        @elseif ($zheartUsingEnvFallback && ! $zheartReplaceKeyOpen)
+                            <p class="text-sm text-[var(--app-fg)]" dir="ltr" data-testid="business-zheart-key-status">
+                                {{ __('business.zheart.key_status_env', ['last4' => $zheartKeyLast4 ?? '????']) }}
+                            </p>
+                            <button type="button" class="tap-action-muted min-h-10 w-full px-3 text-sm sm:w-auto" wire:click="beginZheartReplaceKey">{{ __('business.zheart.store_key_in_db') }}</button>
+                        @else
+                            <x-form.input
+                                type="password"
+                                autocomplete="new-password"
+                                :label="$zheartHasStoredKey ? __('business.zheart.new_api_key') : __('business.zheart.api_key')"
+                                name="zheartApiKeyInput"
+                                wire:model="zheartApiKeyInput"
+                                :liveValidate="false"
+                                dir="ltr"
+                            />
+                        @endif
+                    </div>
+                    @include('livewire.admin.partials.zheart-test-result')
+                    <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                        <button type="button" class="tap-action-muted min-h-11 w-full sm:w-auto" wire:click="testZheartConnection" wire:loading.attr="disabled" wire:target="testZheartConnection">{{ __('business.zheart.test_connection') }}</button>
+                        <button type="button" class="tap-action-primary min-h-11 w-full sm:w-auto" wire:click="saveZheart" wire:loading.attr="disabled" wire:target="saveZheart">{{ __('business.save') }}</button>
+                    </div>
+                </form>
             @endif
-            <x-form.toggle :label="__('business.invoicing.integration_enabled')" name="invoicingIntegrationEnabled" wire:model="invoicingIntegrationEnabled" />
-            <p class="text-sm text-[var(--app-muted)]">{{ __('business.invoicing.integration_hint') }}</p>
-            <div class="flex justify-end">
-                <button type="submit" class="tap-action-primary min-h-11 w-full sm:w-auto" wire:loading.attr="disabled">{{ __('business.save') }}</button>
-            </div>
-        </form>
+        </div>
     @else
         <form wire:submit="saveExtras" class="app-card flex flex-col gap-4 p-4">
             <x-form.toggle :label="__('business.extras.cafe_wifi')" name="cafeWifi" wire:model="cafeWifi" />

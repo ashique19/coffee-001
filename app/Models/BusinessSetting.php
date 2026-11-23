@@ -79,6 +79,11 @@ class BusinessSetting extends Model
         'default_document_type' => 'simplified',
         'integration_enabled' => false,
       ],
+      'zheart' => [
+        'base_url' => '',
+        'api_key_encrypted' => null,
+        'api_key_last4' => null,
+      ],
       'content' => [
         'cafe' => [],
       ],

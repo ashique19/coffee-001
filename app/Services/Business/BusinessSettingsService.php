@@ -4,6 +4,7 @@ namespace App\Services\Business;
 
 use App\Models\BusinessSetting;
 use App\Models\StaffUser;
+use App\Support\Invoicing\ZHeartCredentials;
 use App\Support\Storefront\StorefrontBusinessMirror;
 use App\Support\TenantBusinessHours;
 use App\Support\TenantBusinessProfile;
@@ -310,6 +311,37 @@ class BusinessSettingsService
 
         $tenant->forceFill(['settings' => $settings])->save();
         $this->audit->record($tenant, 'business.settings.invoicing', ['integration_enabled' => $invoicing['integration_enabled'] ?? false], $actor);
+
+        return $tenant->fresh();
+    }
+
+    /**
+     * @param  array{base_url?: string, api_key?: ?string, remove_api_key?: bool}  $input
+     */
+    public function saveZheart(BusinessSetting $tenant, array $input, ?StaffUser $actor = null): BusinessSetting
+    {
+        $settings = $tenant->settings ?? BusinessSetting::defaultSettings();
+        $zheart = is_array($settings['zheart'] ?? null) ? $settings['zheart'] : [];
+
+        if (array_key_exists('base_url', $input)) {
+            $zheart['base_url'] = trim((string) $input['base_url']);
+        }
+
+        $settings['zheart'] = $zheart;
+
+        if (! empty($input['remove_api_key'])) {
+            $settings = ZHeartCredentials::clearStoredKeyFromSettings($settings);
+        } elseif (isset($input['api_key']) && is_string($input['api_key']) && trim($input['api_key']) !== '') {
+            $settings = ZHeartCredentials::applyKeyToSettings($settings, trim($input['api_key']));
+        }
+
+        $zheart = is_array($settings['zheart'] ?? null) ? $settings['zheart'] : [];
+        $tenant->forceFill(['settings' => $settings])->save();
+        $this->audit->record($tenant, 'business.settings.zheart', [
+            'base_url_set' => filled($zheart['base_url'] ?? null),
+            'stored_key_present' => filled(data_get($settings, 'zheart.api_key_encrypted')),
+            'api_key' => '[redacted]',
+        ], $actor);
 
         return $tenant->fresh();
     }

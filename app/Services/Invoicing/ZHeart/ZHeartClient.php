@@ -2,14 +2,15 @@
 
 namespace App\Services\Invoicing\ZHeart;
 
+use App\Business\BusinessContext;
 use App\Models\BusinessSetting;
 use App\Support\Invoicing\ZHeartApiUserMessage;
 use App\Support\Invoicing\ZHeartConnectionTestReport;
 use App\Support\Invoicing\ZHeartCredentials;
+use App\Support\Invoicing\ZHeartZatcaPayloadNormalizer;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
-use App\Business\BusinessContext;
-use App\Support\Invoicing\ZHeartZatcaPayloadNormalizer;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -70,7 +71,8 @@ final class ZHeartClient
      *     severity: 'ok'|'error'|'warn',
      *     reason: ?string,
      *     card: ?array<string, mixed>,
-     *     warnings: list<string>
+     *     warnings: list<string>,
+     *     request_id: ?string
      * }
      */
     public function testConnection(?string $baseUrl = null, ?string $apiKey = null, ?BusinessSetting $business = null): array
@@ -90,11 +92,13 @@ final class ZHeartClient
                 'reason' => 'not_configured',
                 'card' => null,
                 'warnings' => [],
+                'request_id' => null,
             ];
         }
 
         $timeout = (int) config('zheart.timeout_health_seconds', 5);
         $healthOk = false;
+        $health = null;
 
         try {
             $health = Http::timeout($timeout)
@@ -108,6 +112,7 @@ final class ZHeartClient
         $authStatus = null;
         /** @var array<string, mixed>|null $authBody */
         $authBody = null;
+        $auth = null;
 
         try {
             $auth = Http::timeout($timeout)
@@ -120,6 +125,8 @@ final class ZHeartClient
         } catch (\Throwable) {
             $authStatus = null;
         }
+
+        $requestId = self::requestIdFrom($auth) ?? self::requestIdFrom($health);
 
         if ($authStatus === 200 && is_array($authBody) && ($authBody['status'] ?? '') === 'ok') {
             $report = ZHeartConnectionTestReport::successFromAuthPayload($authBody, $business);
@@ -134,6 +141,7 @@ final class ZHeartClient
                 'reason' => null,
                 'card' => $report['card'],
                 'warnings' => $report['warnings'],
+                'request_id' => $requestId,
             ];
         }
 
@@ -150,6 +158,7 @@ final class ZHeartClient
                 'reason' => $failure['reason'],
                 'card' => null,
                 'warnings' => [],
+                'request_id' => $requestId,
             ];
         }
 
@@ -166,6 +175,7 @@ final class ZHeartClient
                 'reason' => $failure['reason'],
                 'card' => null,
                 'warnings' => [],
+                'request_id' => $requestId,
             ];
         }
 
@@ -181,6 +191,7 @@ final class ZHeartClient
             'reason' => $failure['reason'],
             'card' => null,
             'warnings' => [],
+            'request_id' => $requestId,
         ];
     }
 
@@ -287,6 +298,17 @@ final class ZHeartClient
         ]);
 
         throw new ZHeartApiException(__('zheart_api.server_error', ['id' => '—']), 503, null, null, $lastException);
+    }
+
+    private static function requestIdFrom(mixed $response): ?string
+    {
+        if (! $response instanceof Response) {
+            return null;
+        }
+
+        $id = $response->header('X-Request-Id') ?: $response->json('request_id');
+
+        return is_string($id) && $id !== '' ? $id : null;
     }
 
     private function baseUrl(): string
