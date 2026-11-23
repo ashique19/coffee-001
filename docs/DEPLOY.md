@@ -31,6 +31,8 @@ If the database was created from an **older** `install.sql`, run **`docs/sql/202
 
 Before the invoice issue/receipt ports, also run **`docs/sql/2026-11-23-invoice-port-schema.sql`** once in phpMyAdmin (idempotent). It adds `staff_users.locale`, `invoices.due_date`, `product_units`, and `products.product_unit_id`.
 
+To load the 10 representative menu products (with images already in `public/images/menu/`), import **`docs/sql/2026-11-23-fancy-coffee-menu.sql`** once in phpMyAdmin after git pull (idempotent). Image credits: `docs/sql/IMAGE-CREDITS.md`.
+
 When Artisan is available:
 
 ```bash
