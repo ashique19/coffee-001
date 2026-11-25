@@ -14,4 +14,5 @@ return [
     'not_configured' => 'عنوان Z-Heart أو مفتاح API غير مهيأ لهذا النشر.',
     'health_ok' => 'نجح فحص صحة Z-Heart.',
     'health_failed' => 'فشل فحص صحة Z-Heart.',
+    'request_id_suffix' => 'معرّف الطلب :id.',
 ];

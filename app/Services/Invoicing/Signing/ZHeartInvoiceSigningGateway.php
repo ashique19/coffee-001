@@ -9,6 +9,7 @@ use App\Services\Invoicing\ZHeart\ZHeartApiException;
 use App\Services\Invoicing\ZHeart\ZHeartClient;
 use App\Services\Invoicing\ZHeart\ZHeartInvoicePayloadBuilder;
 use App\Support\Invoicing\ZHeartApiUserMessage;
+use App\Support\Invoicing\ZHeartSubmissionOutcome;
 use App\Support\Invoicing\ZHeartZatcaPayloadNormalizer;
 
 final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
@@ -31,6 +32,10 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
         $autoSubmitSigned = $envSubmit && $integrationOn;
         $submissionSkipReason = null;
 
+        if (! $autoSubmitSigned && app()->environment('production')) {
+            throw new InvoiceSigningException(__('invoices.errors.sign_only_blocked_in_production'));
+        }
+
         try {
             if ($autoSubmitSigned) {
                 $result = $this->submitPayload($request, $payload);
@@ -41,12 +46,19 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
                     : (! $envSubmit ? 'submit_disabled' : null);
             }
         } catch (ZHeartApiException $e) {
+            if (in_array($e->outcome(), [ZHeartSubmissionOutcome::RETRY, ZHeartSubmissionOutcome::REJECTED], true)) {
+                $mapped = $this->mapOutcomeException($e, $request->invoiceUuid, $autoSubmitSigned);
+                $mapped['submission_skip_reason'] = $submissionSkipReason;
+
+                return $mapped;
+            }
+
             throw new InvoiceSigningException(ZHeartApiUserMessage::forException($e), 0, $e);
         }
 
         $data = $result['data'];
         $xml = $this->decodeSignedXml((string) ($data['signed_xml'] ?? ''));
-        if ($xml === '') {
+        if ($xml === '' && ZHeartSubmissionOutcome::normalize($data['outcome'] ?? null) !== ZHeartSubmissionOutcome::RETRY) {
             throw InvoiceSigningException::signingFailed(context: 'Z-Heart response missing signed XML.');
         }
 
@@ -58,6 +70,10 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
 
     public function signLocally(InvoiceSigningRequest $request): array
     {
+        if (app()->environment('production')) {
+            throw new InvoiceSigningException(__('invoices.errors.sign_only_blocked_in_production'));
+        }
+
         try {
             $payload = $this->payloadBuilder->build($request);
         } catch (\InvalidArgumentException $e) {
@@ -73,22 +89,10 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
         return $this->mapZatcaSubmissionResponse($result, $request->invoiceUuid, false);
     }
 
-  /**
+    /**
      * Re-submit an already issued document to ZATCA using the same UUID and invoice content (idempotent).
      *
-     * @return array{
-     *     xml?: string,
-     *     hash?: string,
-     *     qr?: ?string,
-     *     icv?: int,
-     *     previous_invoice_hash?: string,
-     *     invoice_uuid?: string,
-     *     remote_submitted?: bool,
-     *     remote_submission?: array<string, mixed>|null,
-     *     reporting_status?: string|null,
-     *     cleared_xml?: string|null,
-     *     request_id?: string|null,
-     * }
+     * @return array<string, mixed>
      */
     public function submitInvoiceToZatca(InvoiceSigningRequest $request): array
     {
@@ -105,6 +109,10 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
         try {
             $result = $this->submitPayload($request, $payload);
         } catch (ZHeartApiException $e) {
+            if (in_array($e->outcome(), [ZHeartSubmissionOutcome::RETRY, ZHeartSubmissionOutcome::REJECTED], true)) {
+                return $this->mapOutcomeException($e, $request->invoiceUuid, true);
+            }
+
             throw new InvoiceSigningException(ZHeartApiUserMessage::forException($e), 0, $e);
         }
 
@@ -137,6 +145,15 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
         }
 
         $xml = isset($data['signed_xml']) ? $this->decodeSignedXml((string) $data['signed_xml']) : null;
+        $cleared = isset($data['cleared_xml']) ? $this->decodeSignedXml((string) $data['cleared_xml']) : null;
+        $outcome = ZHeartSubmissionOutcome::normalize($data['outcome'] ?? null);
+        if ($outcome === null && $remoteSubmitted && ($result['status'] ?? 'ok') !== 'error') {
+            $outcome = ZHeartSubmissionOutcome::ACCEPTED;
+        }
+
+        $invoiceNumber = isset($data['invoice_number']) && is_string($data['invoice_number']) && $data['invoice_number'] !== ''
+            ? (string) $data['invoice_number']
+            : null;
 
         return [
             'xml' => $xml,
@@ -146,14 +163,42 @@ final class ZHeartInvoiceSigningGateway implements InvoiceSigningGateway
             'icv' => isset($data['icv']) ? (int) $data['icv'] : null,
             'previous_invoice_hash' => isset($data['pih']) ? (string) $data['pih'] : null,
             'invoice_uuid' => (string) ($data['uuid'] ?? $invoiceUuid),
+            'invoice_number' => $invoiceNumber,
+            'outcome' => $outcome,
+            'duplicate' => (bool) ($data['duplicate'] ?? false),
+            'retryable' => ZHeartSubmissionOutcome::isRetryable($outcome, $data['retryable'] ?? null),
             'remote_submitted' => $remoteSubmitted,
             'remote_submission' => $remoteSubmission,
             'reporting_status' => $normalized['reporting_status'],
             'zatca_delivery' => $normalized['delivery'],
             'zatca_http_status' => $normalized['zatca_http_status'],
-            'cleared_xml' => isset($data['cleared_xml']) ? $this->decodeSignedXml((string) $data['cleared_xml']) : null,
+            'cleared_xml' => $cleared,
             'request_id' => $result['request_id'] ?? null,
+            'message' => isset($data['message']) && is_string($data['message']) ? $data['message'] : null,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mapOutcomeException(ZHeartApiException $e, string $invoiceUuid, bool $remoteSubmitted): array
+    {
+        $data = is_array(data_get($e->responseJson, 'data')) ? (array) data_get($e->responseJson, 'data') : [];
+        $mapped = $this->mapZatcaSubmissionResponse([
+            'data' => array_merge($data, [
+                'outcome' => $e->outcome(),
+                'retryable' => $e->isRetryable(),
+                'message' => $e->getMessage(),
+            ]),
+            'request_id' => $e->requestId,
+            'status' => 'error',
+        ], $invoiceUuid, $remoteSubmitted);
+
+        $mapped['outcome'] = $e->outcome();
+        $mapped['retryable'] = $e->isRetryable();
+        $mapped['message'] = $e->getMessage();
+
+        return $mapped;
     }
 
     private function decodeSignedXml(string $encoded): string

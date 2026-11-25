@@ -123,3 +123,33 @@ it('requires buyer identity on standard invoices', function () {
     expect(fn () => app(ZHeartInvoicePayloadBuilder::class)->build($request))
         ->toThrow(InvalidArgumentException::class);
 });
+
+it('sends number_series and never invoice_number or icv', function () {
+    $business = new BusinessSetting([
+        'name' => 'Series Biz',
+        'settings' => CafeThemePreset::settings('Series Biz', 'ب'),
+    ]);
+
+    $request = new InvoiceSigningRequest(
+        business: $business,
+        documentNumber: 'SIMP-LOCAL-99',
+        documentType: InvoiceDocumentType::Simplified,
+        invoiceCategory: 'simplified',
+        lines: [new InvoiceLineData('Latte', 1, 18, 15)],
+        invoicePayload: [],
+        issueDateTimeUtc: Carbon::parse('2026-01-15 09:00:00', 'UTC'),
+        invoiceUuid: '550e8400-e29b-41d4-a716-446655440088',
+        referencedInvoiceNumber: null,
+        referencedInvoiceUuid: null,
+        noteReason: null,
+        documentDiscountExVat: 0.0,
+        numberSeries: 'JED',
+    );
+
+    $payload = app(ZHeartInvoicePayloadBuilder::class)->build($request);
+
+    expect($payload['number_series'])->toBe('JED')
+        ->and($payload['uuid'])->toBe('550e8400-e29b-41d4-a716-446655440088')
+        ->and($payload)->not->toHaveKey('invoice_number')
+        ->and($payload)->not->toHaveKey('icv');
+});

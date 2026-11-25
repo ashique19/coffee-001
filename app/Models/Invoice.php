@@ -8,12 +8,19 @@ use App\Exceptions\IssuedInvoiceImmutableException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Invoice extends Model
 {
+    /**
+     * When true, issued invoices may be updated for Z-Heart submission fields only
+     * (official number, signed XML, QR, payload status keys). Document content stays locked.
+     */
+    private static bool $allowSubmissionUpdate = false;
 
     protected $fillable = [
         'document_number',
+        'official_number',
         'document_type',
         'status',
         'branch_id',
@@ -46,11 +53,17 @@ class Invoice extends Model
     public static function booted(): void
     {
         static::updating(function (Invoice $invoice): void {
-            if ($invoice->getOriginal('issued_at') !== null) {
-                throw new IssuedInvoiceImmutableException(
-                    'Issued invoices are immutable; issue a credit or debit note instead.'
-                );
+            if ($invoice->getOriginal('issued_at') === null) {
+                return;
             }
+
+            if (self::$allowSubmissionUpdate) {
+                return;
+            }
+
+            throw new IssuedInvoiceImmutableException(
+                'Issued invoices are immutable; issue a credit or debit note instead.'
+            );
         });
 
         static::deleting(function (Invoice $invoice): void {
@@ -58,6 +71,23 @@ class Invoice extends Model
                 throw new IssuedInvoiceImmutableException('Issued invoices cannot be deleted.');
             }
         });
+    }
+
+    /**
+     * @template T
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public static function withoutIssuedImmutability(callable $callback): mixed
+    {
+        $previous = self::$allowSubmissionUpdate;
+        self::$allowSubmissionUpdate = true;
+
+        try {
+            return $callback();
+        } finally {
+            self::$allowSubmissionUpdate = $previous;
+        }
     }
 
     public function branch(): BelongsTo
@@ -78,5 +108,182 @@ class Invoice extends Model
     public function isIssued(): bool
     {
         return $this->status === InvoiceStatus::Issued;
+    }
+
+    /**
+     * Persist a UUID on the draft before the first Z-Heart call and reuse it on every resend.
+     */
+    public function ensureInvoiceUuid(): string
+    {
+        $payload = is_array($this->payload) ? $this->payload : [];
+        $existing = trim((string) ($payload['invoice_uuid'] ?? ''));
+        if ($existing !== '') {
+            return $existing;
+        }
+
+        $uuid = (string) Str::uuid();
+        $payload['invoice_uuid'] = $uuid;
+        $this->forceFill(['payload' => $payload])->save();
+
+        return $uuid;
+    }
+
+    public function invoiceUuid(): ?string
+    {
+        $uuid = trim((string) data_get($this->payload, 'invoice_uuid', ''));
+
+        return $uuid !== '' ? $uuid : null;
+    }
+
+    /**
+     * Tax invoice number to print: Z-Heart's data.invoice_number when known, otherwise a pending label
+     * for new documents, or the internal document_number for legacy rows.
+     */
+    public function displayNumber(): string
+    {
+        $official = $this->officialOrStoredNumber();
+        if ($official !== null) {
+            return $official;
+        }
+
+        if ($this->status !== InvoiceStatus::Issued || $this->isSubmissionRetry()) {
+            return __('invoices.pending_number');
+        }
+
+        return (string) $this->document_number;
+    }
+
+    /**
+     * Stable number for billing references: official number if stored, else the internal document_number.
+     */
+    public function officialOrDocumentNumber(): string
+    {
+        return $this->officialOrStoredNumber() ?? (string) $this->document_number;
+    }
+
+    public function officialOrStoredNumber(): ?string
+    {
+        $official = trim((string) ($this->official_number ?? ''));
+        if ($official !== '') {
+            return $official;
+        }
+
+        $fromPayload = trim((string) data_get($this->payload, 'zheart_invoice_number', ''));
+
+        return $fromPayload !== '' ? $fromPayload : null;
+    }
+
+    public function isSubmissionRetry(): bool
+    {
+        return data_get($this->payload, 'zheart_outcome') === \App\Support\Invoicing\ZHeartSubmissionOutcome::RETRY;
+    }
+
+    public function isSubmissionRejected(): bool
+    {
+        return data_get($this->payload, 'zheart_outcome') === \App\Support\Invoicing\ZHeartSubmissionOutcome::REJECTED;
+    }
+
+    public function isSubmissionAccepted(): bool
+    {
+        return data_get($this->payload, 'zheart_outcome') === \App\Support\Invoicing\ZHeartSubmissionOutcome::ACCEPTED;
+    }
+
+    /**
+     * Apply Z-Heart sign/report/clear results, including after the invoice is issued (retry -> accepted).
+     *
+     * @param  array<string, mixed>  $signed
+     * @param  array<string, mixed>  $extraPayload
+     */
+    public function applySubmissionResult(array $signed, array $extraPayload = []): void
+    {
+        $apply = function () use ($signed, $extraPayload): void {
+            $payload = is_array($this->payload) ? $this->payload : [];
+            $official = isset($signed['invoice_number']) && is_string($signed['invoice_number']) && $signed['invoice_number'] !== ''
+                ? (string) $signed['invoice_number']
+                : ($this->official_number ?: null);
+
+            if ($official !== null) {
+                $payload['zheart_invoice_number'] = $official;
+            }
+
+            if (! empty($signed['invoice_uuid'])) {
+                $payload['invoice_uuid'] = (string) $signed['invoice_uuid'];
+            }
+
+            if (isset($signed['outcome']) && is_string($signed['outcome']) && $signed['outcome'] !== '') {
+                $payload['zheart_outcome'] = $signed['outcome'];
+            }
+
+            if (array_key_exists('duplicate', $signed)) {
+                $payload['zheart_duplicate'] = (bool) $signed['duplicate'];
+            }
+
+            if (array_key_exists('retryable', $signed)) {
+                $payload['zheart_retryable'] = (bool) $signed['retryable'];
+            }
+
+            if (! empty($signed['request_id'])) {
+                $payload['zheart_request_id'] = $signed['request_id'];
+            }
+
+            if (array_key_exists('submission_skip_reason', $signed)) {
+                $payload['zheart_submission_skip'] = $signed['submission_skip_reason'];
+            }
+
+            if (! empty($signed['reporting_status'])) {
+                $payload['zheart_reporting_status'] = $signed['reporting_status'];
+            }
+
+            if (! empty($signed['message'])) {
+                $payload['zheart_last_error'] = (string) $signed['message'];
+            } elseif (($signed['outcome'] ?? null) === \App\Support\Invoicing\ZHeartSubmissionOutcome::ACCEPTED) {
+                unset($payload['zheart_last_error']);
+            }
+
+            foreach ($extraPayload as $key => $value) {
+                if (is_string($key) && str_starts_with($key, 'zheart_')) {
+                    $payload[$key] = $value;
+                }
+            }
+
+            $cleared = $signed['cleared_xml'] ?? null;
+            $xml = is_string($cleared) && $cleared !== ''
+                ? $cleared
+                : ($signed['xml'] ?? $this->signed_xml);
+
+            $fill = [
+                'payload' => $payload,
+                'official_number' => $official ?? $this->official_number,
+            ];
+
+            if (is_string($xml) && $xml !== '') {
+                $fill['signed_xml'] = $xml;
+            }
+            if (! empty($signed['icv']) || $signed['icv'] === 0 || $signed['icv'] === '0') {
+                $fill['icv'] = $signed['icv'];
+            }
+            if (! empty($signed['hash'])) {
+                $fill['invoice_hash'] = $signed['hash'];
+            }
+            if (array_key_exists('previous_invoice_hash', $signed) && $signed['previous_invoice_hash'] !== null) {
+                $fill['previous_invoice_hash'] = $signed['previous_invoice_hash'];
+            }
+            if (! empty($signed['qr'])) {
+                $fill['qr_tlv_base64'] = $signed['qr'];
+            }
+            if (is_array($signed['seller'] ?? null)) {
+                $fill['zheart_seller'] = $signed['seller'];
+            }
+
+            $this->forceFill($fill)->save();
+        };
+
+        if ($this->getOriginal('issued_at') !== null || $this->issued_at !== null) {
+            self::withoutIssuedImmutability($apply);
+
+            return;
+        }
+
+        $apply();
     }
 }

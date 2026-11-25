@@ -25,40 +25,85 @@
     <div class="space-y-2">
         @forelse ($invoices as $invoice)
             @php
-                $signingKey = filled($invoice->signed_xml)
-                    ? (filled(data_get($invoice->payload, 'zheart_request_id')) ? 'submitted' : 'signed')
-                    : 'none';
+                $status = $this->submissionStatus($invoice);
                 $order = $this->orderFor($invoice);
             @endphp
-            <article class="app-list-card" wire:key="inv-{{ $invoice->id }}">
+            <article class="app-list-card" wire:key="inv-{{ $invoice->id }}" data-testid="invoice-row-{{ $invoice->id }}">
                 <div>
-                    <p class="font-semibold">{{ $invoice->document_number }}</p>
+                    <p class="font-semibold" data-testid="invoice-display-number">{{ $invoice->displayNumber() }}</p>
                     <p class="text-xs text-[var(--app-muted)]">
                         {{ __('invoices.type.'.$invoice->document_type->value) }}
                         · {{ $invoice->issued_at?->format('Y-m-d H:i') ?? '—' }}
                         @if ($invoice->referencedInvoice)
-                            · {{ __('invoices.ref') }} {{ $invoice->referencedInvoice->document_number }}
+                            · {{ __('invoices.ref') }} {{ $invoice->referencedInvoice->officialOrDocumentNumber() }}
                         @endif
                         @if ($order)
                             · {{ __('invoices.order') }} {{ $order->order_number }}
                         @endif
                     </p>
                     <p class="mt-2 flex flex-wrap gap-2 text-xs">
-                        <span @class([
-                            'pos-status-pill',
-                            'pos-status-pill--paid' => in_array($signingKey, ['submitted', 'signed'], true),
-                            'pos-status-pill--refunded' => $signingKey === 'none',
-                        ])>{{ __('invoices.signing.'.$signingKey) }}</span>
+                        <span
+                            @class([
+                                'pos-status-pill',
+                                'pos-status-pill--paid' => in_array($status['key'], ['accepted', 'submitted', 'signed'], true),
+                                'pos-status-pill--refunded' => in_array($status['key'], ['none', 'not_reported', 'sandbox', 'integration_off'], true),
+                                'pos-status-pill--open' => $status['key'] === 'retry',
+                                'pos-status-pill--cancelled' => $status['key'] === 'rejected',
+                            ])
+                            data-testid="invoice-submission-status"
+                            data-status="{{ $status['key'] }}"
+                        >{{ $status['title'] }}</span>
                         @if ($invoice->document_type->value === 'credit_note')
                             <span class="pos-status-pill pos-status-pill--cancelled">{{ __('invoices.credit_badge') }}</span>
                         @endif
                     </p>
+                    @if (filled($status['detail']))
+                        <p class="mt-1 text-xs text-[var(--app-muted)]" data-testid="invoice-submission-detail">{{ $status['detail'] }}</p>
+                    @endif
+                    @if ($status['show_simplified_correction_guidance'])
+                        <p class="mt-2 text-xs" data-testid="invoice-simplified-correction-guidance">{{ __('invoices.correction.simplified_guidance') }}</p>
+                    @endif
                 </div>
                 <div class="flex flex-wrap gap-2">
                     @if ($order)
                         <a class="tap-action-muted min-h-11 px-4 text-sm" href="{{ route('admin.pos.history', [$order->branch_id]) }}">{{ __('invoices.view_order') }}</a>
                     @endif
                     <a class="tap-action-muted min-h-11 px-4 text-sm" href="{{ route('admin.invoices.print', [$invoice]) }}" target="_blank" rel="noopener">{{ __('invoices.print') }}</a>
+                    @can('invoices.issue')
+                        @if ($status['can_resubmit'])
+                            <button
+                                type="button"
+                                class="tap-action-primary min-h-11 px-4 text-sm"
+                                wire:click="resubmit({{ $invoice->id }})"
+                                wire:loading.attr="disabled"
+                                data-testid="invoice-resubmit"
+                            >{{ __('invoices.resubmit') }}</button>
+                        @endif
+                        @if ($status['can_correct'] && $status['show_simplified_correction_guidance'])
+                            <button
+                                type="button"
+                                class="tap-action-primary min-h-11 px-4 text-sm"
+                                wire:click="issueCorrectiveCreditNote({{ $invoice->id }})"
+                                wire:loading.attr="disabled"
+                                data-testid="invoice-correct-credit"
+                            >{{ __('invoices.correction.issue_credit') }}</button>
+                            <button
+                                type="button"
+                                class="tap-action-muted min-h-11 px-4 text-sm"
+                                wire:click="issueCorrectedInvoice({{ $invoice->id }})"
+                                wire:loading.attr="disabled"
+                                data-testid="invoice-correct-new"
+                            >{{ __('invoices.correction.issue_new') }}</button>
+                        @elseif ($status['can_correct'])
+                            <button
+                                type="button"
+                                class="tap-action-primary min-h-11 px-4 text-sm"
+                                wire:click="issueCorrectedInvoice({{ $invoice->id }})"
+                                wire:loading.attr="disabled"
+                                data-testid="invoice-correct-new"
+                            >{{ __('invoices.correction.issue_new') }}</button>
+                        @endif
+                    @endcan
                 </div>
             </article>
         @empty

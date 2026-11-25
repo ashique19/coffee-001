@@ -14,4 +14,5 @@ return [
     'not_configured' => 'এই সেটআপে Z-Heart base URL বা API কী নেই।',
     'health_ok' => 'Z-Heart হেলথ চেক সফল।',
     'health_failed' => 'Z-Heart হেলথ চেক ব্যর্থ।',
+    'request_id_suffix' => 'অনুরোধ আইডি :id.',
 ];
