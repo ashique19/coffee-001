@@ -229,4 +229,23 @@
     .pos-sparkline {
         @apply h-16 w-full;
     }
+
+    /* Phones: compact cart rows (40px stepper). Tablet/desktop keep 44px. */
+    @media (max-width: 767.98px) {
+        .pos-cart-glass .pos-qty-stepper__btn,
+        .pos-cart-glass .pos-qty-stepper__value {
+            min-width: 2.5rem;
+            min-height: 2.5rem;
+        }
+
+        .pos-cart-glass .pos-qty-stepper__btn {
+            font-size: 1.125rem;
+        }
+
+        .pos-cart-glass .pos-cart-line__remove {
+            min-width: 2.5rem;
+            min-height: 2.5rem;
+            padding-inline: 0.25rem;
+        }
+    }
 }
