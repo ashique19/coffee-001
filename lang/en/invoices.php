@@ -69,8 +69,6 @@ return [
         'signing_failed' => 'This invoice could not be cryptographically signed. Check Z-Heart configuration, then try again.',
         'signing_credentials_invalid' => 'Signing credentials could not be loaded. Share the technical detail below with support if needed.',
         'lines_required' => 'Add at least one line item before issuing.',
-        'seller_name_required' => 'Set the seller legal name (English) in Business settings before issuing an invoice.',
-        'seller_vat_required' => 'Set the seller VAT number in Business settings before issuing an invoice.',
     ],
     'zatca_precheck' => [
         'buyer_postal' => 'Buyer postal code must be a 5-digit Saudi code',

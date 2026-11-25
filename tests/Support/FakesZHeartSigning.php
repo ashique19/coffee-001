@@ -6,6 +6,36 @@ use Illuminate\Support\Facades\Http;
 
 trait FakesZHeartSigning
 {
+    /**
+     * Seller block as returned by Z-Heart (built from its client profile). Placeholder values.
+     *
+     * @return array<string, mixed>
+     */
+    public static function zheartSellerBlock(): array
+    {
+        return [
+            'name' => 'ZH Legal Placeholder Co',
+            'name_ar' => 'شركة زد هارت التجريبية',
+            'name_en' => 'ZH Legal Placeholder Co',
+            'vat_number' => '399999999900003',
+            'id_scheme' => 'CRN',
+            'id' => '1010010000',
+            'cr_number' => '1010010000',
+            'address' => [
+                'building' => '4321',
+                'street' => 'ZH Test Street',
+                'additional' => '8765',
+                'district' => 'ZH District',
+                'city' => 'Jeddah',
+                'postal_code' => '23456',
+                'country' => 'SA',
+            ],
+            'address_formatted' => '4321, ZH Test Street, ZH District, Jeddah, 23456, Addl. 8765',
+            'branch' => 'Main branch',
+            'source' => 'z-heart',
+        ];
+    }
+
     protected function fakeZHeartSigning(): void
     {
         config([
@@ -25,6 +55,7 @@ trait FakesZHeartSigning
                     'uuid' => '550e8400-e29b-41d4-a716-446655440099',
                     'icv' => 1,
                     'pih' => '',
+                    'seller' => self::zheartSellerBlock(),
                 ],
                 'request_id' => 'req-test',
             ], 200),

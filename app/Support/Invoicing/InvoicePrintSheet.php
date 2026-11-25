@@ -18,7 +18,6 @@ final class InvoicePrintSheet
     public static function forInvoice(Invoice $invoice, ?PosOrder $order = null, ?BusinessSetting $business = null): array
     {
         $business ??= BusinessSetting::singleton();
-        $legal = (array) data_get($business->settings, 'legal_entity', []);
         $theme = (array) data_get($business->settings, 'theme', []);
         $payload = is_array($invoice->payload) ? $invoice->payload : [];
         $rawLines = is_array($payload['lines'] ?? null) ? $payload['lines'] : [];
@@ -78,17 +77,19 @@ final class InvoicePrintSheet
         $noteUsesSimplified = in_array($docType, [InvoiceDocumentType::CreditNote, InvoiceDocumentType::DebitNote], true)
             && ($category === 'simplified' || $invoice->referencedInvoice?->document_type === InvoiceDocumentType::Simplified);
 
-        $sellerEn = trim((string) ($legal['name_en'] ?? '')) ?: trim((string) $business->name);
-        $sellerAr = trim((string) ($legal['name_ar'] ?? ''));
+        $seller = InvoiceSellerBlock::forInvoice($invoice, $business);
 
         return [
-            'seller_en' => $sellerEn,
-            'seller_ar' => $sellerAr,
-            'trn' => trim((string) ($legal['vat_number'] ?? '')),
-            'cr_number' => trim((string) ($legal['cr_number'] ?? '')),
-            'national_address' => is_array($legal['national_address'] ?? null) ? $legal['national_address'] : [],
-            'address_en' => trim((string) ($legal['address'] ?? '')),
-            'address_ar' => trim((string) ($legal['address_ar'] ?? '')),
+            'seller_en' => $seller['name_en'],
+            'seller_ar' => $seller['name_ar'],
+            'trn' => $seller['vat_number'],
+            'cr_number' => $seller['cr_number'],
+            'seller_id_scheme' => $seller['id_scheme'],
+            'seller_id' => $seller['id'],
+            'seller_source' => $seller['source'],
+            'national_address' => $seller['national_address'],
+            'address_en' => $seller['address_en'],
+            'address_ar' => $seller['address_ar'],
             'show_qr' => filled($qr),
             'qr_png' => PrintQrPng::dataUri($qr),
             'qr_tlv_base64' => $qr,

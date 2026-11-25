@@ -85,6 +85,12 @@
                     <span class="invoice-cash80__value invoice-print-bidi-value" dir="ltr">{{ $t['cr_number'] }}</span>
                     <span class="invoice-cash80__label-ar invoice-print-ar" dir="rtl">السجل التجاري</span>
                 </div>
+            @elseif (filled($t['seller_id'] ?? null))
+                <div class="invoice-cash80__row invoice-cash80__row--id">
+                    <span class="invoice-cash80__label">ID ({{ $t['seller_id_scheme'] }})</span>
+                    <span class="invoice-cash80__value invoice-print-bidi-value" dir="ltr">{{ $t['seller_id'] }}</span>
+                    <span class="invoice-cash80__label-ar invoice-print-ar" dir="rtl">رقم المعرف</span>
+                </div>
             @endif
         </header>
 

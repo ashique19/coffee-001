@@ -76,27 +76,64 @@
             </div>
         </form>
     @elseif ($section === 'legal')
-        <form wire:submit="saveLegal" class="app-card flex flex-col gap-4 p-4">
-            <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200">{{ __('business.legal.zheart_note') }}</p>
-            <x-form.input :label="__('business.legal.name_en')" name="legalNameEn" wire:model.blur="legalNameEn" :liveValidate="false" required />
-            <x-form.input :label="__('business.legal.name_ar')" name="legalNameAr" wire:model.blur="legalNameAr" :liveValidate="false" required />
-            <x-form.input :label="__('business.legal.vat')" name="vatNumber" wire:model.blur="vatNumber" :liveValidate="false" required />
-            <x-form.input :label="__('business.legal.cr')" name="crNumber" wire:model.blur="crNumber" :liveValidate="false" required />
-            <x-form.input :label="__('business.legal.address_en')" name="addressEn" wire:model.blur="addressEn" :liveValidate="false" required />
-            <x-form.input :label="__('business.legal.address_ar')" name="addressAr" wire:model.blur="addressAr" :liveValidate="false" required />
-            <h3 class="form-section__title">{{ __('business.legal.national_address') }}</h3>
-            <div class="grid gap-3 sm:grid-cols-2">
-                <x-form.input :label="__('business.legal.na_building')" name="naBuilding" wire:model.blur="naBuilding" :liveValidate="false" required />
-                <x-form.input :label="__('business.legal.na_street')" name="naStreet" wire:model.blur="naStreet" :liveValidate="false" required />
-                <x-form.input :label="__('business.legal.na_district')" name="naDistrict" wire:model.blur="naDistrict" :liveValidate="false" required />
-                <x-form.input :label="__('business.legal.na_city')" name="naCity" wire:model.blur="naCity" :liveValidate="false" required />
-                <x-form.input :label="__('business.legal.na_postal')" name="naPostal" wire:model.blur="naPostal" :liveValidate="false" required />
-                <x-form.input :label="__('business.legal.na_additional')" name="naAdditional" wire:model.blur="naAdditional" :liveValidate="false" />
-            </div>
-            <div class="flex justify-end">
-                <button type="submit" class="tap-action-primary min-h-11 w-full sm:w-auto" wire:loading.attr="disabled">{{ __('business.save') }}</button>
-            </div>
-        </form>
+        @php
+            $legalView = $zheartSeller ?? [
+                'name_en' => $legalNameEn,
+                'name_ar' => $legalNameAr,
+                'vat_number' => $vatNumber,
+                'cr_number' => $crNumber,
+                'id_scheme' => $crNumber !== '' ? 'CRN' : '',
+                'id' => $crNumber,
+                'national_address' => array_filter([
+                    'building' => $naBuilding, 'street' => $naStreet, 'district' => $naDistrict,
+                    'city' => $naCity, 'postal_code' => $naPostal, 'additional' => $naAdditional,
+                ]),
+            ];
+            $legalNa = (array) ($legalView['national_address'] ?? []);
+            $legalRows = [
+                ['business.legal.name_en', $legalView['name_en'] ?? '', 'ltr'],
+                ['business.legal.name_ar', $legalView['name_ar'] ?? '', 'rtl'],
+                ['business.legal.vat', $legalView['vat_number'] ?? '', 'ltr'],
+                filled($legalView['cr_number'] ?? null) || ($legalView['id_scheme'] ?? '') === 'CRN' || blank($legalView['id'] ?? null)
+                    ? ['business.legal.cr', $legalView['cr_number'] ?? '', 'ltr']
+                    : ['business.legal.seller_id', trim(($legalView['id_scheme'] ?? '').' '.($legalView['id'] ?? '')), 'ltr'],
+                ['business.legal.na_building', $legalNa['building'] ?? '', 'ltr'],
+                ['business.legal.na_street', $legalNa['street'] ?? '', 'auto'],
+                ['business.legal.na_district', $legalNa['district'] ?? '', 'auto'],
+                ['business.legal.na_city', $legalNa['city'] ?? '', 'auto'],
+                ['business.legal.na_postal', $legalNa['postal_code'] ?? '', 'ltr'],
+                ['business.legal.na_additional', $legalNa['additional'] ?? '', 'ltr'],
+            ];
+        @endphp
+        <div class="flex flex-col gap-4">
+            <section class="app-card flex flex-col gap-3 p-4" aria-labelledby="legal-managed-heading" data-legal-readonly>
+                <div class="flex items-start gap-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-800 ring-1 ring-slate-200">
+                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-slate-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+                    <p id="legal-managed-heading" class="font-medium">{{ __('business.legal.managed_by_zheart') }}</p>
+                </div>
+                <p class="text-xs text-slate-500">{{ $zheartSeller ? __('business.legal.source_zheart') : __('business.legal.source_local') }}</p>
+                <dl class="divide-y divide-slate-100 text-sm">
+                    @foreach ($legalRows as [$labelKey, $value, $dir])
+                        <div class="flex min-h-11 items-center justify-between gap-3 py-2">
+                            <dt class="text-slate-500">{{ __($labelKey) }}</dt>
+                            <dd class="text-end font-medium text-slate-900 break-words" dir="{{ $dir }}">{{ filled($value) ? $value : __('business.legal.not_set') }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </section>
+
+            <form wire:submit="saveLegal" class="app-card flex flex-col gap-4 p-4">
+                <div>
+                    <h3 class="form-section__title">{{ __('business.legal.storefront_heading') }}</h3>
+                    <p class="text-xs text-slate-500">{{ __('business.legal.storefront_hint') }}</p>
+                </div>
+                <x-form.input :label="__('business.legal.address_en')" name="addressEn" wire:model.blur="addressEn" :liveValidate="false" />
+                <x-form.input :label="__('business.legal.address_ar')" name="addressAr" wire:model.blur="addressAr" :liveValidate="false" dir="rtl" />
+                <div class="flex justify-end">
+                    <button type="submit" class="tap-action-primary min-h-11 w-full sm:w-auto" wire:loading.attr="disabled">{{ __('business.save') }}</button>
+                </div>
+            </form>
+        </div>
     @elseif ($section === 'contact')
         <form wire:submit="saveContact" class="app-card flex flex-col gap-6 p-4" novalidate>
             <fieldset class="flex flex-col gap-4 border-0 p-0">

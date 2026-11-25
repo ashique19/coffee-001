@@ -20,9 +20,13 @@ final class InvoiceCashReceiptView
         $sellerEnLines = $na !== []
             ? NationalAddressFormatter::formatNationalAddressEnPrintLines($na)
             : self::fallbackLines($t['address_en'] ?? null);
-        $sellerArLines = $na !== []
-            ? NationalAddressFormatter::formatNationalAddressArPdfLineHtml($na)
-            : self::fallbackLines($t['address_ar'] ?? null);
+        $hasArabicAddress = filled($na['street_ar'] ?? null) || filled($na['district_ar'] ?? null) || filled($na['city_ar'] ?? null);
+        $sellerArLines = match (true) {
+            // Z-Heart returns the address as on the signed invoice (no Arabic parts); don't repeat it.
+            ($t['seller_source'] ?? '') === 'z-heart' && ! $hasArabicAddress => [],
+            $na !== [] => NationalAddressFormatter::formatNationalAddressArPdfLineHtml($na),
+            default => self::fallbackLines($t['address_ar'] ?? null),
+        };
 
         $lines = [];
         $itemCount = 0.0;

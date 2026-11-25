@@ -101,14 +101,17 @@ it('validates brand tab inline', function () {
         ->assertHasErrors(['displayNameEn']);
 });
 
-it('validates legal tab inline', function () {
+it('ignores managed legal fields on the legal tab for a legacy tenant', function () {
     legacySqlBusinessShape($this->cafe);
+    $vatBefore = data_get(BusinessSetting::singleton()->settings, 'legal_entity.vat_number');
 
     Livewire::test(BusinessSettings::class)
         ->set('section', 'legal')
         ->set('vatNumber', '123')
         ->call('saveLegal')
-        ->assertHasErrors(['vatNumber']);
+        ->assertHasNoErrors();
+
+    expect(data_get(BusinessSetting::singleton()->fresh()->settings, 'legal_entity.vat_number'))->toBe($vatBefore);
 });
 
 it('saves hours tab for legacy tenant', function () {

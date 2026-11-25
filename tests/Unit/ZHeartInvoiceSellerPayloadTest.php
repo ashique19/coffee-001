@@ -7,7 +7,6 @@ use App\Services\Invoicing\Signing\InvoiceSigningRequest;
 use App\Services\Invoicing\ZHeart\ZHeartInvoicePayloadBuilder;
 use App\Support\Themes\CafeThemePreset;
 use Illuminate\Support\Carbon;
-use Illuminate\Validation\ValidationException;
 use Tests\Support\ZHeartRequiredInvoiceFieldRules;
 
 function sellerPayloadBusiness(?array $legal = null, string $name = 'Fancy Coffee'): BusinessSetting
@@ -53,86 +52,38 @@ function sellerSigningRequest(BusinessSetting $business, string $category = 'sim
     );
 }
 
-it('builds a seller block from business settings that passes Z-Heart required-field rules', function () {
+it('sends no seller block for simplified invoices and passes Z-Heart required-field rules', function () {
     $payload = app(ZHeartInvoicePayloadBuilder::class)->build(
         sellerSigningRequest(sellerPayloadBusiness()),
     );
 
-    expect($payload['seller']['name'])->toBe('Fancy Coffee')
-        ->and($payload['seller']['vat_number'])->toBe('310122393500003')
-        ->and($payload)->not->toHaveKey('allow_seller_override');
+    expect($payload)->not->toHaveKey('seller');
 
     $validated = ZHeartRequiredInvoiceFieldRules::validate(['invoice' => $payload]);
-
-    expect($validated['invoice']['seller']['name'])->toBe('Fancy Coffee')
-        ->and($validated['invoice']['seller']['vat_number'])->toBe('310122393500003');
+    expect($validated['invoice'])->not->toHaveKey('seller');
 });
 
-it('builds a standard invoice payload that also passes Z-Heart required-field rules', function () {
+it('sends no seller block for standard invoices', function () {
     $payload = app(ZHeartInvoicePayloadBuilder::class)->build(
         sellerSigningRequest(sellerPayloadBusiness(), 'standard'),
     );
 
-    expect($payload['seller'])->toMatchArray([
-        'name' => 'Fancy Coffee',
-        'vat_number' => '310122393500003',
-    ])->and($payload['buyer']['name'])->toBe('Buyer Co');
+    expect($payload)->not->toHaveKey('seller')
+        ->and($payload['buyer']['name'])->toBe('Buyer Co');
 
     ZHeartRequiredInvoiceFieldRules::validate(['invoice' => $payload]);
 });
 
-it('rejects a payload that omits seller under the same required-field rules', function () {
-    $payload = app(ZHeartInvoicePayloadBuilder::class)->build(
-        sellerSigningRequest(sellerPayloadBusiness()),
-    );
-    unset($payload['seller']);
-
-    try {
-        ZHeartRequiredInvoiceFieldRules::validate(['invoice' => $payload]);
-        expect()->fail('Expected seller to be required');
-    } catch (ValidationException $e) {
-        $messages = collect($e->errors())->flatten()->implode(' ');
-        expect($messages)->toContain('seller');
-    }
-});
-
-it('maps seller fields from the business.legal settings fallback', function () {
-    $settings = ['business' => ['legal' => [
-        'name_en' => 'Fallback Legal Name',
-        'vat_number' => '399999999800003',
-    ]]];
-    $business = new BusinessSetting([
-        'name' => '',
-        'settings' => $settings,
-    ]);
-
-    $payload = app(ZHeartInvoicePayloadBuilder::class)->build(sellerSigningRequest($business));
-
-    expect($payload['seller'])->toMatchArray([
-        'name' => 'Fallback Legal Name',
-        'vat_number' => '399999999800003',
-    ]);
-
-    ZHeartRequiredInvoiceFieldRules::validate(['invoice' => $payload]);
-});
-
-it('names the empty seller legal name when business settings omit it', function () {
+it('issues without local legal name or VAT, since Z-Heart owns the seller', function () {
     $business = sellerPayloadBusiness([
         'name_en' => '',
         'name_ar' => '',
-        'vat_number' => '310122393500003',
+        'vat_number' => '',
+        'cr_number' => '',
     ], name: '');
 
-    expect(fn () => app(ZHeartInvoicePayloadBuilder::class)->build(sellerSigningRequest($business)))
-        ->toThrow(InvalidArgumentException::class, __('invoices.errors.seller_name_required'));
-});
+    $payload = app(ZHeartInvoicePayloadBuilder::class)->build(sellerSigningRequest($business));
 
-it('names the empty seller VAT number when business settings omit it', function () {
-    $business = sellerPayloadBusiness([
-        'name_en' => 'Fancy Coffee',
-        'vat_number' => '',
-    ]);
-
-    expect(fn () => app(ZHeartInvoicePayloadBuilder::class)->build(sellerSigningRequest($business)))
-        ->toThrow(InvalidArgumentException::class, __('invoices.errors.seller_vat_required'));
+    expect($payload)->not->toHaveKey('seller')
+        ->and(json_encode($payload))->not->toContain('310122393500003');
 });

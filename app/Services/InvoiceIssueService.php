@@ -117,6 +117,7 @@ class InvoiceIssueService
             'previous_invoice_hash' => $signed['previous_invoice_hash'],
             'signed_xml' => $signed['cleared_xml'] ?? $signed['xml'],
             'qr_tlv_base64' => $signed['qr'],
+            'zheart_seller' => is_array($signed['seller'] ?? null) ? $signed['seller'] : null,
             'issued_at' => $now,
             'due_date' => $dueDate,
             'payload' => $payloadMerge,
