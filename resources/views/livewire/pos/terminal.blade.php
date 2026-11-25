@@ -131,4 +131,67 @@
     </div>
 
     <div x-show="cartOpen" x-cloak class="app-sheet-backdrop lg:hidden" @click="cartOpen = false"></div>
+
+    @assets
+        @vite(['resources/css/invoice-print.css', 'resources/js/receipt.js'])
+    @endassets
+
+    @if ($receipt)
+        @teleport('body')
+            <div
+                class="pos-receipt-modal fixed inset-0 z-[90] flex items-end justify-center bg-black/55 sm:items-center sm:p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="pos-receipt-modal-title"
+                data-pos-receipt-modal
+                wire:key="pos-receipt-modal-{{ $receipt['order']->id }}"
+                x-data
+                x-init="$nextTick(() => { window.renderReceiptGraphics?.(); $refs.print?.focus(); })"
+                @keydown.escape.window="$wire.closeReceipt()"
+            >
+                <style>
+                    @media print {
+                        body > *:not(.pos-receipt-modal) { display: none !important; }
+                        html, body { background: #fff !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
+                        .pos-receipt-modal { position: static !important; display: block !important; background: none !important; padding: 0 !important; }
+                        .pos-receipt-modal__panel { position: static !important; display: block !important; width: auto !important; max-width: none !important; max-height: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: none !important; }
+                        .pos-receipt-modal__body { overflow: visible !important; max-height: none !important; padding: 0 !important; background: none !important; }
+                        .pos-receipt-modal .no-print { display: none !important; }
+                        .pos-receipt-modal .invoice-print-sheet--cash { width: 80mm !important; max-width: 80mm !important; min-width: 0 !important; margin: 0 !important; padding: 4mm !important; box-shadow: none !important; outline: 0 !important; zoom: normal !important; transform: none !important; }
+                    }
+                </style>
+                <div class="pos-receipt-modal__panel flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-[var(--app-bg)] text-[var(--app-text)] shadow-2xl sm:max-h-[90dvh] sm:max-w-lg sm:rounded-3xl">
+                    <header class="no-print flex items-center gap-3 border-b border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700" aria-hidden="true">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700" data-pos-receipt-paid>{{ __('pos.receipt_preview.paid') }}</p>
+                            <h2 id="pos-receipt-modal-title" class="line-clamp-2 break-words text-base font-bold leading-snug">
+                                {!! str_replace('%NUM%', '<bdi dir="ltr" class="tabular-nums">'.e($receipt['order']->order_number).'</bdi>', e(__('pos.receipt_preview.title', ['number' => '%NUM%']))) !!}
+                            </h2>
+                        </div>
+                        <button type="button" class="tap-action-muted h-12 w-12 shrink-0 rounded-full p-0" wire:click="closeReceipt" aria-label="{{ __('pos.receipt_preview.close') }}" title="{{ __('pos.receipt_preview.close') }}">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                        </button>
+                    </header>
+
+                    <div class="pos-receipt-modal__body flex-1 overflow-y-auto overscroll-contain px-2 py-3 sm:px-4" dir="ltr" data-pos-receipt-body>
+                        @include('admin.invoices.partials.cash-receipt-sheet', ['t' => $receipt['t'], 'cash' => $receipt['cash'], 'autoPrint' => false])
+                    </div>
+
+                    <footer class="no-print grid grid-cols-2 gap-2 border-t border-[var(--app-border)] bg-[var(--app-surface)] px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                        <button type="button" class="tap-action-muted min-h-14 w-full text-base" wire:click="closeReceipt" wire:loading.attr="disabled" wire:target="closeReceipt" data-pos-receipt-new-order>
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            <span>{{ __('pos.receipt_preview.new_order') }}</span>
+                        </button>
+                        <button type="button" x-ref="print" class="tap-action-primary min-h-14 w-full text-base" onclick="window.print()" data-pos-receipt-print>
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><rect x="2" y="9" width="20" height="9" rx="2"/><path d="M6 14h12v8H6z"/></svg>
+                            <span>{{ __('pos.receipt_preview.print') }}</span>
+                        </button>
+                    </footer>
+                </div>
+            </div>
+        @endteleport
+    @endif
 </div>
