@@ -82,4 +82,13 @@ return [
         'buyer_postal' => 'الرمز البريدي يجب أن يكون 5 أرقام (السعودية)',
         'buyer_address_country_sa' => 'عنوان المشتري الوطني يجب أن يتضمن الدولة SA (السعودية)',
     ],
+    'print_toolbar' => [
+        'back' => 'رجوع',
+        'print' => 'طباعة',
+        'cash_receipt' => 'إيصال نقدي',
+        'pos_receipt' => 'إيصال نقطة البيع',
+        'receipt_title' => 'إيصال :number',
+        'invoice_title' => 'فاتورة :number',
+        'aria' => 'إجراءات الإيصال',
+    ],
 ];

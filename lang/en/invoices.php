@@ -74,4 +74,13 @@ return [
         'buyer_postal' => 'Buyer postal code must be a 5-digit Saudi code',
         'buyer_address_country_sa' => 'Buyer national address must include country SA (Saudi Arabia)',
     ],
+    'print_toolbar' => [
+        'back' => 'Back',
+        'print' => 'Print',
+        'cash_receipt' => 'Cash receipt',
+        'pos_receipt' => 'POS receipt',
+        'receipt_title' => 'Receipt :number',
+        'invoice_title' => 'Invoice :number',
+        'aria' => 'Receipt actions',
+    ],
 ];

@@ -120,3 +120,74 @@ it('uses the same 80mm cash layout for the POS receipt', function () {
         ->not->toContain('receipt-thermal__logo')
         ->not->toContain('img/tenants/demo-logo.webp');
 });
+
+it('shows a styled, translated receipt toolbar that is hidden when printing', function (string $locale, string $dir, string $back, string $print, string $cash) {
+    config(['app.enabled_locales' => ['en', 'ar', 'bn', 'ur', 'hi']]);
+    config(['locales.supported.'.$locale.'.enabled' => true]);
+    $order = seedDemoPaidPosOrder();
+
+    $html = (string) $this->actingAs($this->owner, 'tenant')
+        ->get(route('admin.pos.receipt', ['order' => $order, 'locale' => $locale]))
+        ->assertOk()
+        ->getContent();
+
+    expect($html)
+        ->toContain('data-receipt-toolbar')
+        ->toContain('rcpt-toolbar no-print')
+        ->toContain('dir="'.$dir.'"')
+        ->toContain('data-receipt-toolbar-back')
+        ->toContain('data-receipt-toolbar-print')
+        ->toContain('data-receipt-toolbar-switch')
+        ->toContain('<bdi dir="ltr" class="rcpt-toolbar__number">'.e($order->order_number).'</bdi>')
+        ->toContain($back)
+        ->toContain($print)
+        ->toContain($cash)
+        ->toContain('href="'.e(route('admin.pos.home')).'"');
+})->with([
+    'en' => ['en', 'ltr', 'Back', 'Print', 'Cash receipt'],
+    'ar' => ['ar', 'rtl', 'رجوع', 'طباعة', 'إيصال نقدي'],
+    'bn' => ['bn', 'ltr', 'ফিরে যান', 'প্রিন্ট', 'ক্যাশ রসিদ'],
+    'ur' => ['ur', 'rtl', 'واپس', 'پرنٹ', 'نقد رسید'],
+    'hi' => ['hi', 'ltr', 'वापस', 'प्रिंट', 'नकद रसीद'],
+]);
+
+it('groups the seller VAT and CR rows with english and arabic labels', function () {
+    $order = seedDemoPaidPosOrder();
+
+    $html = (string) $this->actingAs($this->owner, 'tenant')
+        ->get(route('admin.pos.receipt', ['order' => $order, 'locale' => 'en']))
+        ->assertOk()
+        ->getContent();
+
+    $header = str($html)->after('<header class="invoice-cash80__seller">')->before('</header>')->toString();
+
+    expect($header)
+        ->toContain('data-receipt-seller-ids')
+        ->toContain('VAT No.')
+        ->toContain('الرقم الضريبي')
+        ->toContain('invoice-cash80__seller-name--ar');
+});
+
+it('labels the invoice print toolbar with the order number and links back to the pos receipt', function () {
+    $order = seedDemoPaidPosOrder();
+    $invoice = $order->invoice()->firstOrFail();
+
+    $html = (string) $this->actingAs($this->owner, 'tenant')
+        ->get(route('admin.invoices.print', ['invoice' => $invoice, 'layout' => 'cash', 'locale' => 'ar']))
+        ->assertOk()
+        ->getContent();
+
+    expect($html)
+        ->toContain('إيصال <bdi dir="ltr" class="rcpt-toolbar__number">'.e($order->order_number).'</bdi>')
+        ->toContain('href="'.e(route('admin.pos.receipt', ['order' => $order, 'locale' => 'ar'])).'"')
+        ->toContain('إيصال نقطة البيع')
+        ->toContain('dir="rtl"');
+});
+
+it('keeps the toolbar out of the printed receipt', function () {
+    $css = file_get_contents(resource_path('css/invoice-print.css'));
+
+    expect($css)
+        ->toMatch('/@media print\s*\{\s*\.no-print\s*\{\s*display:\s*none !important;/')
+        ->toContain('width: var(--cash80-width);');
+});
