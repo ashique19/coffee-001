@@ -1,8 +1,23 @@
 <?php
 
 return [
-    'new_order' => 'রিসেট',
+    'title' => 'পয়েন্ট অফ সেল',
+    'nav_pos' => 'পস',
+    'nav_orders' => 'অর্ডার',
     'nav_eod' => 'দিনের সমাপ্তি',
+    'nav_ops' => 'অপারেশন',
+    'nav_more' => 'আরও',
+    'nav_home' => 'পস হোম',
+    'mobile_nav' => 'স্টাফ মেনু',
+    'collapse_sidebar' => 'সংকুচিত করুন',
+    'switch_branch' => 'শাখা পরিবর্তন',
+    'user_menu' => 'অ্যাকাউন্ট মেনু',
+    'view_storefront' => 'স্টোরফ্রন্ট',
+    'ops_dashboard' => 'অপারেশন',
+    'logout' => 'লগ আউট',
+    'history' => 'অর্ডার ইতিহাস',
+    'end_of_day' => 'দিনের সমাপ্তি',
+    'new_order' => 'রিসেট',
     'receipt_preview' => [
         'paid' => 'পেমেন্ট গ্রহণ করা হয়েছে',
         'title' => 'রসিদ :number',

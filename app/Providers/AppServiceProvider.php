@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\LoadBusinessSettings;
 use App\Models\Branch;
 use App\Models\PosOrder;
 use Illuminate\Support\Facades\File;
@@ -13,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        require_once app_path('Support/helpers.php');
     }
 
     public function boot(): void
@@ -22,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         File::ensureDirectoryExists($livewireTmp);
 
         Livewire::addPersistentMiddleware([
-            \App\Http\Middleware\LoadBusinessSettings::class,
+            LoadBusinessSettings::class,
         ]);
 
         Route::bind('branch', fn (string $value) => Branch::query()->whereKey($value)->firstOrFail());

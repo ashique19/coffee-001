@@ -3,6 +3,22 @@
 $en = require __DIR__.'/../en/pos.php';
 
 return array_replace($en, [
+    'title' => 'پوائنٹ آف سیل',
+    'nav_pos' => 'پوز',
+    'nav_orders' => 'آرڈرز',
+    'nav_eod' => 'دن کا اختتام',
+    'nav_ops' => 'آپریشنز',
+    'nav_more' => 'مزید',
+    'nav_home' => 'پوز ہوم',
+    'mobile_nav' => 'عملہ مینو',
+    'collapse_sidebar' => 'سمیٹیں',
+    'switch_branch' => 'شاخ بدلیں',
+    'user_menu' => 'اکاؤنٹ مینو',
+    'view_storefront' => 'اسٹور فرنٹ',
+    'ops_dashboard' => 'آپریشنز',
+    'logout' => 'لاگ آؤٹ',
+    'history' => 'آرڈر ہسٹری',
+    'end_of_day' => 'دن کا اختتام',
     'receipt_preview' => [
         'paid' => 'ادائیگی موصول ہو گئی',
         'title' => 'رسید :number',

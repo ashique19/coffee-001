@@ -98,7 +98,7 @@
                                     <ul class="app-card app-card--flat absolute z-20 mt-1 min-w-[12rem] p-1 shadow-lg">
                                         @foreach($branches as $b)
                                             <li>
-                                                <a class="app-nav-link" href="{{ route('admin.pos.terminal', [ $b]) }}">{{ $b->name }}</a>
+                                                <a class="app-nav-link" href="{{ localized_route('admin.pos.terminal', [ $b]) }}">{{ $b->name }}</a>
                                             </li>
                                         @endforeach
                                     </ul>
@@ -115,7 +115,7 @@
                         <div x-show="userOpen" x-cloak @click.outside="userOpen = false" class="app-card app-card--flat absolute end-0 z-30 mt-1 min-w-[11rem] p-1 shadow-xl">
                             <x-app.locale-switch :current="$locale" class="flex p-2 sm:hidden" />
                             @if ($tenant->hasThemedStorefront())
-                                <a href="{{ route('cafe.home') }}" target="_blank" rel="noopener" class="app-nav-link">
+                                <a href="{{ localized_route('cafe.home') }}" target="_blank" rel="noopener" class="app-nav-link">
                                     <x-app.icon name="external" class="h-4 w-4" /> {{ __('pos.view_storefront') }}
                                 </a>
                             @endif
@@ -134,19 +134,19 @@
 
             @if($branchParam)
                 <nav class="app-tabbar" aria-label="{{ __('pos.mobile_nav') }}">
-                    <a href="{{ route('admin.pos.terminal', [ $branchParam]) }}" class="app-tab @if($active === 'pos') app-tab--active @endif">
+                    <a href="{{ localized_route('admin.pos.terminal', [ $branchParam]) }}" class="app-tab @if($active === 'pos') app-tab--active @endif">
                         <x-app.icon name="cart" />
                         {{ __('pos.nav_pos') }}
                     </a>
-                    <a href="{{ route('admin.pos.history', [ $branchParam]) }}" class="app-tab @if($active === 'orders') app-tab--active @endif">
+                    <a href="{{ localized_route('admin.pos.history', [ $branchParam]) }}" class="app-tab @if($active === 'orders') app-tab--active @endif">
                         <x-app.icon name="clipboard" />
                         {{ __('pos.nav_orders') }}
                     </a>
-                    <a href="{{ route('admin.pos.eod', [ $branchParam]) }}" class="app-tab @if($active === 'eod') app-tab--active @endif">
+                    <a href="{{ localized_route('admin.pos.eod', [ $branchParam]) }}" class="app-tab @if($active === 'eod') app-tab--active @endif">
                         <x-app.icon name="clock" />
                         {{ __('pos.nav_eod') }}
                     </a>
-                    <a href="{{ route('admin.pos.ops', [ $branchParam]) }}" class="app-tab @if($active === 'ops') app-tab--active @endif">
+                    <a href="{{ localized_route('admin.pos.ops', [ $branchParam]) }}" class="app-tab @if($active === 'ops') app-tab--active @endif">
                         <x-app.icon name="squares" />
                         {{ __('pos.nav_ops') }}
                     </a>
@@ -172,7 +172,7 @@
                 </div>
             @else
                 <nav class="app-tabbar" aria-label="{{ __('pos.mobile_nav') }}">
-                    <a href="{{ route('admin.pos.home') }}" class="app-tab app-tab--active">
+                    <a href="{{ localized_route('admin.pos.home') }}" class="app-tab app-tab--active">
                         <x-app.icon name="home" />
                         {{ __('pos.nav_home') }}
                     </a>
