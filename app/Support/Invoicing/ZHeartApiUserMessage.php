@@ -36,6 +36,24 @@ final class ZHeartApiUserMessage
                 return __('zheart_api.production_csid_required', ['id' => $id, 'detail' => $detail]);
             }
 
+            $fieldLines = ZHeartApiValidationErrors::collect($json);
+            $numbering = null;
+            foreach (array_merge($fieldLines, [$apiMessage, $errorCode]) as $candidate) {
+                if (! is_string($candidate) || $candidate === '') {
+                    continue;
+                }
+                $mapped = ZHeartApiValidationErrors::present((string) $candidate);
+                if (in_array($mapped, [__('invoices.errors.invoice_number_taken'), __('invoices.errors.number_series_with_number')], true)) {
+                    $numbering = $mapped;
+                    break;
+                }
+            }
+            if ($numbering !== null) {
+                $suffix = $id !== '—' ? ' '.__('zheart_api.request_id_suffix', ['id' => $id]) : '';
+
+                return $numbering.$suffix;
+            }
+
             return __('zheart_api.validation_failed', ['id' => $id, 'detail' => $detail]);
         }
 

@@ -226,6 +226,10 @@
         @apply bg-red-100 text-red-900;
     }
 
+    .pos-status-pill--open {
+        @apply bg-sky-100 text-sky-950;
+    }
+
     .pos-sparkline {
         @apply h-16 w-full;
     }

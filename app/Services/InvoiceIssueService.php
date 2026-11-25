@@ -11,7 +11,9 @@ use App\Services\Invoicing\InvoiceIssueResult;
 use App\Services\Invoicing\Signing\InvoiceSigningGatewayFactory;
 use App\Services\Invoicing\Signing\InvoiceSigningRequest;
 use App\Support\Invoicing\InvoiceDocumentTotals;
+use App\Support\Invoicing\InvoiceNumberSeries;
 use App\Support\Invoicing\InvoicePayloadLines;
+use App\Support\Invoicing\ZHeartSubmissionOutcome;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -40,6 +42,7 @@ class InvoiceIssueService
             'referenced_invoice_id' => $referencedInvoice?->id,
             'payload' => [
                 'lines' => $lineItems,
+                'invoice_uuid' => (string) Str::uuid(),
             ],
         ]);
 
@@ -62,8 +65,9 @@ class InvoiceIssueService
         $now = Carbon::now('UTC');
         $referenced = $invoice->referencedInvoice;
         $invoiceCategory = $this->resolveInvoiceCategory($invoice, $referenced);
+        $invoiceUuid = $invoice->ensureInvoiceUuid();
+        $invoice->refresh();
         $payload = $invoice->payload ?? [];
-        $invoiceUuid = (string) (($payload['invoice_uuid'] ?? null) ?: Str::uuid());
         $documentDiscount = (float) ($payload['invoice_discount_ex_vat'] ?? 0);
         $dueDate = $this->resolveDueDate($invoice, $now);
 
@@ -76,12 +80,13 @@ class InvoiceIssueService
             invoicePayload: $payload,
             issueDateTimeUtc: $now,
             invoiceUuid: $invoiceUuid,
-            referencedInvoiceNumber: $referenced?->document_number,
+            referencedInvoiceNumber: $referenced?->officialOrDocumentNumber(),
             referencedInvoiceUuid: $referenced
                 ? (string) ($referenced->payload['invoice_uuid'] ?? '')
                 : null,
             noteReason: $this->resolveNoteReason($invoice),
             documentDiscountExVat: $documentDiscount,
+            numberSeries: InvoiceNumberSeries::forInvoice($invoice),
         );
 
         $signed = $this->signingFactory->gateway()->signIssuedInvoice($signingRequest, $invoice);
@@ -90,7 +95,8 @@ class InvoiceIssueService
 
         $payloadMerge = array_merge($payload, [
             'lines' => $payload['lines'] ?? [],
-            'invoice_uuid' => $signed['invoice_uuid'],
+            'invoice_uuid' => $signed['invoice_uuid'] ?? $invoiceUuid,
+            'invoice_category' => $invoiceCategory,
             'totals' => [
                 'subtotal_ex_vat' => $totals['subtotal_ex_vat'],
                 'total_vat' => $totals['total_vat'],
@@ -98,37 +104,28 @@ class InvoiceIssueService
             ],
         ]);
 
-        if (! empty($signed['request_id'])) {
-            $payloadMerge['zheart_request_id'] = $signed['request_id'];
-        }
-
-        if (! empty($signed['submission_skip_reason'])) {
-            $payloadMerge['zheart_submission_skip'] = $signed['submission_skip_reason'];
-        }
-
-        if (! empty($signed['reporting_status'])) {
-            $payloadMerge['zheart_reporting_status'] = $signed['reporting_status'];
-        }
-
         $invoice->forceFill([
             'status' => InvoiceStatus::Issued,
-            'icv' => $signed['icv'],
-            'invoice_hash' => $signed['hash'],
-            'previous_invoice_hash' => $signed['previous_invoice_hash'],
-            'signed_xml' => $signed['cleared_xml'] ?? $signed['xml'],
-            'qr_tlv_base64' => $signed['qr'],
-            'zheart_seller' => is_array($signed['seller'] ?? null) ? $signed['seller'] : null,
             'issued_at' => $now,
             'due_date' => $dueDate,
             'payload' => $payloadMerge,
         ])->save();
 
-        $this->auditService->record($invoice, 'invoice.issued', [
-            'icv' => $signed['icv'],
-            'invoice_hash' => $signed['hash'],
+        $invoice->applySubmissionResult($signed);
+
+        $fresh = $invoice->fresh();
+
+        $this->auditService->record($fresh, 'invoice.issued', [
+            'icv' => $signed['icv'] ?? null,
+            'invoice_hash' => $signed['hash'] ?? null,
+            'outcome' => $signed['outcome'] ?? null,
+            'official_number' => $fresh->official_number,
         ]);
 
-        return new InvoiceIssueResult($invoice->fresh(), true);
+        $outcome = $signed['outcome'] ?? null;
+        $ok = $outcome !== ZHeartSubmissionOutcome::REJECTED;
+
+        return new InvoiceIssueResult($fresh, $ok, $signed['message'] ?? null);
     }
 
     private function resolveInvoiceCategory(Invoice $invoice, ?Invoice $referenced): string

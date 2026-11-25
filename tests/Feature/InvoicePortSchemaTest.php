@@ -42,3 +42,21 @@ it('ships an idempotent phpMyAdmin SQL companion that matches this migration', f
         ->not->toContain('legal_name_ar')
         ->not->toContain('CREATE TABLE IF NOT EXISTS `product_sizes`');
 });
+
+it('adds official_number for the Z-Heart invoice number and ships companion SQL', function () {
+    expect(Schema::hasColumn('invoices', 'official_number'))->toBeTrue();
+
+    $migration = require database_path('migrations/2026_11_26_040000_add_official_number_to_invoices.php');
+    $migration->up();
+    $migration->up();
+
+    expect(Schema::hasColumn('invoices', 'official_number'))->toBeTrue();
+
+    $path = base_path('docs/sql/2026-11-26-invoice-official-number.sql');
+    expect(is_file($path))->toBeTrue();
+    $sql = file_get_contents($path);
+    expect($sql)->toContain('official_number')
+        ->and($sql)->toContain('ADD COLUMN IF NOT EXISTS')
+        ->and($sql)->toContain('CREATE UNIQUE INDEX IF NOT EXISTS')
+        ->and($sql)->toContain('2026_11_26_040000_add_official_number_to_invoices');
+});

@@ -146,8 +146,16 @@ class IssueInvoice extends Component
 
         $draft->forceFill(['payload' => $payload])->save();
 
-        $issued = $issuer->issue($draft->fresh())->invoice;
-        $this->toastSuccess(__('invoices.issue_success', ['number' => $issued->document_number]));
+        $result = $issuer->issue($draft->fresh());
+        $issued = $result->invoice;
+        $number = $issued->displayNumber();
+        if ($issued->isSubmissionRetry()) {
+            $this->toastInfo(__('invoices.issue_sending', ['number' => $number]));
+        } elseif ($issued->isSubmissionRejected()) {
+            $this->toastError(__('invoices.issue_rejected', ['number' => $number, 'reason' => $result->signingFailureMessage ?: __('invoices.signing.rejected_detail')]));
+        } else {
+            $this->toastSuccess(__('invoices.issue_success', ['number' => $number]));
+        }
         $this->redirectAfterIssue((int) $issued->id);
     }
 
