@@ -151,6 +151,9 @@ class BusinessSettings extends Component
 
     public ?string $zheartTestRequestId = null;
 
+    /** @var list<string> Plain-language reasons Z-Heart cannot sign invoices yet. */
+    public array $zheartTestIssues = [];
+
     /** @var list<string> */
     public array $tabsWithErrors = [];
 
@@ -576,11 +579,12 @@ class BusinessSettings extends Component
         $this->zheartTestReason = $result['reason'] ?? null;
         $this->zheartTestCard = is_array($result['card'] ?? null) ? $result['card'] : null;
         $this->zheartTestWarnings = is_array($result['warnings'] ?? null) ? $result['warnings'] : [];
+        $this->zheartTestIssues = is_array($result['issues'] ?? null) ? array_values($result['issues']) : [];
         $this->zheartTestRequestId = is_string($result['request_id'] ?? null) && $result['request_id'] !== ''
             ? $result['request_id']
             : null;
 
-        if ($result['ok']) {
+        if (($result['severity'] ?? 'error') === 'ok') {
             $this->toastSuccess($result['message']);
         } elseif (($result['severity'] ?? 'error') === 'warn') {
             $this->toastWarning($result['message']);
