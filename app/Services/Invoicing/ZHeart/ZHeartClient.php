@@ -126,7 +126,8 @@ final class ZHeartClient
             $authStatus = null;
         }
 
-        $requestId = self::requestIdFrom($auth) ?? self::requestIdFrom($health);
+        $authRequestId = self::requestIdFrom($auth);
+        $requestId = $authRequestId ?? self::requestIdFrom($health);
 
         if ($authStatus === 200 && is_array($authBody) && ($authBody['status'] ?? '') === 'ok') {
             $report = ZHeartConnectionTestReport::successFromAuthPayload($authBody, $business);
@@ -149,7 +150,7 @@ final class ZHeartClient
         }
 
         if ($authStatus === 404) {
-            $failure = ZHeartConnectionTestReport::failureReason(404, $healthOk, $authBody);
+            $failure = ZHeartConnectionTestReport::failureReason(404, $healthOk, $authBody, $authRequestId);
 
             return [
                 'ok' => false,
@@ -166,7 +167,7 @@ final class ZHeartClient
         }
 
         if (in_array($authStatus, [401, 403], true)) {
-            $failure = ZHeartConnectionTestReport::failureReason($authStatus, $healthOk, $authBody);
+            $failure = ZHeartConnectionTestReport::failureReason($authStatus, $healthOk, $authBody, $authRequestId);
 
             return [
                 'ok' => false,
@@ -182,7 +183,7 @@ final class ZHeartClient
             ];
         }
 
-        $failure = ZHeartConnectionTestReport::failureReason($authStatus, $healthOk, $authBody);
+        $failure = ZHeartConnectionTestReport::failureReason($authStatus, $healthOk, $authBody, $authRequestId);
 
         return [
             'ok' => false,

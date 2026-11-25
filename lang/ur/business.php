@@ -15,6 +15,15 @@ return array_replace($en, [
             'not_set' => 'سیٹ نہیں',
     ]),
     'zheart' => array_merge($en['zheart'], [
+        'test_request_id' => 'درخواست آئی ڈی: :id',
+        'test_reason_server_error' => 'Z-Heart میں اندرونی خرابی ہوئی۔ درخواست آئی ڈی: :id۔ دوبارہ کوشش کریں یا سپورٹ سے رابطہ کریں۔',
+        'test_reason_server_error_no_id' => 'Z-Heart میں اندرونی خرابی ہوئی۔ دوبارہ کوشش کریں یا سپورٹ سے رابطہ کریں۔',
+        'test_reason_bad_response' => 'Z-Heart نے ایسا جواب بھیجا جو یہ ایپ نہیں پڑھ سکی (HTTP :status)۔ درخواست آئی ڈی: :id۔ دوبارہ کوشش کریں یا سپورٹ سے رابطہ کریں۔',
+        'test_reason_unexpected_status' => 'Z-Heart نے درخواست قبول نہیں کی (HTTP :status)۔ درخواست آئی ڈی: :id۔ سپورٹ سے رابطہ کریں۔',
+        'test_reason_key_revoked' => 'یہ API کلید منسوخ کر دی گئی ہے۔ Z-Heart سپورٹ سے نئی کلید مانگیں۔',
+        'test_reason_key_expired' => 'اس API کلید کی میعاد ختم ہو گئی ہے۔ Z-Heart سپورٹ سے نئی کلید مانگیں۔',
+        'test_reason_client_suspended' => 'Z-Heart کے مطابق اس کاروبار کا اکاؤنٹ معطل ہے۔ سپورٹ سے رابطہ کریں۔',
+        'test_reason_client_not_active' => 'Z-Heart کے مطابق اس کاروبار کا اکاؤنٹ فعال نہیں ہے۔ سپورٹ سے رابطہ کریں۔',
         'test_not_ready' => 'منسلک ہے، لیکن انوائسز پر دستخط کے لیے تیار نہیں',
         'test_not_ready_hint' => 'Z-Heart کو نیچے دیے گئے مسائل ملے ہیں۔ انوائسز پر دستخط سے پہلے انہیں Z-Heart میں ٹھیک کرنا ضروری ہے۔ ٹھیک کروانے کے لیے ہم سے رابطہ کریں۔',
         'issues' => [
