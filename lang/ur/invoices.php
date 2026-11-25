@@ -36,4 +36,13 @@ return [
         'signing_failed' => 'اس انوائس پر cryptographic دستخط نہیں ہو سکا۔ ایڈمن میں کیز اور signing service signing service',
         'signing_credentials_invalid' => 'اس پر compliance signing service',
     ],
+    'print_toolbar' => [
+        'back' => 'واپس',
+        'print' => 'پرنٹ',
+        'cash_receipt' => 'نقد رسید',
+        'pos_receipt' => 'POS رسید',
+        'receipt_title' => 'رسید :number',
+        'invoice_title' => 'انوائس :number',
+        'aria' => 'رسید کے اختیارات',
+    ],
 ];

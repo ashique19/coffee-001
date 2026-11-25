@@ -55,6 +55,8 @@
         'canResubmitZatca' => $canResubmitZatca ?? false,
         'zatcaResubmitUrl' => $zatcaResubmitUrl ?? null,
         'zatcaResubmitLabel' => $zatcaResubmitLabel ?? null,
+        'toolbarKind' => isset($order) && $order !== null ? 'receipt' : 'invoice',
+        'toolbarNumber' => isset($order) && $order !== null && filled($order->order_number) ? $order->order_number : $t['document_number'],
     ])
 
     <div class="invoice-print-root invoice-print-sheet invoice-print-sheet--cash invoice-cash80" data-invoice-print data-auto-print="{{ request()->boolean('autoprint') ? '1' : '0' }}" data-document-number="{{ $t['document_number'] }}">
@@ -62,15 +64,22 @@
         <header class="invoice-cash80__seller">
             <div class="invoice-cash80__seller-name">{{ $t['seller_en'] }}</div>
             <div class="invoice-cash80__seller-name invoice-cash80__seller-name--ar invoice-print-ar" dir="rtl">{{ $t['seller_ar'] }}</div>
-            @foreach ($cash['seller_en_lines'] as $line)
-                <div class="invoice-cash80__seller-line">{{ $line }}</div>
-            @endforeach
+            @if ($cash['seller_en_lines'] !== [])
+                <div class="invoice-cash80__seller-address" data-receipt-seller-address>
+                    @foreach ($cash['seller_en_lines'] as $line)
+                        <div class="invoice-cash80__seller-line">{{ $line }}</div>
+                    @endforeach
+                </div>
+            @endif
             @if ($cash['seller_ar_lines'] !== [])
                 <div class="invoice-national-address-ar invoice-national-address-ar-lines invoice-cash80__seller-ar" lang="ar">
                     @foreach ($cash['seller_ar_lines'] as $line)
                         <div class="invoice-national-address-ar__line invoice-cash__seller-ar invoice-print-ar" dir="rtl">{!! $line !!}</div>
                     @endforeach
                 </div>
+            @endif
+            @if ($t['trn'] || $t['cr_number'] || filled($t['seller_id'] ?? null))
+            <div class="invoice-cash80__seller-ids" data-receipt-seller-ids>
             @endif
             @if ($t['trn'])
                 <div class="invoice-cash80__row invoice-cash80__row--id">
@@ -91,6 +100,9 @@
                     <span class="invoice-cash80__value invoice-print-bidi-value" dir="ltr">{{ $t['seller_id'] }}</span>
                     <span class="invoice-cash80__label-ar invoice-print-ar" dir="rtl">رقم المعرف</span>
                 </div>
+            @endif
+            @if ($t['trn'] || $t['cr_number'] || filled($t['seller_id'] ?? null))
+            </div>
             @endif
         </header>
 
