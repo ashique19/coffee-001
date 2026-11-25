@@ -31,6 +31,8 @@ If the database was created from an **older** `install.sql`, run **`docs/sql/202
 
 Before the invoice issue/receipt ports, also run **`docs/sql/2026-11-23-invoice-port-schema.sql`** once in phpMyAdmin (idempotent). It adds `staff_users.locale`, `invoices.due_date`, `product_units`, and `products.product_unit_id`.
 
+For Z-Heart seller blocks on invoices (Z-Heart is the source of seller identity), add `invoices.zheart_seller`: run **`php artisan migrate --force`**, or import **`docs/sql/2026-11-25-invoice-zheart-seller.sql`** once in phpMyAdmin (MariaDB, idempotent; also records the migration). Do one or the other.
+
 To load the 10 representative menu products (with images already in `public/images/menu/`), import **`docs/sql/2026-11-23-fancy-coffee-menu.sql`** once in phpMyAdmin after git pull (idempotent; plain statements, current-schema tables only). Image credits: `docs/sql/IMAGE-CREDITS.md`.
 
 When Artisan is available:

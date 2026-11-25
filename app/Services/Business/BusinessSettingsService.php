@@ -205,18 +205,24 @@ class BusinessSettingsService
         $business['legal'] = $legalBlock;
         $settings['business'] = $business;
 
+        // Only mirror the keys that were passed, so a storefront-address save never blanks
+        // the legacy legal fields (kept for displaying older invoices).
         $legal = (array) ($settings['legal_entity'] ?? []);
-        $legal['name_en'] = (string) ($legalBlock['name_en'] ?? '');
-        $legal['name_ar'] = (string) ($legalBlock['name_ar'] ?? '');
-        $legal['vat_number'] = preg_replace('/\D/', '', (string) ($legalBlock['vat_number'] ?? '')) ?? '';
-        $legal['cr_number'] = (string) ($legalBlock['cr_number'] ?? '');
-        $legal['address'] = (string) ($legalBlock['address_en'] ?? '');
-        $legal['address_ar'] = (string) ($legalBlock['address_ar'] ?? '');
-        $legal['national_address'] = (array) ($legalBlock['national_address'] ?? []);
+        foreach (['name_en' => 'name_en', 'name_ar' => 'name_ar', 'cr_number' => 'cr_number', 'address_en' => 'address', 'address_ar' => 'address_ar'] as $from => $to) {
+            if (array_key_exists($from, $input)) {
+                $legal[$to] = (string) ($legalBlock[$from] ?? '');
+            }
+        }
+        if (array_key_exists('vat_number', $input)) {
+            $legal['vat_number'] = preg_replace('/\D/', '', (string) ($legalBlock['vat_number'] ?? '')) ?? '';
+        }
+        if (array_key_exists('national_address', $input)) {
+            $legal['national_address'] = (array) ($legalBlock['national_address'] ?? []);
+        }
         $settings['legal_entity'] = $legal;
 
         $tenant->forceFill(['settings' => $settings])->save();
-        $this->audit->record($tenant, 'business.settings.legal', ['vat' => $legal['vat_number']], $actor);
+        $this->audit->record($tenant, 'business.settings.legal', ['vat' => $legal['vat_number'] ?? null, 'keys' => array_keys($input)], $actor);
 
         return $tenant->fresh();
     }

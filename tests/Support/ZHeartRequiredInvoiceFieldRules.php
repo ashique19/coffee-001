@@ -10,8 +10,8 @@ use Illuminate\Validation\ValidationException;
  * Z-Heart invoice API required-field rules, used to assert a locally built
  * payload would be accepted on field presence (not signing or UBL precheck).
  *
- * Mirrors the public API rules for the case where the Z-Heart client profile
- * does not supply seller data, so invoice.seller is required.
+ * Mirrors the public API rules. Z-Heart builds the seller from its client
+ * profile, so invoice.seller is not part of the contract (and is ignored if sent).
  */
 final class ZHeartRequiredInvoiceFieldRules
 {
@@ -56,9 +56,6 @@ final class ZHeartRequiredInvoiceFieldRules
             'invoice.icv' => ['nullable', 'integer', 'min:1'],
             'invoice.billing_reference' => ['nullable', 'string', 'max:127', 'required_if:invoice.document_type,credit', 'required_if:invoice.document_type,debit'],
             'invoice.billing_reference_uuid' => ['nullable', 'uuid'],
-            'invoice.seller' => ['required', 'array'],
-            'invoice.seller.name' => ['nullable', 'string', 'max:255'],
-            'invoice.seller.vat_number' => ['nullable', 'string', 'max:32'],
             'invoice.buyer' => ['required_if:invoice.type,standard', 'array'],
             'invoice.buyer.name' => ['required_if:invoice.type,standard', 'string', 'max:255'],
             'invoice.buyer.vat_number' => [

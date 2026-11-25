@@ -17,7 +17,6 @@ final class ZHeartInvoicePayloadBuilder
     public function build(InvoiceSigningRequest $request): array
     {
         $issued = $request->issueDateTimeUtc->copy()->timezone('Asia/Riyadh');
-        $legal = $request->business->settings['legal_entity'] ?? [];
 
         $type = $request->invoiceCategory === 'simplified' ? 'simplified' : 'standard';
         $documentType = match ($request->documentType->value) {
@@ -60,42 +59,8 @@ final class ZHeartInvoicePayloadBuilder
             $payload['buyer'] = $buyerBlock;
         }
 
-        $payload['seller'] = $this->sellerBlock($request, $legal);
-
+        // No seller block: Z-Heart builds the seller from its client profile and returns it.
         return $payload;
-    }
-
-    /**
-     * Seller block required by Z-Heart when the API client profile does not
-     * already supply one. Field mapping matches plumber-001 (legal_entity, with
-     * business.legal as a coffee settings fallback).
-     *
-     * @param  array<string, mixed>  $legal
-     * @return array<string, mixed>
-     */
-    private function sellerBlock(InvoiceSigningRequest $request, array $legal): array
-    {
-        if (! filled($legal['name_en'] ?? null) && ! filled($legal['vat_number'] ?? null)) {
-            $alt = data_get($request->business->settings, 'business.legal', []);
-            if (is_array($alt) && $alt !== []) {
-                $legal = array_merge($legal, $alt);
-            }
-        }
-
-        $name = trim((string) ($legal['name_en'] ?? $request->business->name));
-        $vatNumber = trim((string) ($legal['vat_number'] ?? ''));
-
-        if ($name === '') {
-            throw new \InvalidArgumentException(__('invoices.errors.seller_name_required'));
-        }
-        if ($vatNumber === '') {
-            throw new \InvalidArgumentException(__('invoices.errors.seller_vat_required'));
-        }
-
-        return array_filter([
-            'name' => $name,
-            'vat_number' => $vatNumber,
-        ]);
     }
 
     /**

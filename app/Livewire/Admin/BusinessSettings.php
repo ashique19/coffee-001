@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Support\Invoicing\InvoiceSellerBlock;
 use App\Business\BusinessContext;
 use App\Livewire\Concerns\DispatchesToasts;
 use App\Livewire\Concerns\ResolvesBusinessContext;
@@ -306,6 +307,10 @@ class BusinessSettings extends Component
         $this->toastSuccess(__('business.messages.logo_removed'));
     }
 
+    /**
+     * Legal name, VAT, CR and the invoice national address are managed by Z-Heart and
+     * cannot be changed here. Only the storefront address (English/Arabic) is saved.
+     */
     public function saveLegal(BusinessSettingsService $service): void
     {
         $this->authorize('business.manage');
@@ -314,40 +319,19 @@ class BusinessSettings extends Component
         $this->tabsWithErrors = [];
         try {
             $this->runSectionValidation([
-                'legalNameEn' => 'required|string|max:200',
-                'legalNameAr' => 'required|string|max:200',
-                'vatNumber' => ['required', 'string', new SaudiVatNumber],
-                'crNumber' => 'required|string|max:32',
-                'addressEn' => 'required|string|max:500',
-                'addressAr' => 'required|string|max:500',
-                'naBuilding' => 'required|string|max:20',
-                'naStreet' => 'required|string|max:120',
-                'naDistrict' => 'required|string|max:120',
-                'naCity' => 'required|string|max:80',
-                'naPostal' => 'required|digits:5',
-                'naAdditional' => 'nullable|string|max:20',
+                'addressEn' => 'nullable|string|max:500',
+                'addressAr' => 'nullable|string|max:500',
             ], 'legal');
         } catch (ValidationException) {
             return;
         }
 
         $service->saveLegal($this->tenant(), [
-            'name_en' => $this->legalNameEn,
-            'name_ar' => $this->legalNameAr,
-            'vat_number' => $this->vatNumber,
-            'cr_number' => $this->crNumber,
             'address_en' => $this->addressEn,
             'address_ar' => $this->addressAr,
-            'national_address' => [
-                'building' => $this->naBuilding,
-                'street' => $this->naStreet,
-                'district' => $this->naDistrict,
-                'city' => $this->naCity,
-                'postal_code' => $this->naPostal,
-                'additional' => $this->naAdditional,
-            ],
         ], auth('tenant')->user());
 
+        $this->hydrateFromTenant($this->tenant());
         $this->toastSuccess(__('business.messages.saved'));
     }
 
@@ -611,6 +595,7 @@ class BusinessSettings extends Component
 
         return view('livewire.admin.business-settings', [
             'tenant' => $tenant,
+            'zheartSeller' => $this->section === 'legal' ? InvoiceSellerBlock::latestFromZHeart() : null,
             'colorOptions' => TenantBusinessProfile::brandColorOptions($tenant),
             'teamUrl' => route('admin.team'),
             'isOwner' => $this->isOwner(),

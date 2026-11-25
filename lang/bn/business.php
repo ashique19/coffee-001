@@ -55,4 +55,16 @@ $en['zheart'] = array_merge($en['zheart'] ?? [], [
     'onboarded_unknown' => 'অজানা',
 ]);
 
+$en['legal'] = array_merge($en['legal'] ?? [], [
+        'address_en' => 'স্টোরফ্রন্ট ঠিকানা (ইংরেজি)',
+        'address_ar' => 'স্টোরফ্রন্ট ঠিকানা (আরবি)',
+        'managed_by_zheart' => 'Z-Heart দ্বারা পরিচালিত। পরিবর্তন করতে আমাদের সাথে যোগাযোগ করুন।',
+        'source_zheart' => 'আপনার সর্বশেষ Z-Heart ইনভয়েস অনুযায়ী।',
+        'source_local' => 'এখনও কোনো Z-Heart ইনভয়েস নেই। এগুলো আগে এই অ্যাপে সংরক্ষিত তথ্য; নতুন ইনভয়েস Z-Heart ব্যবহার করে।',
+        'storefront_heading' => 'স্টোরফ্রন্ট ঠিকানা',
+        'storefront_hint' => 'আপনার ওয়েবসাইটে দেখানো হয়। ইনভয়েসে বিক্রেতার ঠিকানা Z-Heart থেকে ছাপা হয়।',
+        'seller_id' => 'বিক্রেতা আইডি',
+        'not_set' => 'সেট করা নেই',
+]);
+
 return $en;

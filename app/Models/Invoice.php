@@ -25,6 +25,7 @@ class Invoice extends Model
         'previous_invoice_hash',
         'signed_xml',
         'qr_tlv_base64',
+        'zheart_seller',
         'payload',
         'issued_at',
         'due_date',
@@ -36,6 +37,7 @@ class Invoice extends Model
             'document_type' => InvoiceDocumentType::class,
             'status' => InvoiceStatus::class,
             'payload' => 'array',
+            'zheart_seller' => 'array',
             'issued_at' => 'datetime',
             'due_date' => 'date',
         ];
