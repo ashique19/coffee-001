@@ -15,6 +15,15 @@ return array_replace($en, [
             'not_set' => 'सेट नहीं',
     ]),
     'zheart' => array_merge($en['zheart'], [
+        'test_request_id' => 'अनुरोध आईडी: :id',
+        'test_reason_server_error' => 'Z-Heart में आंतरिक त्रुटि हुई। अनुरोध आईडी: :id। फिर से कोशिश करें या सपोर्ट से संपर्क करें।',
+        'test_reason_server_error_no_id' => 'Z-Heart में आंतरिक त्रुटि हुई। फिर से कोशिश करें या सपोर्ट से संपर्क करें।',
+        'test_reason_bad_response' => 'Z-Heart ने ऐसा जवाब भेजा जिसे यह ऐप पढ़ नहीं सका (HTTP :status)। अनुरोध आईडी: :id। फिर से कोशिश करें या सपोर्ट से संपर्क करें।',
+        'test_reason_unexpected_status' => 'Z-Heart ने अनुरोध स्वीकार नहीं किया (HTTP :status)। अनुरोध आईडी: :id। सपोर्ट से संपर्क करें।',
+        'test_reason_key_revoked' => 'यह API कुंजी रद्द कर दी गई है। Z-Heart सपोर्ट से नई कुंजी माँगें।',
+        'test_reason_key_expired' => 'इस API कुंजी की अवधि समाप्त हो गई है। Z-Heart सपोर्ट से नई कुंजी माँगें।',
+        'test_reason_client_suspended' => 'Z-Heart के अनुसार इस व्यवसाय का खाता निलंबित है। सपोर्ट से संपर्क करें।',
+        'test_reason_client_not_active' => 'Z-Heart के अनुसार इस व्यवसाय का खाता सक्रिय नहीं है। सपोर्ट से संपर्क करें।',
         'test_not_ready' => 'कनेक्टेड है, लेकिन इनवॉइस साइन करने के लिए तैयार नहीं',
         'test_not_ready_hint' => 'Z-Heart को नीचे दी गई समस्याएँ मिली हैं। इनवॉइस साइन होने से पहले इन्हें Z-Heart में ठीक करना ज़रूरी है। ठीक करवाने के लिए हमसे संपर्क करें।',
         'issues' => [
