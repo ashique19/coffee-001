@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.FancyCoffee" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/coffee_brown</item>
+        <item name="colorPrimaryVariant">@color/coffee_brown_dark</item>
+        <item name="colorOnPrimary">@color/coffee_cream</item>
+        <item name="android:statusBarColor">@color/coffee_brown</item>
+        <item name="android:navigationBarColor">@color/coffee_brown</item>
+        <item name="android:windowBackground">@color/coffee_brown</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>
