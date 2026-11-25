@@ -176,4 +176,11 @@ return [
         'new_order' => 'New order',
         'close' => 'Close',
     ],
+    'mobile_cart' => [
+        'items' => ':count item|:count items',
+        'expand' => 'View order',
+        'collapse' => 'Hide order',
+        'pay' => 'Pay',
+        'add_discount' => 'Add discount',
+    ],
 ];

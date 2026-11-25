@@ -1,7 +1,7 @@
 @php
     use App\Support\PosProductImagery;
 @endphp
-<div class="pos-terminal-rich pb-20 lg:pb-0" x-data="{ cartOpen: @entangle('mobileCartOpen').live }">
+<div class="pos-terminal-rich pb-20 max-md:pb-28 lg:pb-0" x-data="{ cartOpen: @entangle('mobileCartOpen').live }">
     <header class="pos-hero mb-4">
         <p class="relative text-xs font-semibold uppercase tracking-widest text-cafe-cream/80">{{ __('pos.shift_today') }}</p>
         <h1 class="relative text-xl font-bold sm:text-2xl">{{ $branch->name }}</h1>
@@ -114,7 +114,8 @@
         </section>
 
         <aside
-            class="pos-cart-glass self-start max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(4.25rem+env(safe-area-inset-bottom))] max-lg:z-50 max-lg:mx-3 max-lg:max-h-[min(70vh,32rem)] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:transition-transform max-lg:duration-300 lg:order-2 lg:sticky lg:top-20 lg:mx-0 lg:max-h-none lg:overflow-visible lg:rounded-2xl"
+            class="pos-cart-glass self-start max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(4.25rem+env(safe-area-inset-bottom))] max-lg:z-50 max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:transition-transform max-lg:duration-300 md:max-lg:mx-3 md:max-lg:max-h-[min(70vh,32rem)] max-md:mx-0 max-md:max-h-[calc(100dvh-4.75rem-4.25rem-env(safe-area-inset-bottom)-0.75rem)] max-md:overscroll-contain max-md:rounded-b-none max-md:p-0 lg:order-2 lg:sticky lg:top-20 lg:mx-0 lg:max-h-none lg:overflow-visible lg:rounded-2xl"
+            data-pos-cart-sheet
             :class="cartOpen ? 'max-lg:block max-lg:translate-y-0' : 'max-lg:hidden'"
             role="region"
             aria-label="{{ __('pos.cart_sheet') }}"
@@ -123,12 +124,39 @@
         </aside>
     </div>
 
-    <div class="fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-30 px-3 lg:hidden">
-        <button type="button" data-testid="pos-mobile-cart-open" class="pos-pay-gradient flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl px-4 shadow-lg" @click="cartOpen = true">
+    {{-- Tablet (md to lg): unchanged "View cart" bar. --}}
+    <div class="fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-30 hidden px-3 md:block lg:hidden">
+        <button type="button" data-testid="pos-tablet-cart-open" class="pos-pay-gradient flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl px-4 shadow-lg" @click="cartOpen = true">
             <span class="font-semibold">{{ __('pos.open_cart') }}</span>
             <span class="tabular-nums text-lg">{{ number_format($order->total_inc_vat, 2) }} SAR</span>
         </button>
     </div>
+
+    {{-- Phones: compact summary bar above the bottom nav. Tap to expand the order sheet; Pay pays with the chosen method. --}}
+    @php
+        $cartCount = (int) collect($order->line_items)->sum(fn ($l) => max(1, (int) floor((float) ($l['quantity'] ?? 1))));
+    @endphp
+    @if ($order->line_items !== [])
+        <div class="fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-30 px-3 md:hidden" x-show="!cartOpen" data-pos-cart-bar>
+            <div class="pos-pay-gradient flex min-h-16 items-center gap-2 rounded-2xl p-1.5 shadow-lg">
+                <button type="button" data-testid="pos-mobile-cart-open" class="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl px-2 text-start focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70" @click="cartOpen = true" aria-label="{{ __('pos.mobile_cart.expand') }}" :aria-expanded="cartOpen.toString()">
+                    <span class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15" aria-hidden="true">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a1 1 0 0 0 1 .8h9.7a1 1 0 0 0 1-.8L21 7H6"/></svg>
+                        <span class="absolute -end-1 -top-1 min-w-5 rounded-full bg-white px-1 text-center text-[0.7rem] font-bold leading-5 text-[var(--cafe-espresso,#2c1810)] tabular-nums">{{ $cartCount }}</span>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block truncate text-xs font-medium opacity-90" data-pos-cart-bar-count>{{ trans_choice('pos.mobile_cart.items', $cartCount, ['count' => $cartCount]) }}</span>
+                        <span class="block text-lg font-bold leading-tight tabular-nums" dir="ltr" data-pos-cart-bar-total>{{ number_format($order->total_inc_vat, 2) }} SAR</span>
+                    </span>
+                    <svg class="ms-auto h-5 w-5 shrink-0 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+                </button>
+                <button type="button" class="flex min-h-12 shrink-0 flex-col items-center justify-center rounded-xl bg-white px-4 text-[var(--cafe-espresso,#2c1810)] shadow-sm active:scale-[0.98] disabled:opacity-60" wire:click="pay" wire:loading.attr="disabled" wire:target="pay" data-pos-cart-bar-pay>
+                    <span class="text-base font-bold leading-tight">{{ __('pos.mobile_cart.pay') }}</span>
+                    <span class="text-[0.7rem] font-medium leading-tight opacity-75">{{ __('pos.'.$paymentMethod) }}</span>
+                </button>
+            </div>
+        </div>
+    @endif
 
     <div x-show="cartOpen" x-cloak class="app-sheet-backdrop lg:hidden" @click="cartOpen = false"></div>
 
