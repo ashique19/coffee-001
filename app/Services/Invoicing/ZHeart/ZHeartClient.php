@@ -130,6 +130,7 @@ final class ZHeartClient
 
         if ($authStatus === 200 && is_array($authBody) && ($authBody['status'] ?? '') === 'ok') {
             $report = ZHeartConnectionTestReport::successFromAuthPayload($authBody, $business);
+            $notReady = $report['ready'] === false;
 
             return [
                 'ok' => true,
@@ -137,10 +138,12 @@ final class ZHeartClient
                 'auth_ok' => true,
                 'message' => $report['message'],
                 'http_status' => 200,
-                'severity' => 'ok',
-                'reason' => null,
+                'severity' => $notReady ? 'warn' : 'ok',
+                'reason' => $notReady ? 'not_ready' : null,
                 'card' => $report['card'],
                 'warnings' => $report['warnings'],
+                'ready' => $report['ready'],
+                'issues' => $report['issues'],
                 'request_id' => $requestId,
             ];
         }
