@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Fancy Coffee</string>
+    <string name="error_title">Can’t reach Fancy Coffee</string>
+    <string name="error_offline">No internet connection. Check the tablet’s Wi-Fi and try again.</string>
+    <string name="error_generic">The page could not be loaded. Check the connection and try again.</string>
+    <string name="retry">Retry</string>
+    <string name="https_only">Only secure HTTPS pages can open in this app.</string>
+    <string name="cannot_open_link">Can’t open that link.</string>
+    <string name="download_started">Download started.</string>
+</resources>
