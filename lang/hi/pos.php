@@ -3,6 +3,22 @@
 $en = require __DIR__.'/../en/pos.php';
 
 return array_replace($en, [
+    'title' => 'पॉइंट ऑफ़ सेल',
+    'nav_pos' => 'पीओएस',
+    'nav_orders' => 'ऑर्डर',
+    'nav_eod' => 'दिन का अंत',
+    'nav_ops' => 'संचालन',
+    'nav_more' => 'और',
+    'nav_home' => 'पीओएस होम',
+    'mobile_nav' => 'स्टाफ़ मेनू',
+    'collapse_sidebar' => 'सिकोड़ें',
+    'switch_branch' => 'शाखा बदलें',
+    'user_menu' => 'खाता मेनू',
+    'view_storefront' => 'स्टोरफ्रंट',
+    'ops_dashboard' => 'संचालन',
+    'logout' => 'लॉग आउट',
+    'history' => 'ऑर्डर इतिहास',
+    'end_of_day' => 'दिन का अंत',
     'receipt_preview' => [
         'paid' => 'भुगतान प्राप्त हुआ',
         'title' => 'रसीद :number',

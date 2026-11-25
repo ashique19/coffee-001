@@ -1,7 +1,12 @@
 <?php
 
 return [
+    'title' => 'ইনভয়েস',
+    'nav' => 'ইনভয়েস',
+    'nav_issue_standard' => 'স্ট্যান্ডার্ড ইনভয়েস',
     'nav_issue_simplified' => 'নতুন ইনভয়েস',
+    'issue_standard_title' => 'স্ট্যান্ডার্ড ইনভয়েস ইস্যু',
+    'issue_simplified_title' => 'সরলীকৃত ইনভয়েস ইস্যু',
     'errors' => [
         'signing_failed' => 'এই ইনভয়েস ক্রিপ্টোগ্রাফিকভাবে স্বাক্ষর করা যায়নি। অ্যাডমিনে কী এবং signing service signing service',
         'signing_credentials_invalid' => 'এই EGS-এর compliance signing service',
