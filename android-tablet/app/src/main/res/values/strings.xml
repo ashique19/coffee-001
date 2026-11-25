@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Fancy Coffee</string>
-    <string name="error_title">Can’t reach Fancy Coffee</string>
+    <string name="app_name">Healthy Brew</string>
+    <string name="error_title">Can’t reach Healthy Brew</string>
     <string name="error_offline">No internet connection. Check the tablet’s Wi-Fi and try again.</string>
     <string name="error_generic">The page could not be loaded. Check the connection and try again.</string>
     <string name="retry">Retry</string>

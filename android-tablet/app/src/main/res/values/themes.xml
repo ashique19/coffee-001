@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.FancyCoffee" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.HealthyBrew" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/coffee_brown</item>
         <item name="colorPrimaryVariant">@color/coffee_brown_dark</item>
         <item name="colorOnPrimary">@color/coffee_cream</item>

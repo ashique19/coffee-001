@@ -50,11 +50,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String PRINT_HOOK_JS =
             "(function(){"
-                    + "if(window.__fancyCoffeePrintHooked)return;"
-                    + "window.__fancyCoffeePrintHooked=true;"
+                    + "if(window.__healthyBrewPrintHooked)return;"
+                    + "window.__healthyBrewPrintHooked=true;"
                     + "window.print=function(){"
-                    + "if(window.FancyCoffee&&window.FancyCoffee.printPage){"
-                    + "window.FancyCoffee.printPage();"
+                    + "if(window.HealthyBrew&&window.HealthyBrew.printPage){"
+                    + "window.HealthyBrew.printPage();"
                     + "}"
                     + "};"
                     + "})();";
@@ -157,11 +157,11 @@ public class MainActivity extends AppCompatActivity {
         settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setUserAgentString(settings.getUserAgentString() + " FancyCoffeeTablet/1.0");
+        settings.setUserAgentString(settings.getUserAgentString() + " HealthyBrewTablet/1.1");
 
         webView.setWebViewClient(new StaffWebViewClient());
         webView.setWebChromeClient(new StaffChromeClient());
-        webView.addJavascriptInterface(new PrintBridge(this), "FancyCoffee");
+        webView.addJavascriptInterface(new PrintBridge(this), "HealthyBrew");
         webView.setDownloadListener(new StaffDownloadListener());
         webView.setBackgroundColor(getResources().getColor(R.color.coffee_brown, getTheme()));
     }

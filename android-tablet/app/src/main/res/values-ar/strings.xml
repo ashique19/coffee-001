@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">فانسي كوفي</string>
-    <string name="error_title">تعذر الوصول إلى فانسي كوفي</string>
+    <string name="app_name">هيلثي برو</string>
+    <string name="error_title">تعذر الوصول إلى هيلثي برو</string>
     <string name="error_offline">لا يوجد اتصال بالإنترنت. تحقق من شبكة الواي فاي في الجهاز ثم أعد المحاولة.</string>
     <string name="error_generic">تعذر تحميل الصفحة. تحقق من الاتصال ثم أعد المحاولة.</string>
     <string name="retry">إعادة المحاولة</string>

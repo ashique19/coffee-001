@@ -1,22 +1,24 @@
-# Fancy Coffee tablet app
+# Healthy Brew tablet app
 
-Android WebView wrapper for the Fancy Coffee staff area. Built for a Samsung Galaxy Tab A9 (8.7") used in the shop. It opens the staff login full-screen, stays logged in via cookies, and supports invoice printing, file uploads, pull-to-refresh, and a simple offline retry screen.
+Android WebView wrapper for the Healthy Brew staff area. Built for a Samsung Galaxy Tab A9 (8.7") used in the shop. It opens the staff login full-screen, stays logged in via cookies, and supports invoice printing, file uploads, pull-to-refresh, and a simple offline retry screen.
 
 - **Start URL:** https://coffee-001.duckdns.org/login
 - Logged-in staff are redirected to `/admin/dashboard`.
-- **Package:** `org.duckdns.coffee001.fancycoffee`
-- **Version:** 1.0 (versionCode 1), minSdk 24, targetSdk 34
+- **App name:** Healthy Brew (Arabic label: هيلثي برو)
+- **Package:** `org.duckdns.coffee001.fancycoffee` (unchanged, so this build installs over the previous v1.0 app)
+- **Version:** 1.1 (versionCode 2), minSdk 24, targetSdk 34
 - Navigation stays on `coffee-001.duckdns.org` (HTTPS only). Other links open in the system browser.
 
 This folder is only the tablet app. It is not under `public/`, so a normal site deploy will not publish it to the café website.
 
 ## Install on the tablet
 
-1. On the Tab A9, open the v1.0 APK in this folder:
-   [releases/fancy-coffee-tablet-v1.0.apk](releases/fancy-coffee-tablet-v1.0.apk)
+1. On the Tab A9, open the v1.1 APK in this folder:
+   [releases/healthy-brew-tablet-v1.1.apk](releases/healthy-brew-tablet-v1.1.apk)
 2. If Android asks, allow install from that source (Files, Chrome, or Drive).
-3. Open **Fancy Coffee** (Arabic label: فانسي كوفي) and sign in with a staff account.
-4. Keep **Android System WebView** up to date.
+3. If the older Fancy Coffee app is already installed, this file updates it in place (same package and signing key). The home-screen name becomes **Healthy Brew**.
+4. Open **Healthy Brew** (Arabic label: هيلثي برو) and sign in with a staff account.
+5. Keep **Android System WebView** up to date.
 
 The signed APK is about 4.3 MB. This is a sideload install, not a Play Store listing. Later updates must be signed with the same release key, or the tablet will refuse the install.
 
