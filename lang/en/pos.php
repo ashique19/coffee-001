@@ -169,4 +169,11 @@ return [
         'standard_buyer_required' => 'Standard invoices need a customer with buyer name, Saudi national address, and VAT or CR number. Assign a customer to this order or use simplified checkout.',
         'standard_buyer_address_required' => 'The customer profile is missing a valid Saudi national address (building, street, city, 5-digit postal code).',
     ],
+    'receipt_preview' => [
+        'paid' => 'Payment received',
+        'title' => 'Receipt :number',
+        'print' => 'Print',
+        'new_order' => 'New order',
+        'close' => 'Close',
+    ],
 ];

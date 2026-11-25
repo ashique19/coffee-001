@@ -15,9 +15,12 @@ use App\Services\Pos\PosBranchInsights;
 use App\Services\Pos\PosCatalogQuery;
 use App\Services\Pos\PosCheckoutService;
 use App\Services\Pos\PosOrderService;
+use App\Support\Invoicing\InvoiceCashReceiptView;
+use App\Support\Invoicing\InvoicePrintSheet;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 #[Layout('layouts.pos')]
@@ -46,6 +49,10 @@ class Terminal extends Component
 
     /** @var array{line: array<string, mixed>, index: int}|null */
     public ?array $undoLineSnapshot = null;
+
+    /** Paid order whose receipt is shown in the print-preview modal. Set only by pay(). */
+    #[Locked]
+    public ?int $receiptOrderId = null;
 
     public function mount(Branch $branch, PosCatalogQuery $catalog, PosOrderService $orders): void
     {
@@ -253,16 +260,22 @@ class Terminal extends Component
         try {
             $method = PosPaymentMethod::from($this->paymentMethod);
             $order = $checkout->pay($this->currentOrder(), $method, Auth::guard('tenant')->user());
-            $this->redirectRoute('admin.pos.receipt', [
-                'order' => $order->id,
-                'locale' => app()->getLocale(),
-                'paid' => 1,
-                'autoprint' => config('pos.auto_print_receipt') ? 1 : 0,
-            ]);
+            $this->receiptOrderId = $order->id;
+            $this->mobileCartOpen = false;
+            $this->dispatch('pos-receipt-opened', autoprint: (bool) config('pos.auto_print_receipt'));
         } catch (\Throwable $e) {
             report($e);
             $this->toastError($e->getMessage());
         }
+    }
+
+    /**
+     * Close the print preview and start a fresh order so the terminal is ready for the next sale.
+     */
+    public function closeReceipt(PosOrderService $orders, PosCatalogQuery $catalog): void
+    {
+        $this->receiptOrderId = null;
+        $this->newOrder($orders, $catalog);
     }
 
     public function newOrder(PosOrderService $orders, PosCatalogQuery $catalog): void
@@ -334,7 +347,35 @@ class Terminal extends Component
             'stockStates' => $stockStates,
             'shift' => $insights->todaySnapshot($branch),
             'activeShift' => $activeShift,
+            'receipt' => $this->receiptPreview(),
         ]);
+    }
+
+    /**
+     * @return array{order: PosOrder, t: array<string, mixed>, cash: array<string, mixed>}|null
+     */
+    private function receiptPreview(): ?array
+    {
+        if ($this->receiptOrderId === null) {
+            return null;
+        }
+
+        $order = PosOrder::query()
+            ->where('branch_id', $this->branchId)
+            ->with(['branch', 'cashier', 'customer'])
+            ->find($this->receiptOrderId);
+        $invoice = $order?->invoice_id !== null ? $order->invoice()->first() : null;
+        if ($order === null || $invoice === null) {
+            return null;
+        }
+
+        $t = InvoicePrintSheet::forInvoice($invoice, $order, BusinessSetting::singleton());
+
+        return [
+            'order' => $order,
+            't' => $t,
+            'cash' => InvoiceCashReceiptView::fromPrintData($t, $order),
+        ];
     }
 
     private function currentOrder(): PosOrder

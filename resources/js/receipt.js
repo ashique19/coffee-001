@@ -65,6 +65,21 @@ function maybeAutoPrint() {
     window.setTimeout(() => window.print(), 400);
 }
 
+window.renderReceiptGraphics = () => {
+    renderReceiptQr();
+    renderReceiptBarcode();
+};
+
+// POS terminal print preview: draw the QR/barcode once the modal is in the page, then auto-print if enabled.
+window.addEventListener('pos-receipt-opened', (event) => {
+    window.setTimeout(() => {
+        window.renderReceiptGraphics();
+        if (event.detail?.autoprint) {
+            window.setTimeout(() => window.print(), 400);
+        }
+    }, 80);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     renderReceiptQr();
     renderReceiptBarcode();
